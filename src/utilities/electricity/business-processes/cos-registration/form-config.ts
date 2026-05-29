@@ -3,6 +3,16 @@
 // ============================================================
 
 import type { FormGroupDefinition } from '../../../../shared/domain/types';
+import {
+  TEST_FLAG_OPTIONS,
+  PROFILE_CLASS_OPTIONS,
+  MEASUREMENT_CLASS_OPTIONS,
+  GSP_GROUP_OPTIONS,
+  METER_TYPE_OPTIONS,
+  NUMBER_OF_DIGITS_OPTIONS,
+  MEASUREMENT_QUANTITY_OPTIONS,
+  READING_TYPE_OPTIONS,
+} from '../../industry-constants';
 
 function localDateISO(): string {
   const d = new Date();
@@ -21,10 +31,7 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
         type: 'select',
         required: true,
         defaultValue: 'OPER',
-        options: [
-          { label: 'OPER — Operational', value: 'OPER' },
-          { label: 'TR06 — Training', value: 'TR06' },
-        ],
+        options: TEST_FLAG_OPTIONS,
         helpText: 'OPER = operational, TR06 = training',
       },
       {
@@ -140,53 +147,21 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
         label: 'Profile Class',
         type: 'select',
         required: true,
-        options: [
-          { label: '01 — Domestic Unrestricted', value: '01' },
-          { label: '02 — Domestic Economy 7', value: '02' },
-          { label: '03 — Non-Dom Unrestricted', value: '03' },
-          { label: '04 — Non-Dom Economy 7', value: '04' },
-          { label: '05 — Non-Dom MD LV', value: '05' },
-          { label: '06 — Non-Dom MD HV', value: '06' },
-          { label: '07 — Non-Dom MD LV Sub', value: '07' },
-          { label: '08 — Non-Dom MD HV Sub', value: '08' },
-        ],
+        options: PROFILE_CLASS_OPTIONS,
       },
       {
         id: 'measurementClass',
         label: 'Measurement Class',
         type: 'select',
         required: true,
-        options: [
-          { label: 'A — Non Half-Hourly', value: 'A' },
-          { label: 'B — Unrestricted Unmetered', value: 'B' },
-          { label: 'C — Restricted Unmetered', value: 'C' },
-          { label: 'D — Automatically read NHH', value: 'D' },
-          { label: 'E — Half-Hourly', value: 'E' },
-          { label: 'G — Deemed NHH', value: 'G' },
-          { label: 'I — Half-Hourly AMR', value: 'I' },
-        ],
+        options: MEASUREMENT_CLASS_OPTIONS,
       },
       {
         id: 'gspGroupId',
         label: 'GSP Group ID',
         type: 'select',
         required: true,
-        options: [
-          { label: '_A — Eastern', value: '_A' },
-          { label: '_B — East Midlands', value: '_B' },
-          { label: '_C — London', value: '_C' },
-          { label: '_D — Merseyside & N Wales', value: '_D' },
-          { label: '_E — Midlands', value: '_E' },
-          { label: '_F — Northern', value: '_F' },
-          { label: '_G — North Western', value: '_G' },
-          { label: '_H — Southern', value: '_H' },
-          { label: '_J — South Eastern', value: '_J' },
-          { label: '_K — South Western', value: '_K' },
-          { label: '_L — Yorkshire', value: '_L' },
-          { label: '_M — South Scotland', value: '_M' },
-          { label: '_N — North Scotland', value: '_N' },
-          { label: '_P — South Wales', value: '_P' },
-        ],
+        options: GSP_GROUP_OPTIONS,
       },
       {
         id: 'llfClass',
@@ -218,14 +193,7 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
         label: 'Meter Type',
         type: 'select',
         required: true,
-        options: [
-          { label: 'S1A — Single Phase Credit', value: 'S1A' },
-          { label: 'S1B — Single Phase Prepayment', value: 'S1B' },
-          { label: 'E7A — Economy 7 Credit', value: 'E7A' },
-          { label: 'E7B — Economy 7 Prepayment', value: 'E7B' },
-          { label: 'H — Half-Hourly', value: 'H' },
-          { label: 'NSS — Non Standard', value: 'NSS' },
-        ],
+        options: METER_TYPE_OPTIONS,
       },
       {
         id: 'mtc',
@@ -271,11 +239,7 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
         label: 'Number of Digits',
         type: 'select',
         required: true,
-        options: [
-          { label: '4', value: '4' },
-          { label: '5', value: '5' },
-          { label: '6', value: '6' },
-        ],
+        options: NUMBER_OF_DIGITS_OPTIONS,
       },
       {
         id: 'registerId',
@@ -290,11 +254,7 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
         label: 'Measurement Quantity ID',
         type: 'select',
         required: true,
-        options: [
-          { label: 'AI — Active Import', value: 'AI' },
-          { label: 'RI — Reactive Import', value: 'RI' },
-          { label: 'AQ — Active Export', value: 'AQ' },
-        ],
+        options: MEASUREMENT_QUANTITY_OPTIONS,
         helpText: 'Type of measurement',
       },
       {
@@ -338,15 +298,7 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
         label: 'Reading Type',
         type: 'select',
         required: true,
-        options: [
-          { label: 'A — Actual (physical read)', value: 'A' },
-          { label: 'I — Initial (start of supply)', value: 'I' },
-          { label: 'F — Final (end of supply)', value: 'F' },
-          { label: 'P — Periodic (routine scheduled)', value: 'P' },
-          { label: 'C — Customer self-read', value: 'C' },
-          { label: 'E — Estimated', value: 'E' },
-          { label: 'D — Deemed', value: 'D' },
-        ],
+        options: READING_TYPE_OPTIONS,
         helpText: 'Read type as expected by D0149 / D0010',
       },
       {

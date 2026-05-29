@@ -3,12 +3,12 @@
 // ============================================================
 
 import type { UtilityDefinition } from '../../shared/domain/types';
-import { cosRegistrationFormGroups } from './processes/cos-registration/form-config';
-import { mapFormToCoSModel } from './processes/cos-registration/model';
-import { orchestrateCoSRegistration } from './processes/cos-registration/orchestrator';
-import { energisationFormGroups } from './processes/energisation/form-config';
-import { mapFormToEnergisationModel } from './processes/energisation/model';
-import { orchestrateEnergisation } from './processes/energisation/orchestrator';
+import { cosRegistrationFormGroups } from './business-processes/cos-registration/form-config';
+import { mapFormToCoSModel } from './business-processes/cos-registration/model';
+import { orchestrateCoSRegistration } from './business-processes/cos-registration/orchestrator';
+import { energisationFormGroups } from './business-processes/energisation/form-config';
+import { mapFormToEnergisationModel } from './business-processes/energisation/model';
+import { orchestrateEnergisation } from './business-processes/energisation/orchestrator';
 
 export const electricityUtility: UtilityDefinition = {
   id: 'electricity',
