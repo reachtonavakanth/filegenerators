@@ -10,27 +10,24 @@ export interface ElectricityEnergisationModel {
   testFlag: TestFlag;
   fileDate: string;
 
-  // ZHV routing — per-party DTN codes
-  supplierRoleCode: string;       // Supplier role code   e.g. 'X'
-  supplierParticipantId: string;  // Supplier participant  e.g. 'GMTR'
-  mopRoleCode: string;            // MOB role code        e.g. 'M'
-  mopParticipantId: string;       // MOB participant      e.g. 'BMET'
-  dcRoleCode: string;             // DC role code         e.g. 'D'
-  dcParticipantId: string;        // DC participant       e.g. 'UDMS'
+  // ZHV routing — per party: Role Code + Participant ID
+  supplierRoleCode: string;
+  supplierParticipantId: string;
+  mopRoleCode: string;
+  mopParticipantId: string;
+  dcRoleCode: string;
+  dcParticipantId: string;
+  distributorRoleCode: string;
+  distributorParticipantId: string;
 
   mpan: string;
   msn: string;
-
-  supplierId: string;
-  mobId: string;
-  dcId: string;
 
   profileClass: string;
   measurementClass: string;
   gspGroupId: string;
   llfClass: string;
   ssc: string;
-  distributorId: string;
 
   meterType: string;
   mtc: string;
@@ -68,21 +65,19 @@ export function mapFormToEnergisationModel(
     fileDate: inputs['fileDate'] || '',
     supplierRoleCode: inputs['supplierRoleCode'] || 'X',
     supplierParticipantId: inputs['supplierParticipantId'] || 'GMTR',
-    mopRoleCode: inputs['mopRoleCode'] || 'M',
+    mopRoleCode: inputs['mopRoleCode'] || '',
     mopParticipantId: inputs['mopParticipantId'] || '',
-    dcRoleCode: inputs['dcRoleCode'] || 'D',
+    dcRoleCode: inputs['dcRoleCode'] || '',
     dcParticipantId: inputs['dcParticipantId'] || '',
+    distributorRoleCode: inputs['distributorRoleCode'] || '',
+    distributorParticipantId: inputs['distributorParticipantId'] || '',
     mpan: inputs['mpan'] || '',
     msn: inputs['msn'] || '',
-    supplierId: inputs['supplierId'] || '',
-    mobId: inputs['mobId'] || '',
-    dcId: inputs['dcId'] || '',
     profileClass: inputs['profileClass'] || '',
     measurementClass: inputs['measurementClass'] || '',
     gspGroupId: inputs['gspGroupId'] || '',
     llfClass: inputs['llfClass'] || '001',
     ssc: inputs['ssc'] || '0000',
-    distributorId: inputs['distributorId'] || '',
     meterType: inputs['meterType'] || 'S1A',
     mtc: inputs['mtc'] || '001',
     meterMake: inputs['meterMake'] || '',

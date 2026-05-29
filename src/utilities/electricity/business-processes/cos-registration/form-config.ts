@@ -1,10 +1,13 @@
 // ============================================================
-// CoS Registration — Form Group Definitions
+// COS Registration — Form Group Definitions
 // ============================================================
 
 import type { FormGroupDefinition } from '../../../../shared/domain/types';
 import {
   TEST_FLAG_OPTIONS,
+  INSTRUCTION_TYPE_OPTIONS,
+  HH_TYPE_OPTIONS,
+  ENERGISATION_STATUS_OPTIONS,
   PROFILE_CLASS_OPTIONS,
   MEASUREMENT_CLASS_OPTIONS,
   GSP_GROUP_OPTIONS,
@@ -22,7 +25,7 @@ function localDateISO(): string {
 export const cosRegistrationFormGroups: FormGroupDefinition[] = [
   {
     id: 'file-settings',
-    label: 'File Settings',
+    label: 'File Details',
     icon: '⚙',
     fields: [
       {
@@ -45,90 +48,31 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
     ],
   },
   {
-    id: 'envelope-routing',
-    label: 'Envelope Routing (ZHV)',
-    icon: '🔀',
+    id: 'market-parties',
+    label: 'Market Parties',
+    icon: '🏢',
     fields: [
-      {
-        id: 'mpasRoleCode',
-        label: 'MPAS Role Code',
-        type: 'text',
-        required: true,
-        defaultValue: 'P',
-        helpText: 'ZHV[4] — MPAS/Distributor role code (D0260, D0217 FROM)',
-      },
-      {
-        id: 'mpasParticipantId',
-        label: 'MPAS Participant ID',
-        type: 'text',
-        required: true,
-        placeholder: 'EMEB',
-        helpText: 'ZHV[5] — MPAS participant ID, varies per MPAN',
-      },
-      {
-        id: 'supplierRoleCode',
-        label: 'Supplier Role Code',
-        type: 'text',
-        required: true,
-        defaultValue: 'X',
-        helpText: 'Supplier role code — TO for most D-flows',
-      },
-      {
-        id: 'supplierParticipantId',
-        label: 'Supplier Participant ID',
-        type: 'text',
-        required: true,
-        defaultValue: 'GMTR',
-        helpText: 'Supplier participant ID',
-      },
-      {
-        id: 'mopRoleCode',
-        label: 'MOP Role Code',
-        type: 'text',
-        required: true,
-        defaultValue: 'M',
-        helpText: 'MOP role code (D0011/D0149/D0052 FROM)',
-      },
-      {
-        id: 'mopParticipantId',
-        label: 'MOP Participant ID',
-        type: 'text',
-        required: true,
-        placeholder: 'BMET',
-        helpText: 'MOP participant ID',
-      },
-      {
-        id: 'daRoleCode',
-        label: 'DA Role Code',
-        type: 'text',
-        required: true,
-        defaultValue: 'B',
-        helpText: 'DA role code (D0011 DA FROM)',
-      },
-      {
-        id: 'daParticipantId',
-        label: 'DA Participant ID',
-        type: 'text',
-        required: true,
-        placeholder: 'UDMS',
-        helpText: 'DA participant ID',
-      },
-      {
-        id: 'dcRoleCode',
-        label: 'DC Role Code',
-        type: 'text',
-        required: true,
-        defaultValue: 'D',
-        helpText: 'DC role code (D0011/D0010/D0150 FROM)',
-      },
-      {
-        id: 'dcParticipantId',
-        label: 'DC Participant ID',
-        type: 'text',
-        required: true,
-        placeholder: 'UDMS',
-        helpText: 'DC participant ID',
-      },
+      // ---- New Supplier ----
+      { id: 'supplierRoleCode',          label: 'New Supplier Role Code',       type: 'text', required: true, defaultValue: 'X' },
+      { id: 'supplierParticipantId',     label: 'New Supplier Participant ID',  type: 'text', required: true, defaultValue: 'GMTR' },
+      // ---- Old Supplier ----
+      { id: 'oldSupplierRoleCode',       label: 'Old Supplier Role Code',       type: 'text', required: true },
+      { id: 'oldSupplierParticipantId',  label: 'Old Supplier Participant ID',  type: 'text', required: true },
+      // ---- Distributor ----
+      { id: 'distributorRoleCode',       label: 'Distributor Role Code',        type: 'text', required: true },
+      { id: 'distributorParticipantId',  label: 'Distributor Participant ID',   type: 'text', required: true },
+      // ---- MPAS ----
+      { id: 'mpasRoleCode',              label: 'MPAS Role Code',               type: 'text', required: true },
+      { id: 'mpasParticipantId',         label: 'MPAS Participant ID',          type: 'text', required: true },
+      // ---- MOP ----
+      { id: 'mopRoleCode',               label: 'MOP Role Code',                type: 'text', required: true },
+      { id: 'mopParticipantId',          label: 'MOP Participant ID',           type: 'text', required: true },
+      // ---- Data Aggregator (DA) ----
+      { id: 'daRoleCode',                label: 'Data Aggregator Role Code',    type: 'text', required: true },
+      { id: 'daParticipantId',           label: 'Data Aggregator Participant ID', type: 'text', required: true },
+      // ---- Data Collector (DC) ----
+      { id: 'dcRoleCode',                label: 'Data Collector Role Code',     type: 'text', required: true },
+      { id: 'dcParticipantId',           label: 'Data Collector Participant ID', type: 'text', required: true },
     ],
   },
   {
@@ -136,6 +80,12 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
     label: 'Supply Point',
     icon: '⚡',
     fields: [
+      { id: 'instructionNumber',  label: 'Instruction Number',      type: 'text',   required: true, placeholder: '17658' },
+      { id: 'instructionType',    label: 'Instruction Type',        type: 'select', required: true, defaultValue: 'SP43', options: INSTRUCTION_TYPE_OPTIONS },
+      { id: 'energisationStatus', label: 'Energisation Status',     type: 'select', required: true, defaultValue: 'E',    options: ENERGISATION_STATUS_OPTIONS },
+      { id: 'aggrType',           label: 'Data Aggregation Type',   type: 'select', required: true, options: HH_TYPE_OPTIONS },
+      { id: 'collectorType',      label: 'Data Collector Type',     type: 'select', required: true, options: HH_TYPE_OPTIONS },
+      { id: 'mopType',            label: 'Meter Operator Type',     type: 'select', required: true, options: HH_TYPE_OPTIONS },
       {
         id: 'mpan',
         label: 'MPAN',
@@ -143,7 +93,6 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
         required: true,
         placeholder: '1200012345678',
         maxLength: 13,
-        helpText: '13-digit Meter Point Administration Number',
       },
       {
         id: 'msn',
@@ -158,69 +107,14 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
         label: 'Registration Date (Supply Start)',
         type: 'date',
         required: true,
-        helpText: 'New supply start / CoS effective date',
+        helpText: 'New supply start / COS effective date',
       },
       {
         id: 'cosDate',
         label: 'Change of Supplier Date',
         type: 'date',
         required: true,
-        helpText: 'Date CoS is legally effective',
-      },
-    ],
-  },
-  {
-    id: 'parties',
-    label: 'Market Parties',
-    icon: '🏢',
-    fields: [
-      {
-        id: 'newSupplierId',
-        label: 'New Supplier ID',
-        type: 'text',
-        required: true,
-        placeholder: 'SP43',
-        helpText: 'Gaining supplier party ID',
-      },
-      {
-        id: 'oldSupplierId',
-        label: 'Old Supplier ID',
-        type: 'text',
-        required: true,
-        placeholder: 'EDF1',
-        helpText: 'Losing supplier party ID',
-      },
-      {
-        id: 'mobId',
-        label: 'MOP (Meter Operator) ID',
-        type: 'text',
-        required: true,
-        placeholder: 'MOP001',
-        helpText: 'Meter Operator Business party ID',
-      },
-      {
-        id: 'dcId',
-        label: 'DC (Data Collector) ID',
-        type: 'text',
-        required: true,
-        placeholder: 'HHDC001',
-        helpText: 'Data Collector party ID',
-      },
-      {
-        id: 'daId',
-        label: 'DA (Data Aggregator) ID',
-        type: 'text',
-        required: true,
-        placeholder: 'HHDA001',
-        helpText: 'Data Aggregator party ID',
-      },
-      {
-        id: 'distributorId',
-        label: 'Distributor ID',
-        type: 'text',
-        required: true,
-        placeholder: 'EMEB',
-        helpText: 'Distribution network operator ID',
+        helpText: 'Date COS is legally effective',
       },
     ],
   },

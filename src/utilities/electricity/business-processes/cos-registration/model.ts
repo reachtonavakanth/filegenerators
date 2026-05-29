@@ -1,36 +1,41 @@
 // ============================================================
-// Electricity CoS Registration — Domain Model
+// Electricity COS Registration — Domain Model
 // ============================================================
 
 import type { TestFlag } from '../../../../shared/domain/types';
 
-export interface ElectricityCoSRegistrationModel {
+export interface ElectricityCOSRegistrationModel {
   // Envelope / file settings
   testFlag: TestFlag;
   fileDate: string;    // YYYYMMDD
 
-  // ZHV routing — per-party DTN codes (fromRoleCode|fromParticipantId → toRoleCode|toParticipantId)
-  mpasRoleCode: string;           // MPAS/Distributor role code   e.g. 'P'  — D0260, D0217 FROM
-  mpasParticipantId: string;      // MPAS participant ID           e.g. 'EMEB' — varies per MPAN
-  supplierRoleCode: string;       // Supplier role code            e.g. 'X'  — TO for most D-flows
-  supplierParticipantId: string;  // Supplier participant ID       e.g. 'GMTR'
-  mopRoleCode: string;            // MOB role code                 e.g. 'M'  — D0011/D0149/D0052 FROM
-  mopParticipantId: string;       // MOB participant ID            e.g. 'BMET'
-  daRoleCode: string;             // DA role code                  e.g. 'B'  — D0011 DA FROM
-  daParticipantId: string;        // DA participant ID             e.g. 'UDMS'
-  dcRoleCode: string;             // DC role code                  e.g. 'D'  — D0011/D0010/D0150 FROM
-  dcParticipantId: string;        // DC participant ID             e.g. 'UDMS'
+  // ZHV routing — per party: Role Code + Participant ID (participant ID also used in D-flow body records)
+  supplierRoleCode: string;
+  supplierParticipantId: string;
+  oldSupplierRoleCode: string;
+  oldSupplierParticipantId: string;
+  distributorRoleCode: string;
+  distributorParticipantId: string;
+  mpasRoleCode: string;
+  mpasParticipantId: string;
+  mopRoleCode: string;
+  mopParticipantId: string;
+  daRoleCode: string;
+  daParticipantId: string;
+  dcRoleCode: string;
+  dcParticipantId: string;
+
+  // D0260 / D0217 758/492 body fields
+  instructionNumber: string;  // up to 10-digit integer reference
+  instructionType: string;    // e.g. 'SP43' — dropdown
+  energisationStatus: string; // 'E' | 'D'
+  aggrType: string;           // Data Aggregation Type: 'H' | 'N'
+  collectorType: string;      // Data Collector Type:   'H' | 'N'
+  mopType: string;            // Meter Operator Type:   'H' | 'N'
 
   // Supply point
   mpan: string;        // 13-digit MPAN
   msn: string;         // Meter Serial Number
-
-  // Parties
-  newSupplierId: string;
-  oldSupplierId: string;
-  mobId: string;       // Meter Operator
-  dcId: string;        // Data Collector
-  daId: string;        // Data Aggregator
 
   // Technical attributes
   profileClass: string;
@@ -38,7 +43,6 @@ export interface ElectricityCoSRegistrationModel {
   gspGroupId: string;
   llfClass: string;    // Line Loss Factor Class
   ssc: string;         // Standard Settlement Configuration
-  distributorId: string;
 
   // Meter details
   meterType: string;   // e.g. 'S1A', 'E7A', 'H'
@@ -65,35 +69,39 @@ export interface ElectricityCoSRegistrationModel {
   estimatedAnnualConsumption: string; // kWh
 }
 
-export function mapFormToCoSModel(
+export function mapFormToCOSModel(
   inputs: Record<string, string>
-): ElectricityCoSRegistrationModel {
+): ElectricityCOSRegistrationModel {
   return {
     testFlag: (inputs['testFlag'] as TestFlag) || 'OPER',
     fileDate: inputs['fileDate'] || '',
-    mpasRoleCode: inputs['mpasRoleCode'] || 'P',
-    mpasParticipantId: inputs['mpasParticipantId'] || '',
     supplierRoleCode: inputs['supplierRoleCode'] || 'X',
     supplierParticipantId: inputs['supplierParticipantId'] || 'GMTR',
-    mopRoleCode: inputs['mopRoleCode'] || 'M',
+    oldSupplierRoleCode: inputs['oldSupplierRoleCode'] || '',
+    oldSupplierParticipantId: inputs['oldSupplierParticipantId'] || '',
+    distributorRoleCode: inputs['distributorRoleCode'] || '',
+    distributorParticipantId: inputs['distributorParticipantId'] || '',
+    mpasRoleCode: inputs['mpasRoleCode'] || '',
+    mpasParticipantId: inputs['mpasParticipantId'] || '',
+    mopRoleCode: inputs['mopRoleCode'] || '',
     mopParticipantId: inputs['mopParticipantId'] || '',
-    daRoleCode: inputs['daRoleCode'] || 'B',
+    daRoleCode: inputs['daRoleCode'] || '',
     daParticipantId: inputs['daParticipantId'] || '',
-    dcRoleCode: inputs['dcRoleCode'] || 'D',
+    dcRoleCode: inputs['dcRoleCode'] || '',
     dcParticipantId: inputs['dcParticipantId'] || '',
+    instructionNumber: inputs['instructionNumber'] || '',
+    instructionType: inputs['instructionType'] || 'SP43',
+    energisationStatus: inputs['energisationStatus'] || 'E',
+    aggrType: inputs['aggrType'] || '',
+    collectorType: inputs['collectorType'] || '',
+    mopType: inputs['mopType'] || '',
     mpan: inputs['mpan'] || '',
     msn: inputs['msn'] || '',
-    newSupplierId: inputs['newSupplierId'] || '',
-    oldSupplierId: inputs['oldSupplierId'] || '',
-    mobId: inputs['mobId'] || '',
-    dcId: inputs['dcId'] || '',
-    daId: inputs['daId'] || '',
     profileClass: inputs['profileClass'] || '',
     measurementClass: inputs['measurementClass'] || '',
     gspGroupId: inputs['gspGroupId'] || '',
     llfClass: inputs['llfClass'] || '001',
     ssc: inputs['ssc'] || '0000',
-    distributorId: inputs['distributorId'] || '',
     meterType: inputs['meterType'] || 'S1A',
     mtc: inputs['mtc'] || '001',
     meterMake: inputs['meterMake'] || '',

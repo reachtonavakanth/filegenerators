@@ -84,6 +84,11 @@ export const TEST_FLAG_OPTIONS: FormFieldOption[] = [
   { label: 'TR06 — Training', value: 'TR06' },
 ];
 
+export const ENERGISATION_STATUS_OPTIONS: FormFieldOption[] = [
+  { label: 'E — Energised', value: 'E' },
+  { label: 'D — De-energised', value: 'D' },
+];
+
 export const ENERGISATION_ACTION_OPTIONS: FormFieldOption[] = [
   { label: 'E — Energise', value: 'E' },
   { label: 'D — De-energise', value: 'D' },
@@ -91,11 +96,54 @@ export const ENERGISATION_ACTION_OPTIONS: FormFieldOption[] = [
 
 export const ENERGISATION_REASON_OPTIONS: FormFieldOption[] = [
   { label: '01 — New Supply', value: '01' },
-  { label: '02 — CoS', value: '02' },
+  { label: '02 — COS', value: '02' },
   { label: '03 — Re-energisation', value: '03' },
   { label: '04 — Prepayment Reinstatement', value: '04' },
   { label: '05 — Safety', value: '05' },
   { label: '06 — Theft', value: '06' },
+];
+
+// ---- 758 / 492 Instruction Type (common to D0260 and D0217) ----
+export const INSTRUCTION_TYPE_OPTIONS: FormFieldOption[] = [
+  { label: 'SP43 — D0260 Metering Point and Appointment Details of Old Suppliers Registration', value: 'SP43' },
+  { label: 'SP40 — D0217 Confirmation of Change of Supplier Registration', value: 'SP40' },
+  { label: 'SP20 — D0217 Confirmation of New Connection Registration', value: 'SP20' },
+  { label: 'SP02 — D0205 MP and Appointment Detail Changes (Made by Supplier)', value: 'SP02' },
+  { label: 'SP24 — D0213 Metering Point Detail Changes made by Supplier', value: 'SP24' },
+  { label: 'SP26 — D0171 Metering Point Disconnection (cancel pending registration)', value: 'SP26' },
+  { label: 'SP27 — D0171 Metering Point Disconnection (terminate registration)', value: 'SP27' },
+  { label: 'SP28 — D0171 MP Detail Changes by Distribution Business (to subsequent Supplier)', value: 'SP28' },
+  { label: 'SP29 — D0171 MP Detail Changes by Distribution Business (to Supplier)', value: 'SP29' },
+  { label: 'SP30 — D0203 Rejection of Metering Point and Appointment Data Changes', value: 'SP30' },
+  { label: 'SP51 — D0089 Metering Point changes (between gaining liability and objection)', value: 'SP51' },
+  { label: 'SP64 — D0089 Metering Point changes during time of objection', value: 'SP64' },
+  { label: 'SP84 — D0204 Refresh Data', value: 'SP84' },
+  { label: 'SP90 — D0172 File Summary', value: 'SP90' },
+  { label: 'NH01 — D0209 NHH Data Aggregator Appointment Details or Selective Refresh', value: 'NH01' },
+  { label: 'NH02 — D0209 NHH Data Collector Appointment Details', value: 'NH02' },
+  { label: 'NH03 — D0209 NHH Profile Class/SSC in Registration Details', value: 'NH03' },
+  { label: 'NH04 — D0209 NHH Measurement Class in Registration Details', value: 'NH04' },
+  { label: 'NH05 — D0209 NHH Energisation Status in Registration Details', value: 'NH05' },
+  { label: 'NH06 — D0209 NHH GSP Group Details', value: 'NH06' },
+  { label: 'NH07 — D0209 NHH Line Loss Factor Class Details', value: 'NH07' },
+  { label: 'NH08 — D0209 NHH Full MPAS Refresh to NHHDA', value: 'NH08' },
+  { label: 'NH09 — D0019 NHH EAC/AA & MS Details', value: 'NH09' },
+  { label: 'HH01 — D0209 HH Data Aggregator Appointment Details or Selective Refresh', value: 'HH01' },
+  { label: 'HH02 — D0209 HH Data Collector Appointment Details', value: 'HH02' },
+  { label: 'HH04 — D0209 HH Measurement Class in Registration Details', value: 'HH04' },
+  { label: 'HH05 — D0209 HH Energisation Status in Registration Details', value: 'HH05' },
+  { label: 'HH06 — D0209 HH GSP Group Details', value: 'HH06' },
+  { label: 'HH07 — D0209 HH Line Loss Factor Class Details', value: 'HH07' },
+  { label: 'HH08 — D0209 HH Full MPAS Refresh to HHDA', value: 'HH08' },
+  { label: 'DC01 — D0350 Notification of DCC Services at Metering Point', value: 'DC01' },
+  { label: 'DC11 — D0351 Rejection of Update to DCC Service Flag', value: 'DC11' },
+  { label: 'DC90 — D0172 File Summary', value: 'DC90' },
+];
+
+// ---- Half-Hourly / Non-Half-Hourly type (common to D0260 and D0217 party type fields) ----
+export const HH_TYPE_OPTIONS: FormFieldOption[] = [
+  { label: 'H — Half Hourly', value: 'H' },
+  { label: 'N — Non-Half Hourly', value: 'N' },
 ];
 
 // ---- Market Party Role Codes ----

@@ -1,13 +1,12 @@
 // ============================================================
-// Electricity CoS Registration — Process Orchestrator
-// Produces all 16 D-flow + CSS outputs for a CoS Registration
+// Electricity COS Registration — Process Orchestrator
+// Produces all 16 D-flow + CSS outputs for a COS Registration
 // ============================================================
 
 import type { GeneratedOutput, DFlowEnvelope } from '../../../../shared/domain/types';
-import type { ElectricityCoSRegistrationModel } from './model';
+import type { ElectricityCOSRegistrationModel } from './model';
 import { makeDateTime, makeXRef, currentHHMMSS, generateFileIdBase } from '../../../../shared/rendering/dflow-renderer';
 import {
-  CUSTOMER_CLASSIFICATION_NATP,
   STANDING_DATA_STATUS_ACTIVE, VALIDATION_METHOD_VRA,
 } from '../../industry-constants';
 
@@ -30,7 +29,7 @@ import {
 
 
 function makeEnvelope(
-  m: ElectricityCoSRegistrationModel,
+  m: ElectricityCOSRegistrationModel,
   flowId: string,
   fileIdBase: number,
   fileIndex: number,
@@ -53,8 +52,8 @@ function makeEnvelope(
   };
 }
 
-export function orchestrateCoSRegistration(
-  m: ElectricityCoSRegistrationModel
+export function orchestrateCOSRegistration(
+  m: ElectricityCOSRegistrationModel
 ): GeneratedOutput {
   const t = currentHHMMSS();
   const ts = `${m.fileDate.slice(0, 4)}-${m.fileDate.slice(4, 6)}-${m.fileDate.slice(6, 8)}T${t.slice(0, 2)}:${t.slice(2, 4)}:${t.slice(4, 6)}Z`;
@@ -72,8 +71,8 @@ export function orchestrateCoSRegistration(
   // ---- CSS02300_01 ----
   const css02300 = buildCSS02300_01({
     mpan: m.mpan,
-    currentSupplierId: m.oldSupplierId,
-    newSupplierId: m.newSupplierId,
+    currentSupplierId: m.oldSupplierParticipantId,
+    newSupplierId: m.supplierParticipantId,
     requestedSupplyStartDate: m.registrationDate,
     customerAgreementDate: m.registrationDate,
     timestamp: ts,
@@ -84,8 +83,8 @@ export function orchestrateCoSRegistration(
   // ---- CSS02380_01 ----
   const css02380 = buildCSS02380_01({
     mpan: m.mpan,
-    newSupplierId: m.newSupplierId,
-    oldSupplierId: m.oldSupplierId,
+    newSupplierId: m.supplierParticipantId,
+    oldSupplierId: m.oldSupplierParticipantId,
     requestedSupplyStartDate: m.registrationDate,
     registrationDate: m.registrationDate,
     profileClass: m.profileClass,
@@ -93,7 +92,7 @@ export function orchestrateCoSRegistration(
     gspGroupId: m.gspGroupId,
     llfClass: m.llfClass,
     ssc: m.ssc,
-    distributorId: m.distributorId,
+    distributorId: m.distributorParticipantId,
     timestamp: ts,
     correlationId,
     testIndicator: m.testFlag,
@@ -102,7 +101,7 @@ export function orchestrateCoSRegistration(
   // ---- CSS02370_01 ----
   const css02370_01 = buildCSS02370_01({
     mpan: m.mpan,
-    queryingPartyId: m.newSupplierId,
+    queryingPartyId: m.supplierParticipantId,
     queryDate: m.registrationDate,
     timestamp: ts,
     correlationId,
@@ -114,7 +113,7 @@ export function orchestrateCoSRegistration(
     mpan: m.mpan,
     queryReference: qryRef,
     responseDate: m.registrationDate,
-    supplierId: m.newSupplierId,
+    supplierId: m.supplierParticipantId,
     profileClass: m.profileClass,
     measurementClass: m.measurementClass,
     registrationStatus: 'ACCEPTED',
@@ -128,24 +127,24 @@ export function orchestrateCoSRegistration(
   const d0260 = buildD0260({
     envelope: makeEnvelope(m, 'D0260', fileIdBase, 1, '002', ...mpas, ...supp),
     record758: {
-      mddReference: '',
-      supplierId: m.newSupplierId,
+      instructionNumber: m.instructionNumber,
+      instructionType: m.instructionType,
       mpan: m.mpan,
-      effectiveDate: m.registrationDate,
-      customerClassification: CUSTOMER_CLASSIFICATION_NATP,
-      energisationStatus: 'E',
+      cosDate: m.cosDate,
+      oldSupplierParticipantId: m.oldSupplierParticipantId,
+      energisationStatus: m.energisationStatus,
       measurementClass: m.measurementClass,
-      llfClass: m.llfClass,
+      mtc: m.mtc,
       profileClass: m.profileClass,
       ssc: m.ssc,
-      mobId: m.mobId,
-      mobStatus: STANDING_DATA_STATUS_ACTIVE,
-      dcId: m.dcId,
-      dcStatus: STANDING_DATA_STATUS_ACTIVE,
-      daId: m.daId,
-      daStatus: STANDING_DATA_STATUS_ACTIVE,
+      aggrParticipantId: m.daParticipantId,
+      aggrType: m.aggrType,
+      collectorParticipantId: m.dcParticipantId,
+      collectorType: m.collectorType,
+      mopParticipantId: m.mopParticipantId,
+      mopType: m.mopType,
       field18: '', field19: '', field20: '', field21: '', field22: '',
-      newConnectionFlag: STANDING_DATA_STATUS_ACTIVE,
+      relatedMpanIndicator: STANDING_DATA_STATUS_ACTIVE,
     },
   });
 
@@ -154,16 +153,16 @@ export function orchestrateCoSRegistration(
     envelope: makeEnvelope(m, 'D0217', fileIdBase, 2, '001', ...mpas, ...supp),
     record026: {
       mpan: m.mpan,
-      newSupplierId: m.newSupplierId,
+      newSupplierId: m.supplierParticipantId,
       registrationDate: m.registrationDate,
-      oldSupplierId: m.oldSupplierId,
+      oldSupplierId: m.oldSupplierParticipantId,
       cosDate: m.cosDate,
       profileClass: m.profileClass,
       measurementClass: m.measurementClass,
       gspGroupId: m.gspGroupId,
       llfClass: m.llfClass,
       ssc: m.ssc,
-      distributorId: m.distributorId,
+      distributorId: m.distributorParticipantId,
     },
   });
 
@@ -212,8 +211,8 @@ export function orchestrateCoSRegistration(
     envelope: makeEnvelope(m, 'D0011', fileIdBase, 5, '003', ...da, ...supp),
     record029: {
       mpan: m.mpan,
-      dataAggregatorId: m.daId,
-      nominatedDistributorId: m.distributorId,
+      dataAggregatorId: m.daParticipantId,
+      nominatedDistributorId: m.distributorParticipantId,
       effectiveFromDate: m.registrationDate,
       settlementDate: m.cosDate,
     },
@@ -336,7 +335,7 @@ export function orchestrateCoSRegistration(
 
   return {
     processId: 'cos-registration',
-    processLabel: 'Electricity CoS Registration',
+    processLabel: 'Electricity COS Registration',
     dflows: [
       d0260,
       d0217,

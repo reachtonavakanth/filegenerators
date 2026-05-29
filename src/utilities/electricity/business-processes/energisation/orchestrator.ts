@@ -107,7 +107,7 @@ export function orchestrateEnergisation(
   // ---- CSS02380_01: Registration/Energisation Notification ----
   const css02380 = buildCSS02380_01({
     mpan: m.mpan,
-    newSupplierId: m.supplierId,
+    newSupplierId: m.supplierParticipantId,
     oldSupplierId: '',
     requestedSupplyStartDate: m.requestedDate,
     registrationDate: m.requestedDate,
@@ -116,7 +116,7 @@ export function orchestrateEnergisation(
     gspGroupId: m.gspGroupId,
     llfClass: m.llfClass,
     ssc: m.ssc,
-    distributorId: m.distributorId,
+    distributorId: m.distributorParticipantId,
     timestamp: ts,
     correlationId,
     testIndicator: m.testFlag,
@@ -127,7 +127,7 @@ export function orchestrateEnergisation(
   // ---- CSS02370_01: Status Query ----
   const css02370 = buildCSS02370_01({
     mpan: m.mpan,
-    queryingPartyId: m.supplierId,
+    queryingPartyId: m.supplierParticipantId,
     queryDate: m.requestedDate,
     timestamp: ts,
     correlationId,

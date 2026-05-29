@@ -151,6 +151,36 @@ html, body {
   gap: 6px;
 }
 
+.process-search-wrapper {
+  margin-bottom: 8px;
+}
+
+.process-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 7px 10px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+}
+
+.process-search-input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 2px rgba(79, 110, 247, 0.2);
+}
+
+.process-no-results {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 12px 0;
+  margin: 0;
+}
+
 .selector-btn {
   display: flex;
   align-items: center;
