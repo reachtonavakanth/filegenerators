@@ -7,6 +7,7 @@
 //         030|01|20260519|054321|N||
 //         ZTT|0000003421|00000008|20260519213500
 
+import { DFLOW_FILE_EXT } from '../../industry-constants';
 import type { DFlowFile, DFlowEnvelope, DFlowRecord } from '../../../../shared/domain/types';
 
 export interface D0010_MeterPoint {
@@ -36,7 +37,7 @@ export function buildD0010(model: D0010Model): DFlowFile {
 
   return {
     envelope,
-    fileName: `${envelope.xRef}.usr`,
+    fileName: `${envelope.xRef}${DFLOW_FILE_EXT}`,
     trailerType: 'ZTT',
     records,
   };

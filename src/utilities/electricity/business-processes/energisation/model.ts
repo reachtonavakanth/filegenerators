@@ -10,6 +10,14 @@ export interface ElectricityEnergisationModel {
   testFlag: TestFlag;
   fileDate: string;
 
+  // ZHV routing — per-party DTN codes
+  supplierRoleCode: string;       // Supplier role code   e.g. 'X'
+  supplierParticipantId: string;  // Supplier participant  e.g. 'GMTR'
+  mopRoleCode: string;            // MOB role code        e.g. 'M'
+  mopParticipantId: string;       // MOB participant      e.g. 'BMET'
+  dcRoleCode: string;             // DC role code         e.g. 'D'
+  dcParticipantId: string;        // DC participant       e.g. 'UDMS'
+
   mpan: string;
   msn: string;
 
@@ -56,8 +64,14 @@ export function mapFormToEnergisationModel(
   inputs: Record<string, string>
 ): ElectricityEnergisationModel {
   return {
-    testFlag: (inputs['testFlag'] as TestFlag) || 'T',
+    testFlag: (inputs['testFlag'] as TestFlag) || 'OPER',
     fileDate: inputs['fileDate'] || '',
+    supplierRoleCode: inputs['supplierRoleCode'] || 'X',
+    supplierParticipantId: inputs['supplierParticipantId'] || 'GMTR',
+    mopRoleCode: inputs['mopRoleCode'] || 'M',
+    mopParticipantId: inputs['mopParticipantId'] || '',
+    dcRoleCode: inputs['dcRoleCode'] || 'D',
+    dcParticipantId: inputs['dcParticipantId'] || '',
     mpan: inputs['mpan'] || '',
     msn: inputs['msn'] || '',
     supplierId: inputs['supplierId'] || '',

@@ -11,6 +11,12 @@ import type {
   CSS02370_01_Body,
   CSS02370_03_Body,
 } from './types';
+import {
+  CSS_MSG_COS_INITIATION,
+  CSS_MSG_REGISTRATION_NOTIF,
+  CSS_MSG_QUERY,
+  CSS_MSG_QUERY_RESPONSE,
+} from '../industry-constants';
 
 function makeHeader(
   messageType: string,
@@ -53,11 +59,11 @@ export function buildCSS02300_01(params: {
     objectType: 'DOMESTIC',
   };
   return {
-    messageType: 'CSS02300_01',
+    messageType: CSS_MSG_COS_INITIATION,
     fileName: `CSS02300_01_${params.mpan.slice(-6)}.json`,
     content: {
       header: makeHeader(
-        'CSS02300_01',
+        CSS_MSG_COS_INITIATION,
         params.newSupplierId,
         'CSS',
         params.correlationId,
@@ -102,11 +108,11 @@ export function buildCSS02380_01(params: {
     distributorId: params.distributorId,
   };
   return {
-    messageType: 'CSS02380_01',
+    messageType: CSS_MSG_REGISTRATION_NOTIF,
     fileName: `CSS02380_01_${params.mpan.slice(-6)}.json`,
     content: {
       header: makeHeader(
-        'CSS02380_01',
+        CSS_MSG_REGISTRATION_NOTIF,
         'CSS',
         params.newSupplierId,
         params.correlationId,
@@ -135,11 +141,11 @@ export function buildCSS02370_01(params: {
     queryingPartyId: params.queryingPartyId,
   };
   return {
-    messageType: 'CSS02370_01',
+    messageType: CSS_MSG_QUERY,
     fileName: `CSS02370_01_${params.mpan.slice(-6)}.json`,
     content: {
       header: makeHeader(
-        'CSS02370_01',
+        CSS_MSG_QUERY,
         params.queryingPartyId,
         'CSS',
         params.correlationId,
@@ -178,11 +184,11 @@ export function buildCSS02370_03(params: {
     },
   };
   return {
-    messageType: 'CSS02370_03',
+    messageType: CSS_MSG_QUERY_RESPONSE,
     fileName: `CSS02370_03_${params.mpan.slice(-6)}.json`,
     content: {
       header: makeHeader(
-        'CSS02370_03',
+        CSS_MSG_QUERY_RESPONSE,
         'CSS',
         params.supplierId,
         params.correlationId,

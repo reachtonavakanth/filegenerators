@@ -1,7 +1,7 @@
 // ============================================================
-// UK Electricity Market Reference Data
-// Single source of truth for all dropdown option lists.
-// Update here when market codes change — form configs auto-update.
+// UK Electricity Market Industry Constants
+// Single source of truth for all market codes, role codes,
+// option lists and field values. Update here when codes change.
 // ============================================================
 
 import type { FormFieldOption } from '../../shared/domain/types';
@@ -97,3 +97,26 @@ export const ENERGISATION_REASON_OPTIONS: FormFieldOption[] = [
   { label: '05 — Safety', value: '05' },
   { label: '06 — Theft', value: '06' },
 ];
+
+// ---- Market Party Role Codes ----
+export const ROLE_SUPP = 'SUPP';   // Supplier
+export const ROLE_MOPB = 'MOPB';   // Meter Operator Business
+export const ROLE_DCOL = 'DCOL';   // Data Collector
+export const ROLE_HHDA = 'HHDA';   // Half-Hourly Data Aggregator
+export const ROLE_CSS  = 'CSS';    // Central Switching Service
+
+// ---- D-Flow File ----
+export const DFLOW_FILE_EXT = '.usr';
+
+
+// ---- CSS Message Type Codes ----
+export const CSS_MSG_COS_INITIATION     = 'CSS02300_01';
+export const CSS_MSG_REGISTRATION_NOTIF = 'CSS02380_01';
+export const CSS_MSG_QUERY              = 'CSS02370_01';
+export const CSS_MSG_QUERY_RESPONSE     = 'CSS02370_03';
+
+// ---- Common Standing Data Field Values ----
+export const CUSTOMER_CLASSIFICATION_NATP = 'NATP';   // National Tariff Profile
+export const CUSTOMER_CLASSIFICATION_D    = 'D';      // Domestic
+export const STANDING_DATA_STATUS_ACTIVE  = 'N';      // 'N' = normal/active in standing data records
+export const VALIDATION_METHOD_VRA        = 'VRA';    // Validate Reading Automatically

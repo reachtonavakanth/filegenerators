@@ -5,7 +5,11 @@
 
 import type { GeneratedOutput, DFlowEnvelope } from '../../../../shared/domain/types';
 import type { ElectricityCoSRegistrationModel } from './model';
-import { makeDateTime, makeXRef, currentHHMMSS } from '../../../../shared/rendering/dflow-renderer';
+import { makeDateTime, makeXRef, currentHHMMSS, generateFileIdBase } from '../../../../shared/rendering/dflow-renderer';
+import {
+  CUSTOMER_CLASSIFICATION_NATP,
+  STANDING_DATA_STATUS_ACTIVE, VALIDATION_METHOD_VRA,
+} from '../../industry-constants';
 
 import { buildD0260 } from '../../dflows/d0260';
 import { buildD0217 } from '../../dflows/d0217';
@@ -24,30 +28,27 @@ import {
   buildCSS02370_03,
 } from '../../css/builders';
 
-// recipientRole / senderRole constants per flow direction
-const ROLE_SUPP = 'SUPP';
-const ROLE_MOPB = 'MOPB';
-const ROLE_DCOL = 'DCOL';
-const ROLE_HHDA = 'HHDA';
-const ROLE_CSS  = 'CSS';
 
 function makeEnvelope(
   m: ElectricityCoSRegistrationModel,
   flowId: string,
-  senderId: string,
-  senderRole: string,
-  recipientId: string,
-  recipientRole: string,
-  seq: string
+  fileIdBase: number,
+  fileIndex: number,
+  xRefSeq: string,
+  fromRoleCode: string,
+  fromParticipantId: string,
+  toRoleCode: string,
+  toParticipantId: string,
 ): DFlowEnvelope {
   return {
-    senderId,
-    xRef: makeXRef(flowId, seq),
-    testFlag: m.testFlag,
-    recipientId,
-    recipientRole,
-    senderRole,
+    fileId: String(fileIdBase + fileIndex),
+    xRef: makeXRef(flowId, xRefSeq),
+    fromRoleCode,
+    fromParticipantId,
+    toRoleCode,
+    toParticipantId,
     creationDateTime: makeDateTime(m.fileDate, currentHHMMSS()),
+    testFlag: m.testFlag,
     dataFlowId: flowId,
   };
 }
@@ -59,8 +60,16 @@ export function orchestrateCoSRegistration(
   const ts = `${m.fileDate.slice(0, 4)}-${m.fileDate.slice(4, 6)}-${m.fileDate.slice(6, 8)}T${t.slice(0, 2)}:${t.slice(2, 4)}:${t.slice(4, 6)}Z`;
   const correlationId = `COR-${m.mpan.slice(-6)}-${m.fileDate}`;
   const qryRef = `QRY-${m.mpan.slice(-6)}-${m.fileDate}`;
+  const fileIdBase = generateFileIdBase();
 
-  // ---- CSS02300_01: Supplier → CSS (CoS Initiation Request) ----
+  // Party routing shortcuts — (fromRoleCode, fromParticipantId, toRoleCode, toParticipantId)
+  const mpas = [m.mpasRoleCode, m.mpasParticipantId]         as const;
+  const supp = [m.supplierRoleCode, m.supplierParticipantId] as const;
+  const mop  = [m.mopRoleCode, m.mopParticipantId]           as const;
+  const da   = [m.daRoleCode, m.daParticipantId]             as const;
+  const dc   = [m.dcRoleCode, m.dcParticipantId]             as const;
+
+  // ---- CSS02300_01 ----
   const css02300 = buildCSS02300_01({
     mpan: m.mpan,
     currentSupplierId: m.oldSupplierId,
@@ -72,7 +81,7 @@ export function orchestrateCoSRegistration(
     testIndicator: m.testFlag,
   });
 
-  // ---- CSS02380_01: CSS → New Supplier (Registration Accepted) ----
+  // ---- CSS02380_01 ----
   const css02380 = buildCSS02380_01({
     mpan: m.mpan,
     newSupplierId: m.newSupplierId,
@@ -90,7 +99,7 @@ export function orchestrateCoSRegistration(
     testIndicator: m.testFlag,
   });
 
-  // ---- CSS02370_01: Supplier → CSS (Status Query) ----
+  // ---- CSS02370_01 ----
   const css02370_01 = buildCSS02370_01({
     mpan: m.mpan,
     queryingPartyId: m.newSupplierId,
@@ -100,7 +109,7 @@ export function orchestrateCoSRegistration(
     testIndicator: m.testFlag,
   });
 
-  // ---- CSS02370_03: CSS → Supplier (Query Response) ----
+  // ---- CSS02370_03 ----
   const css02370_03 = buildCSS02370_03({
     mpan: m.mpan,
     queryReference: qryRef,
@@ -114,34 +123,35 @@ export function orchestrateCoSRegistration(
     testIndicator: m.testFlag,
   });
 
-  // ---- D0260: New Supplier → CSS ----
+  // fileIndex = unique position in batch; xRefSeq = per-file-type sequence suffix
+  // ---- D0260: MPAS → Supplier ----
   const d0260 = buildD0260({
-    envelope: makeEnvelope(m, 'D0260', m.newSupplierId, ROLE_SUPP, 'CSS', ROLE_CSS, '001'),
+    envelope: makeEnvelope(m, 'D0260', fileIdBase, 1, '002', ...mpas, ...supp),
     record758: {
       mddReference: '',
       supplierId: m.newSupplierId,
       mpan: m.mpan,
       effectiveDate: m.registrationDate,
-      customerClassification: 'NATP',
+      customerClassification: CUSTOMER_CLASSIFICATION_NATP,
       energisationStatus: 'E',
       measurementClass: m.measurementClass,
       llfClass: m.llfClass,
       profileClass: m.profileClass,
       ssc: m.ssc,
       mobId: m.mobId,
-      mobStatus: 'N',
+      mobStatus: STANDING_DATA_STATUS_ACTIVE,
       dcId: m.dcId,
-      dcStatus: 'N',
+      dcStatus: STANDING_DATA_STATUS_ACTIVE,
       daId: m.daId,
-      daStatus: 'N',
+      daStatus: STANDING_DATA_STATUS_ACTIVE,
       field18: '', field19: '', field20: '', field21: '', field22: '',
-      newConnectionFlag: 'N',
+      newConnectionFlag: STANDING_DATA_STATUS_ACTIVE,
     },
   });
 
-  // ---- D0217 → MOB ----
-  const d0217_mob = buildD0217({
-    envelope: makeEnvelope(m, 'D0217', 'CSS', ROLE_CSS, m.mobId, ROLE_MOPB, '002'),
+  // ---- D0217: MPAS → Supplier ----
+  const d0217 = buildD0217({
+    envelope: makeEnvelope(m, 'D0217', fileIdBase, 2, '001', ...mpas, ...supp),
     record026: {
       mpan: m.mpan,
       newSupplierId: m.newSupplierId,
@@ -156,49 +166,10 @@ export function orchestrateCoSRegistration(
       distributorId: m.distributorId,
     },
   });
-  d0217_mob.fileName = `D0217_MOB_${m.fileDate}_001.usr`;
 
-  // ---- D0217 → DC ----
-  const d0217_dc = buildD0217({
-    envelope: makeEnvelope(m, 'D0217', 'CSS', ROLE_CSS, m.dcId, ROLE_DCOL, '003'),
-    record026: {
-      mpan: m.mpan,
-      newSupplierId: m.newSupplierId,
-      registrationDate: m.registrationDate,
-      oldSupplierId: m.oldSupplierId,
-      cosDate: m.cosDate,
-      profileClass: m.profileClass,
-      measurementClass: m.measurementClass,
-      gspGroupId: m.gspGroupId,
-      llfClass: m.llfClass,
-      ssc: m.ssc,
-      distributorId: m.distributorId,
-    },
-  });
-  d0217_dc.fileName = `D0217_DC_${m.fileDate}_001.usr`;
-
-  // ---- D0217 → DA ----
-  const d0217_da = buildD0217({
-    envelope: makeEnvelope(m, 'D0217', 'CSS', ROLE_CSS, m.daId, ROLE_HHDA, '004'),
-    record026: {
-      mpan: m.mpan,
-      newSupplierId: m.newSupplierId,
-      registrationDate: m.registrationDate,
-      oldSupplierId: m.oldSupplierId,
-      cosDate: m.cosDate,
-      profileClass: m.profileClass,
-      measurementClass: m.measurementClass,
-      gspGroupId: m.gspGroupId,
-      llfClass: m.llfClass,
-      ssc: m.ssc,
-      distributorId: m.distributorId,
-    },
-  });
-  d0217_da.fileName = `D0217_DA_${m.fileDate}_001.usr`;
-
-  // ---- D0011 from MOP ----
+  // ---- D0011 MOP → Supplier ----
   const d0011_mop = buildD0011_MOP({
-    envelope: makeEnvelope(m, 'D0011', m.mobId, ROLE_MOPB, m.newSupplierId, ROLE_SUPP, '005'),
+    envelope: makeEnvelope(m, 'D0011', fileIdBase, 3, '001', ...mop, ...supp),
     record058: {
       mpan: m.mpan,
       msn: m.msn,
@@ -215,16 +186,16 @@ export function orchestrateCoSRegistration(
       msn: m.msn,
       registerId: m.registerId,
       measurementQuantityId: m.measurementQuantityId,
-      backRegisterIndicator: 'N',
+      backRegisterIndicator: STANDING_DATA_STATUS_ACTIVE,
       timePatternRegiment: m.timePatternRegiment,
       numberOfDigits: m.numberOfDigits,
     },
   });
   d0011_mop.fileName = `D0011_MOP_${m.fileDate}_001.usr`;
 
-  // ---- D0011 from DC ----
+  // ---- D0011 DC → Supplier ----
   const d0011_dc = buildD0011_DC({
-    envelope: makeEnvelope(m, 'D0011', m.dcId, ROLE_DCOL, m.newSupplierId, ROLE_SUPP, '006'),
+    envelope: makeEnvelope(m, 'D0011', fileIdBase, 4, '002', ...dc, ...supp),
     record028: {
       mpan: m.mpan,
       profileClass: m.profileClass,
@@ -236,9 +207,9 @@ export function orchestrateCoSRegistration(
   });
   d0011_dc.fileName = `D0011_DC_${m.fileDate}_001.usr`;
 
-  // ---- D0011 from DA ----
+  // ---- D0011 DA → Supplier ----
   const d0011_da = buildD0011_DA({
-    envelope: makeEnvelope(m, 'D0011', m.daId, ROLE_HHDA, m.newSupplierId, ROLE_SUPP, '007'),
+    envelope: makeEnvelope(m, 'D0011', fileIdBase, 5, '003', ...da, ...supp),
     record029: {
       mpan: m.mpan,
       dataAggregatorId: m.daId,
@@ -249,9 +220,9 @@ export function orchestrateCoSRegistration(
   });
   d0011_da.fileName = `D0011_DA_${m.fileDate}_001.usr`;
 
-  // ---- D0149: Meter Readings ----
+  // ---- D0149: MOP → Supplier ----
   const d0149 = buildD0149({
-    envelope: makeEnvelope(m, 'D0149', m.mobId, ROLE_MOPB, m.newSupplierId, ROLE_SUPP, '008'),
+    envelope: makeEnvelope(m, 'D0149', fileIdBase, 6, '001', ...mop, ...supp),
     records026: [
       {
         mpan: m.mpan,
@@ -265,9 +236,9 @@ export function orchestrateCoSRegistration(
     ],
   });
 
-  // ---- D0150: EAC / Consumption Data ----
+  // ---- D0150: DC → Supplier ----
   const d0150 = buildD0150({
-    envelope: makeEnvelope(m, 'D0150', m.dcId, ROLE_DCOL, m.newSupplierId, ROLE_SUPP, '009'),
+    envelope: makeEnvelope(m, 'D0150', fileIdBase, 7, '001', ...dc, ...supp),
     record026: {
       mpan: m.mpan,
       msn: m.msn,
@@ -278,9 +249,9 @@ export function orchestrateCoSRegistration(
     },
   });
 
-  // ---- D0052: Meter Technical Details ----
+  // ---- D0052: MOP → Supplier ----
   const d0052 = buildD0052({
-    envelope: makeEnvelope(m, 'D0052', m.mobId, ROLE_MOPB, m.newSupplierId, ROLE_SUPP, '010'),
+    envelope: makeEnvelope(m, 'D0052', fileIdBase, 8, '001', ...mop, ...supp),
     record026: {
       mpan: m.mpan,
       msn: m.msn,
@@ -302,13 +273,13 @@ export function orchestrateCoSRegistration(
       numberOfDigits: m.numberOfDigits,
       scalingFactor: m.scalingFactor,
       timePatternRegiment: m.timePatternRegiment,
-      backRegisterIndicator: 'N',
+      backRegisterIndicator: STANDING_DATA_STATUS_ACTIVE,
     },
   });
 
-  // ---- D0010: Full Market Domain Data ----
+  // ---- D0010: DC → Supplier ----
   const d0010 = buildD0010({
-    envelope: makeEnvelope(m, 'D0010', m.dcId, ROLE_DCOL, m.newSupplierId, ROLE_SUPP, '011'),
+    envelope: makeEnvelope(m, 'D0010', fileIdBase, 9, '001', ...dc, ...supp),
     meterPoints: [{
       mpan: m.mpan,
       msn: m.msn,
@@ -320,9 +291,9 @@ export function orchestrateCoSRegistration(
     }],
   });
 
-  // ---- D0086: Profile Class Amendment ----
+  // ---- D0086: DC → Supplier ----
   const d0086 = buildD0086({
-    envelope: makeEnvelope(m, 'D0086', m.dcId, ROLE_DCOL, m.newSupplierId, ROLE_SUPP, '012'),
+    envelope: makeEnvelope(m, 'D0086', fileIdBase, 10, '001', ...dc, ...supp),
     record026: {
       mpan: m.mpan,
       newProfileClass: m.profileClass,
@@ -333,9 +304,9 @@ export function orchestrateCoSRegistration(
     },
   });
 
-  // ---- D0012: Meter Reading Instruction ----
+  // ---- D0012: Supplier → MOP ----
   const d0012 = buildD0012({
-    envelope: makeEnvelope(m, 'D0012', m.newSupplierId, ROLE_SUPP, m.mobId, ROLE_MOPB, '013'),
+    envelope: makeEnvelope(m, 'D0012', fileIdBase, 11, '001', ...supp, ...mop),
     record026: {
       mpan: m.mpan,
       msn: m.msn,
@@ -346,9 +317,9 @@ export function orchestrateCoSRegistration(
     },
   });
 
-  // ---- D0019: Validated Reading ----
+  // ---- D0019: DC → Supplier ----
   const d0019 = buildD0019({
-    envelope: makeEnvelope(m, 'D0019', m.dcId, ROLE_DCOL, m.newSupplierId, ROLE_SUPP, '014'),
+    envelope: makeEnvelope(m, 'D0019', fileIdBase, 12, '001', ...dc, ...supp),
     records026: [
       {
         mpan: m.mpan,
@@ -357,7 +328,7 @@ export function orchestrateCoSRegistration(
         readDate: m.readingDate,
         validatedReading: m.readingValue,
         readingType: m.readingType,
-        validationMethod: 'VRA',
+        validationMethod: VALIDATION_METHOD_VRA,
         measurementQuantityId: m.measurementQuantityId,
       },
     ],
@@ -368,9 +339,7 @@ export function orchestrateCoSRegistration(
     processLabel: 'Electricity CoS Registration',
     dflows: [
       d0260,
-      d0217_mob,
-      d0217_dc,
-      d0217_da,
+      d0217,
       d0011_mop,
       d0011_dc,
       d0011_da,

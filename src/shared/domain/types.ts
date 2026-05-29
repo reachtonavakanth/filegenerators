@@ -6,17 +6,19 @@ export type UtilityType = 'electricity' | 'gas';
 export type TestFlag = 'OPER' | 'TR06';
 
 // ---- D-Flow envelope (ZHV header fields) ----
-// Real UK format: ZHV|{senderId}|{xRef}|{testFlag}|{recipientId}|{recipientRole}|{senderRole}|{YYYYMMDDHHMMSS}||||OPER|
+// Real UK format: ZHV|{fileId}|{xRef}|{fromRoleCode}|{fromParticipantId}|{toRoleCode}|{toParticipantId}|{YYYYMMDDHHMMSS}||||{testFlag}|
+// ZPT/ZTT[2] also uses fileId.  757 batch header[1] also uses fileId.
 
 export interface DFlowEnvelope {
-  senderId: string;           // ZHV[2] — also repeated in 757 batch header, ZPT, ZTT
-  xRef: string;               // ZHV[3] — file cross-reference e.g. 'D0260001'
-  testFlag: string;           // ZHV[4] — 'P' production, 'T' test
-  recipientId: string;        // ZHV[5]
-  recipientRole: string;      // ZHV[6] — e.g. 'DCOL', 'MOPB', 'SUPP'
-  senderRole: string;         // ZHV[7] — e.g. 'SUPP', 'DCOL'
-  creationDateTime: string;   // ZHV[8] — YYYYMMDDHHMMSS combined
-  dataFlowId: string;         // not in ZHV; used for file naming only
+  fileId: string;              // ZHV[2], ZPT[2], ZTT[2], 757[1] — auto-generated file identifier
+  xRef: string;                // ZHV[3] — e.g. 'D0260001'
+  fromRoleCode: string;        // ZHV[4] — DTN from-role code e.g. 'P'; from UI
+  fromParticipantId: string;   // ZHV[5] — DTN from-participant ID e.g. 'EMEB'; from UI
+  toRoleCode: string;          // ZHV[6] — DTN to-role code e.g. 'X'; from UI
+  toParticipantId: string;     // ZHV[7] — DTN to-participant ID e.g. 'GMTR'; from UI
+  creationDateTime: string;    // ZHV[8] — YYYYMMDDHHMMSS combined
+  testFlag: string;            // ZHV[12] — 'OPER' or 'TR06'; from UI
+  dataFlowId: string;          // not in ZHV; used for file naming only
 }
 
 // ---- Typed D-flow record — one line in the .usr file ----
@@ -75,6 +77,7 @@ export interface FormFieldDefinition {
   helpText?: string;
   maxLength?: number;
   pattern?: string;
+  readOnly?: boolean;
 }
 
 export interface FormGroupDefinition {

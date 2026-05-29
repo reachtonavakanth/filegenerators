@@ -1,5 +1,6 @@
 // D0149 — Provide Meter Readings
 
+import { DFLOW_FILE_EXT } from '../../industry-constants';
 import type { DFlowFile, DFlowEnvelope } from '../../../../shared/domain/types';
 
 export interface D0149_026 {
@@ -20,7 +21,7 @@ export interface D0149Model {
 export function buildD0149(model: D0149Model): DFlowFile {
   return {
     envelope: model.envelope,
-    fileName: `${model.envelope.xRef}.usr`,
+    fileName: `${model.envelope.xRef}${DFLOW_FILE_EXT}`,
     trailerType: 'ZTT',
     records: model.records026.map((r) => ({
       recordType: '026',

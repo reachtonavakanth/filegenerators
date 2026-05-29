@@ -6,6 +6,7 @@
 //         758|17658|SP43|1100013222946|20260518|NATP|E|A|801|03||UDMS|N|UDMS|N|EELC|N||||||N|
 //         ZPT|8970|2||1|20260515111500|
 
+import { DFLOW_FILE_EXT } from '../../industry-constants';
 import type { DFlowFile, DFlowEnvelope } from '../../../../shared/domain/types';
 
 export interface D0260_758 {
@@ -42,11 +43,11 @@ export function buildD0260(model: D0260Model): DFlowFile {
   const { envelope, record758: r } = model;
   return {
     envelope,
-    fileName: `${envelope.xRef}.usr`,
+    fileName: `${envelope.xRef}${DFLOW_FILE_EXT}`,
     trailerType: 'ZPT',
     records: [
-      // 757 batch header — contains senderId
-      { recordType: '757', fields: [envelope.senderId] },
+      // 757 batch header — file identifier matches ZHV[2]
+      { recordType: '757', fields: [envelope.fileId] },
       // 758 meter point data record
       {
         recordType: '758',

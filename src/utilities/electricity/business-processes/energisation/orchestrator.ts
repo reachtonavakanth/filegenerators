@@ -5,34 +5,33 @@
 
 import type { GeneratedOutput, DFlowEnvelope } from '../../../../shared/domain/types';
 import type { ElectricityEnergisationModel } from './model';
-import { makeDateTime, makeXRef, currentHHMMSS } from '../../../../shared/rendering/dflow-renderer';
+import { makeDateTime, makeXRef, currentHHMMSS, generateFileIdBase } from '../../../../shared/rendering/dflow-renderer';
 import { buildD0142 } from '../../dflows/d0142';
 import { buildD0010 } from '../../dflows/d0010';
 import { buildD0149 } from '../../dflows/d0149';
 import { buildD0150 } from '../../dflows/d0150';
 import { buildCSS02380_01, buildCSS02370_01 } from '../../css/builders';
 
-const ROLE_SUPP = 'SUPP';
-const ROLE_MOPB = 'MOPB';
-const ROLE_DCOL = 'DCOL';
-
 function makeEnvelope(
   m: ElectricityEnergisationModel,
   flowId: string,
-  senderId: string,
-  senderRole: string,
-  recipientId: string,
-  recipientRole: string,
-  seq: string
+  fileIdBase: number,
+  fileIndex: number,
+  xRefSeq: string,
+  fromRoleCode: string,
+  fromParticipantId: string,
+  toRoleCode: string,
+  toParticipantId: string,
 ): DFlowEnvelope {
   return {
-    senderId,
-    xRef: makeXRef(flowId, seq),
-    testFlag: m.testFlag,
-    recipientId,
-    recipientRole,
-    senderRole,
+    fileId: String(fileIdBase + fileIndex),
+    xRef: makeXRef(flowId, xRefSeq),
+    fromRoleCode,
+    fromParticipantId,
+    toRoleCode,
+    toParticipantId,
     creationDateTime: makeDateTime(m.fileDate, currentHHMMSS()),
+    testFlag: m.testFlag,
     dataFlowId: flowId,
   };
 }
@@ -43,10 +42,15 @@ export function orchestrateEnergisation(
   const t = currentHHMMSS();
   const ts = `${m.fileDate.slice(0, 4)}-${m.fileDate.slice(4, 6)}-${m.fileDate.slice(6, 8)}T${t.slice(0, 2)}:${t.slice(2, 4)}:${t.slice(4, 6)}Z`;
   const correlationId = `COR-EN-${m.mpan.slice(-6)}-${m.fileDate}`;
+  const fileIdBase = generateFileIdBase();
 
-  // ---- D0142: Energisation Request (Supplier → MOB) ----
+  const supp = [m.supplierRoleCode, m.supplierParticipantId] as const;
+  const mop  = [m.mopRoleCode, m.mopParticipantId]           as const;
+  const dc   = [m.dcRoleCode, m.dcParticipantId]             as const;
+
+  // ---- D0142: Supplier → MOP ----
   const d0142 = buildD0142({
-    envelope: makeEnvelope(m, 'D0142', m.supplierId, ROLE_SUPP, m.mobId, ROLE_MOPB, '001'),
+    envelope: makeEnvelope(m, 'D0142', fileIdBase, 1, '001', ...supp, ...mop),
     record026: {
       mpan: m.mpan,
       msn: m.msn,
@@ -59,9 +63,9 @@ export function orchestrateEnergisation(
     },
   });
 
-  // ---- D0010: Market Domain Data (DC → Supplier) ----
+  // ---- D0010: DC → Supplier ----
   const d0010 = buildD0010({
-    envelope: makeEnvelope(m, 'D0010', m.dcId, ROLE_DCOL, m.supplierId, ROLE_SUPP, '002'),
+    envelope: makeEnvelope(m, 'D0010', fileIdBase, 2, '001', ...dc, ...supp),
     meterPoints: [{
       mpan: m.mpan,
       msn: m.msn,
@@ -73,9 +77,9 @@ export function orchestrateEnergisation(
     }],
   });
 
-  // ---- D0149: Meter Reading (MOB → Supplier) ----
+  // ---- D0149: MOP → Supplier ----
   const d0149 = buildD0149({
-    envelope: makeEnvelope(m, 'D0149', m.mobId, ROLE_MOPB, m.supplierId, ROLE_SUPP, '003'),
+    envelope: makeEnvelope(m, 'D0149', fileIdBase, 3, '001', ...mop, ...supp),
     records026: [{
       mpan: m.mpan,
       msn: m.msn,
@@ -87,9 +91,9 @@ export function orchestrateEnergisation(
     }],
   });
 
-  // ---- D0150: EAC / Consumption Data (DC → Supplier) ----
+  // ---- D0150: DC → Supplier ----
   const d0150 = buildD0150({
-    envelope: makeEnvelope(m, 'D0150', m.dcId, ROLE_DCOL, m.supplierId, ROLE_SUPP, '004'),
+    envelope: makeEnvelope(m, 'D0150', fileIdBase, 4, '001', ...dc, ...supp),
     record026: {
       mpan: m.mpan,
       msn: m.msn,

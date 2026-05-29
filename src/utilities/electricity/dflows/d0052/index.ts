@@ -1,5 +1,6 @@
 // D0052 — Provide Meter Technical Details
 
+import { DFLOW_FILE_EXT } from '../../industry-constants';
 import type { DFlowFile, DFlowEnvelope } from '../../../../shared/domain/types';
 
 export interface D0052_026 {
@@ -37,7 +38,7 @@ export function buildD0052(model: D0052Model): DFlowFile {
   const { envelope, record026: r26, record028: r28 } = model;
   return {
     envelope,
-    fileName: `${envelope.xRef}.usr`,
+    fileName: `${envelope.xRef}${DFLOW_FILE_EXT}`,
     trailerType: 'ZTT',
     records: [
       { recordType: '026', fields: [r26.mpan, r26.msn, r26.meterType, r26.mtc, r26.meterMake, r26.meterModel, r26.ctPrimaryRatio, r26.vtPrimaryRatio, r26.meterLocation, r26.installedDate, r26.outstationId] },

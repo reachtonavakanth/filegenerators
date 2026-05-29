@@ -1,6 +1,7 @@
 // D0217 — Notification of Supplier Nomination
 // Sent by CSS to MOB, DC, DA after registration accepted
 
+import { DFLOW_FILE_EXT } from '../../industry-constants';
 import type { DFlowFile, DFlowEnvelope } from '../../../../shared/domain/types';
 
 export interface D0217_026 {
@@ -26,7 +27,7 @@ export function buildD0217(model: D0217Model): DFlowFile {
   const { envelope, record026: r } = model;
   return {
     envelope,
-    fileName: `${envelope.xRef}.usr`,
+    fileName: `${envelope.xRef}${DFLOW_FILE_EXT}`,
     trailerType: 'ZTT',
     records: [
       {

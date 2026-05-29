@@ -84,6 +84,10 @@ function buildField(field: FormFieldDefinition): HTMLElement {
     if (field.placeholder) input.placeholder = field.placeholder;
     if (field.maxLength) input.maxLength = field.maxLength;
     if (field.required) input.required = true;
+    if (field.readOnly) {
+      input.readOnly = true;
+      input.classList.add('field-readonly');
+    }
 
     if (field.type === 'date') {
       if (field.defaultValue) input.value = field.defaultValue;

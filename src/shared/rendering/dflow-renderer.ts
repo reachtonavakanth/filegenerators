@@ -2,9 +2,9 @@
 // D-Flow Renderer
 // Converts typed DFlowFile objects → pipe-delimited .usr strings
 //
-// ZHV  format: ZHV|{senderId}|{xRef}|{testFlag}|{recipientId}|{recipientRole}|{senderRole}|{YYYYMMDDHHMMSS}||||OPER|
-// ZPT  format: ZPT|{senderId}|{batchCount}||1|{datetime}|          (batch trailer — D0260)
-// ZTT  format: ZTT|{senderId}|{totalCount00000000}|{datetime}       (file trailer  — D0010 etc.)
+// ZHV  format: ZHV|{fileId}|{xRef}|{fromRoleCode}|{fromParticipantId}|{toRoleCode}|{toParticipantId}|{YYYYMMDDHHMMSS}||||{testFlag}|
+// ZPT  format: ZPT|{fileId}|{linesBetween}||1|{datetime}|    (batch trailer — D0260)
+// ZTT  format: ZTT|{fileId}|{totalCount00000000}|{datetime}  (file trailer  — D0010 etc.)
 // ============================================================
 
 import type { DFlowFile, DFlowEnvelope, DFlowRecord } from '../domain/types';
@@ -31,17 +31,17 @@ export function renderDFlowFile(file: DFlowFile): string {
 function renderZHV(env: DFlowEnvelope): string {
   return pipe([
     'ZHV',
-    env.senderId,
+    env.fileId,
     env.xRef,
-    env.testFlag,
-    env.recipientId,
-    env.senderRole,    // field 6 — sender's role (FROM)
-    env.recipientRole, // field 7 — recipient's role (TO)
+    env.fromRoleCode,
+    env.fromParticipantId,
+    env.toRoleCode,
+    env.toParticipantId,
     env.creationDateTime,
-    '',       // version
-    '',       // priority
     '',
-    'OPER',
+    '',
+    '',
+    env.testFlag,
     '',
   ]);
 }
@@ -50,12 +50,12 @@ function renderRecord(record: DFlowRecord): string {
   return pipe([record.recordType, ...record.fields, '']);
 }
 
-// ZPT — batch trailer: count = records within the batch (incl. 757 header)
-function renderZPT(env: DFlowEnvelope, batchCount: number): string {
+// ZPT — batch trailer: count = lines between ZHV and ZPT (body records only)
+function renderZPT(env: DFlowEnvelope, linesBetween: number): string {
   return pipe([
     'ZPT',
-    env.senderId,
-    String(batchCount),
+    env.fileId,
+    String(linesBetween),
     '',
     '1',
     env.creationDateTime,
@@ -65,7 +65,7 @@ function renderZPT(env: DFlowEnvelope, batchCount: number): string {
 
 // ZTT — file trailer: count = ALL records in file (ZHV + body + ZTT), zero-padded to 8 digits
 function renderZTT(env: DFlowEnvelope, totalCount: number): string {
-  return pipe(['ZTT', env.senderId, String(totalCount).padStart(8, '0'), env.creationDateTime, '']);
+  return pipe(['ZTT', env.fileId, String(totalCount).padStart(8, '0'), env.creationDateTime, '']);
 }
 
 function pipe(fields: string[]): string {
@@ -92,4 +92,10 @@ export function currentHHMMSS(): string {
 // Auto-generate xRef: {flowId}{3-digit sequence} e.g. 'D0260001'
 export function makeXRef(flowId: string, seq: string): string {
   return `${flowId}${seq.padStart(3, '0')}`;
+}
+
+// Generate a base file identifier — a 4-5 digit number derived from the current epoch second.
+// Each file in a batch offsets from this base so IDs are sequential within a run.
+export function generateFileIdBase(): number {
+  return Math.floor(Date.now() / 1000) % 90000 + 10000;
 }

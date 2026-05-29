@@ -9,6 +9,18 @@ export interface ElectricityCoSRegistrationModel {
   testFlag: TestFlag;
   fileDate: string;    // YYYYMMDD
 
+  // ZHV routing — per-party DTN codes (fromRoleCode|fromParticipantId → toRoleCode|toParticipantId)
+  mpasRoleCode: string;           // MPAS/Distributor role code   e.g. 'P'  — D0260, D0217 FROM
+  mpasParticipantId: string;      // MPAS participant ID           e.g. 'EMEB' — varies per MPAN
+  supplierRoleCode: string;       // Supplier role code            e.g. 'X'  — TO for most D-flows
+  supplierParticipantId: string;  // Supplier participant ID       e.g. 'GMTR'
+  mopRoleCode: string;            // MOB role code                 e.g. 'M'  — D0011/D0149/D0052 FROM
+  mopParticipantId: string;       // MOB participant ID            e.g. 'BMET'
+  daRoleCode: string;             // DA role code                  e.g. 'B'  — D0011 DA FROM
+  daParticipantId: string;        // DA participant ID             e.g. 'UDMS'
+  dcRoleCode: string;             // DC role code                  e.g. 'D'  — D0011/D0010/D0150 FROM
+  dcParticipantId: string;        // DC participant ID             e.g. 'UDMS'
+
   // Supply point
   mpan: string;        // 13-digit MPAN
   msn: string;         // Meter Serial Number
@@ -59,6 +71,16 @@ export function mapFormToCoSModel(
   return {
     testFlag: (inputs['testFlag'] as TestFlag) || 'OPER',
     fileDate: inputs['fileDate'] || '',
+    mpasRoleCode: inputs['mpasRoleCode'] || 'P',
+    mpasParticipantId: inputs['mpasParticipantId'] || '',
+    supplierRoleCode: inputs['supplierRoleCode'] || 'X',
+    supplierParticipantId: inputs['supplierParticipantId'] || 'GMTR',
+    mopRoleCode: inputs['mopRoleCode'] || 'M',
+    mopParticipantId: inputs['mopParticipantId'] || '',
+    daRoleCode: inputs['daRoleCode'] || 'B',
+    daParticipantId: inputs['daParticipantId'] || '',
+    dcRoleCode: inputs['dcRoleCode'] || 'D',
+    dcParticipantId: inputs['dcParticipantId'] || '',
     mpan: inputs['mpan'] || '',
     msn: inputs['msn'] || '',
     newSupplierId: inputs['newSupplierId'] || '',

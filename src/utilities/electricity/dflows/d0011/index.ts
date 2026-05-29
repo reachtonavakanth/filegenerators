@@ -1,5 +1,6 @@
 // D0011 — Standing Data Amendment (three role variants: MOP / DC / DA)
 
+import { DFLOW_FILE_EXT } from '../../industry-constants';
 import type { DFlowFile, DFlowEnvelope } from '../../../../shared/domain/types';
 
 // ---- MOP version ----
@@ -35,7 +36,7 @@ export function buildD0011_MOP(model: D0011_MOPModel): DFlowFile {
   const { envelope, record058: r58, record059: r59 } = model;
   return {
     envelope,
-    fileName: `${envelope.xRef}.usr`,
+    fileName: `${envelope.xRef}${DFLOW_FILE_EXT}`,
     trailerType: 'ZTT',
     records: [
       { recordType: '058', fields: [r58.mpan, r58.msn, r58.meterType, r58.mtc, r58.meterMake, r58.ctPrimaryRatio, r58.vtPrimaryRatio, r58.installedDate, r58.removedDate] },
@@ -63,7 +64,7 @@ export function buildD0011_DC(model: D0011_DCModel): DFlowFile {
   const { envelope, record028: r } = model;
   return {
     envelope,
-    fileName: `${envelope.xRef}.usr`,
+    fileName: `${envelope.xRef}${DFLOW_FILE_EXT}`,
     trailerType: 'ZTT',
     records: [
       { recordType: '028', fields: [r.mpan, r.profileClass, r.measurementClass, r.estimatedAnnualConsumption, r.effectiveFromDate, r.reasonCode] },
@@ -89,7 +90,7 @@ export function buildD0011_DA(model: D0011_DAModel): DFlowFile {
   const { envelope, record029: r } = model;
   return {
     envelope,
-    fileName: `${envelope.xRef}.usr`,
+    fileName: `${envelope.xRef}${DFLOW_FILE_EXT}`,
     trailerType: 'ZTT',
     records: [
       { recordType: '029', fields: [r.mpan, r.dataAggregatorId, r.nominatedDistributorId, r.effectiveFromDate, r.settlementDate] },
