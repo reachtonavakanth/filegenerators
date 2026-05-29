@@ -4,10 +4,6 @@
 
 export type UtilityType = 'electricity' | 'gas';
 export type TestFlag = 'OPER' | 'TR06';
-export type EnergisationStatus = 'E' | 'D';
-export type MeasurementClass = 'A' | 'B' | 'C' | 'D' | 'E' | 'G' | 'I' | 'J' | 'K';
-export type ProfileClass = '01' | '02' | '03' | '04' | '05' | '06' | '07' | '08';
-export type GSPGroup = '_A' | '_B' | '_C' | '_D' | '_E' | '_F' | '_G' | '_H' | '_J' | '_K' | '_L' | '_M' | '_N' | '_P';
 
 // ---- D-Flow envelope (ZHV header fields) ----
 // Real UK format: ZHV|{senderId}|{xRef}|{testFlag}|{recipientId}|{recipientRole}|{senderRole}|{YYYYMMDDHHMMSS}||||OPER|

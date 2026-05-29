@@ -2,7 +2,7 @@
 // Electricity Energisation — Domain Model
 // ============================================================
 
-import type { TestFlag, ProfileClass, MeasurementClass, GSPGroup } from '../../../../shared/domain/types';
+import type { TestFlag } from '../../../../shared/domain/types';
 
 export type EnergisationActionType = 'E' | 'D';
 
@@ -17,9 +17,9 @@ export interface ElectricityEnergisationModel {
   mobId: string;
   dcId: string;
 
-  profileClass: ProfileClass;
-  measurementClass: MeasurementClass;
-  gspGroupId: GSPGroup;
+  profileClass: string;
+  measurementClass: string;
+  gspGroupId: string;
   llfClass: string;
   ssc: string;
   distributorId: string;
@@ -63,9 +63,9 @@ export function mapFormToEnergisationModel(
     supplierId: inputs['supplierId'] || '',
     mobId: inputs['mobId'] || '',
     dcId: inputs['dcId'] || '',
-    profileClass: (inputs['profileClass'] as ProfileClass) || '01',
-    measurementClass: (inputs['measurementClass'] as MeasurementClass) || 'A',
-    gspGroupId: (inputs['gspGroupId'] as GSPGroup) || '_A',
+    profileClass: inputs['profileClass'] || '',
+    measurementClass: inputs['measurementClass'] || '',
+    gspGroupId: inputs['gspGroupId'] || '',
     llfClass: inputs['llfClass'] || '001',
     ssc: inputs['ssc'] || '0000',
     distributorId: inputs['distributorId'] || '',

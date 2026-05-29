@@ -2,7 +2,7 @@
 // Electricity CoS Registration — Domain Model
 // ============================================================
 
-import type { TestFlag, ProfileClass, MeasurementClass, GSPGroup } from '../../../../shared/domain/types';
+import type { TestFlag } from '../../../../shared/domain/types';
 
 export interface ElectricityCoSRegistrationModel {
   // Envelope / file settings
@@ -21,9 +21,9 @@ export interface ElectricityCoSRegistrationModel {
   daId: string;        // Data Aggregator
 
   // Technical attributes
-  profileClass: ProfileClass;
-  measurementClass: MeasurementClass;
-  gspGroupId: GSPGroup;
+  profileClass: string;
+  measurementClass: string;
+  gspGroupId: string;
   llfClass: string;    // Line Loss Factor Class
   ssc: string;         // Standard Settlement Configuration
   distributorId: string;
@@ -57,7 +57,7 @@ export function mapFormToCoSModel(
   inputs: Record<string, string>
 ): ElectricityCoSRegistrationModel {
   return {
-    testFlag: (inputs['testFlag'] as TestFlag) || 'T',
+    testFlag: (inputs['testFlag'] as TestFlag) || 'OPER',
     fileDate: inputs['fileDate'] || '',
     mpan: inputs['mpan'] || '',
     msn: inputs['msn'] || '',
@@ -66,9 +66,9 @@ export function mapFormToCoSModel(
     mobId: inputs['mobId'] || '',
     dcId: inputs['dcId'] || '',
     daId: inputs['daId'] || '',
-    profileClass: (inputs['profileClass'] as ProfileClass) || '01',
-    measurementClass: (inputs['measurementClass'] as MeasurementClass) || 'A',
-    gspGroupId: (inputs['gspGroupId'] as GSPGroup) || '_A',
+    profileClass: inputs['profileClass'] || '',
+    measurementClass: inputs['measurementClass'] || '',
+    gspGroupId: inputs['gspGroupId'] || '',
     llfClass: inputs['llfClass'] || '001',
     ssc: inputs['ssc'] || '0000',
     distributorId: inputs['distributorId'] || '',
