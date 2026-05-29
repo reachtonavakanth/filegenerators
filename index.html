@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test File Generator</title>
+    <link rel="stylesheet" href="/styles/main.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="app-header">
+        <div class="header-inner">
+          <div class="header-title">
+            <span class="header-icon">⚡</span>
+            <div>
+              <h1>Test File Generator</h1>
+              <p>D-flow &amp; CSS Message Generator</p>
+            </div>
+          </div>
+          <div class="header-badge">Local QA Tool &bull; v1.0</div>
+        </div>
+      </header>
+
+      <main class="app-main">
+        <!-- Step 1: Utility + Process Selection -->
+        <aside class="sidebar">
+          <section class="panel">
+            <h2 class="panel-title">
+              <span class="step-badge">1</span> Utility Type
+            </h2>
+            <div id="utility-selector" class="selector-group"></div>
+          </section>
+
+          <section class="panel" id="process-panel" style="display:none;">
+            <h2 class="panel-title">
+              <span class="step-badge">2</span> Business Process
+            </h2>
+            <div id="process-selector" class="selector-group"></div>
+          </section>
+        </aside>
+
+        <!-- Step 2: Dynamic Form -->
+        <section class="content-area">
+          <div id="form-placeholder" class="form-placeholder">
+            <div class="placeholder-content">
+              <div class="placeholder-icon">📋</div>
+              <h3>Select a utility and process to begin</h3>
+              <p>Choose from the left panel to load the input form</p>
+            </div>
+          </div>
+
+          <div id="form-area" style="display:none;">
+            <div class="form-header">
+              <div>
+                <h2 id="form-title">Process Form</h2>
+                <p id="form-description" class="form-desc"></p>
+              </div>
+              <div class="form-actions">
+                <button id="btn-generate" class="btn btn-primary" disabled>
+                  ⚙ Generate Files
+                </button>
+                <button id="btn-download" class="btn btn-success" disabled>
+                  ⬇ Save Files
+                </button>
+              </div>
+            </div>
+
+            <div id="form-body" class="form-body"></div>
+
+            <div id="status-bar" class="status-bar" style="display:none;">
+              <span id="status-icon">✓</span>
+              <span id="status-text"></span>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
