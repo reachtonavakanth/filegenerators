@@ -39,8 +39,7 @@ function makeEnvelope(
 export function orchestrateEnergisation(
   m: ElectricityEnergisationModel
 ): GeneratedOutput {
-  const t = currentHHMMSS();
-  const ts = `${m.fileDate.slice(0, 4)}-${m.fileDate.slice(4, 6)}-${m.fileDate.slice(6, 8)}T${t.slice(0, 2)}:${t.slice(2, 4)}:${t.slice(4, 6)}Z`;
+  const ts = new Date().toISOString();
   const correlationId = `COR-EN-${m.mpan.slice(-6)}-${m.fileDate}`;
   const fileIdBase = generateFileIdBase();
 
@@ -104,22 +103,13 @@ export function orchestrateEnergisation(
     },
   });
 
-  // ---- CSS02380_01: Registration/Energisation Notification ----
+  // ---- CSS02380_01: Energisation Notification ----
   const css02380 = buildCSS02380_01({
-    mpan: m.mpan,
-    newSupplierId: m.supplierParticipantId,
-    oldSupplierId: '',
-    requestedSupplyStartDate: m.requestedDate,
-    registrationDate: m.requestedDate,
-    profileClass: m.profileClass,
-    measurementClass: m.measurementClass,
-    gspGroupId: m.gspGroupId,
-    llfClass: m.llfClass,
-    ssc: m.ssc,
-    distributorId: m.distributorParticipantId,
-    timestamp: ts,
+    mpxn: m.mpan,
+    registrationRequestId: '',
+    supplierGeneratedReference: '',
     correlationId,
-    testIndicator: m.testFlag,
+    timestamp: ts,
   });
   css02380.messageType = 'CSS02380_01_ENERGISATION';
   css02380.fileName = `CSS02380_01_EN_${m.mpan.slice(-6)}.json`;

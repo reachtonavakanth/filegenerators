@@ -6,8 +6,8 @@
 import type { CSSMessage } from '../../../shared/domain/types';
 import type {
   CSSMessageHeader,
-  CSS02380_01_Body,
-  CSS02300_01_Body,
+  CSS02380_01_Event,
+  CSS02300_01_Event,
   CSS02370_01_Body,
   CSS02370_03_Body,
 } from './types';
@@ -40,87 +40,81 @@ function makeHeader(
 
 // ---- CSS02300_01 ----
 export function buildCSS02300_01(params: {
-  mpan: string;
-  currentSupplierId: string;
-  newSupplierId: string;
-  requestedSupplyStartDate: string;
-  customerAgreementDate: string;
-  timestamp: string;
+  mpxn: string;
+  supplierGeneratedReference: string;
+  supplyStartDate: string;
+  registrationId: string;
+  supplierRole: string;
+  supplierMpid: string;
   correlationId: string;
-  testIndicator: string;
+  timestamp: string;
 }): CSSMessage {
-  const body: CSS02300_01_Body = {
-    requestId: `REQ-${params.mpan.slice(-6)}-${params.timestamp.slice(0, 10).replace(/-/g, '')}`,
-    mpan: params.mpan,
-    currentSupplierId: params.currentSupplierId,
-    newSupplierId: params.newSupplierId,
-    requestedSupplyStartDate: params.requestedSupplyStartDate,
-    customerAgreementDate: params.customerAgreementDate,
-    objectType: 'DOMESTIC',
+  const event: CSS02300_01_Event = {
+    eventId: crypto.randomUUID(),
+    updatedProperties: [],
+    data: {
+      registrationStatus: 'Pending',
+      registrationStatusFromDate: params.timestamp,
+      supplierGeneratedReference: params.supplierGeneratedReference,
+      mpxn: params.mpxn,
+      supplyStartDate: params.supplyStartDate.length === 10
+        ? `${params.supplyStartDate}T00:00:00.000Z`
+        : params.supplyStartDate,
+      erroneousSwitchResolutionInd: false,
+      changeOfOccupancyInd: false,
+      domesticPremisesInd: false,
+      fuelType: 'E',
+      registrationId: params.registrationId,
+      registrationInitiator: 'GainingSupplier',
+      supplierRole: params.supplierRole,
+      supplierMpid: params.supplierMpid,
+    },
+    eventStatus: 'Ok',
+    contextType: 'GainingSupplier',
+    eventDescription: 'Registration status changed to Pending',
+    correlationId: params.correlationId,
+    eventType: 'RegistrationPendingNotification',
+    version: '1.0',
+    eventDate: params.timestamp,
   };
   return {
     messageType: CSS_MSG_COS_INITIATION,
-    fileName: `CSS02300_01_${params.mpan.slice(-6)}.json`,
-    content: {
-      header: makeHeader(
-        CSS_MSG_COS_INITIATION,
-        params.newSupplierId,
-        'CSS',
-        params.correlationId,
-        params.timestamp,
-        params.testIndicator
-      ),
-      body,
-    },
+    fileName: `CSS02300_01_${params.mpxn.slice(-6)}.json`,
+    content: event as unknown as Record<string, unknown>,
   };
 }
 
 // ---- CSS02380_01 ----
 export function buildCSS02380_01(params: {
-  mpan: string;
-  newSupplierId: string;
-  oldSupplierId: string;
-  requestedSupplyStartDate: string;
-  registrationDate: string;
-  profileClass: string;
-  measurementClass: string;
-  gspGroupId: string;
-  llfClass: string;
-  ssc: string;
-  distributorId: string;
-  timestamp: string;
+  mpxn: string;
+  registrationRequestId: string;
+  supplierGeneratedReference: string;
   correlationId: string;
-  testIndicator: string;
+  timestamp: string;
 }): CSSMessage {
-  const body: CSS02380_01_Body = {
-    registrationId: `REG-${params.mpan.slice(-6)}-${params.registrationDate.replace(/-/g, '')}`,
-    mpan: params.mpan,
-    newSupplierId: params.newSupplierId,
-    oldSupplierId: params.oldSupplierId,
-    requestedSupplyStartDate: params.requestedSupplyStartDate,
-    registrationDate: params.registrationDate,
-    registrationStatus: 'ACCEPTED',
-    profileClass: params.profileClass,
-    measurementClass: params.measurementClass,
-    gspGroupId: params.gspGroupId,
-    llfClass: params.llfClass,
-    ssc: params.ssc,
-    distributorId: params.distributorId,
+  const event: CSS02380_01_Event = {
+    eventId: crypto.randomUUID(),
+    updatedProperties: [],
+    data: [
+      {
+        registrationRequestStatus: 'Validated',
+        registrationRequestId: params.registrationRequestId,
+        supplierGeneratedReference: params.supplierGeneratedReference,
+        mpxn: params.mpxn,
+      },
+    ],
+    eventStatus: 'Ok',
+    contextType: 'GainingSupplier',
+    eventDescription: 'Validated',
+    correlationId: params.correlationId,
+    eventType: 'RegistrationValidationNotification',
+    version: '1.0',
+    eventDate: params.timestamp,
   };
   return {
     messageType: CSS_MSG_REGISTRATION_NOTIF,
-    fileName: `CSS02380_01_${params.mpan.slice(-6)}.json`,
-    content: {
-      header: makeHeader(
-        CSS_MSG_REGISTRATION_NOTIF,
-        'CSS',
-        params.newSupplierId,
-        params.correlationId,
-        params.timestamp,
-        params.testIndicator
-      ),
-      body,
-    },
+    fileName: `CSS02380_01_${params.mpxn.slice(-6)}.json`,
+    content: event as unknown as Record<string, unknown>,
   };
 }
 

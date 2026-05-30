@@ -39,7 +39,7 @@ export interface ElectricityCOSRegistrationModel {
 
   // D0011 034/037/038 fields
   appointmentRef: string;  // e.g. 'GMTRNDA001'
-  registerCode: string;    // 038 field[2]
+  registerCode: string;    // D0011 038 Service Reference (field[1]) & Service Level Reference (field[2]) — same value, alphanumeric max 4
 
   // Supply point
   mpan: string;        // 13-digit MPAN
@@ -64,6 +64,11 @@ export interface ElectricityCOSRegistrationModel {
   measurementQuantityId: string; // AI / RI / AQ
   timePatternRegiment: string;   // TPR code
   scalingFactor: string;
+
+  // CSS Registration identifiers (user-provided)
+  supplierGeneratedReference: string; // e.g. SC000000549
+  registrationRequestId: string;      // GUID — registrationRequestId in CSS02380_01
+  cssCorrelationId: string;           // GUID — correlationId shared across CSS02380_01 & CSS02300_01
 
   // Dates
   registrationDate: string;      // YYYYMMDD supply start
@@ -125,6 +130,9 @@ export function mapFormToCOSModel(
     measurementQuantityId: inputs['measurementQuantityId'] || 'AI',
     timePatternRegiment: inputs['timePatternRegiment'] || '00001',
     scalingFactor: inputs['scalingFactor'] || '1',
+    supplierGeneratedReference: inputs['supplierGeneratedReference'] || '',
+    registrationRequestId: inputs['registrationRequestId'] || '',
+    cssCorrelationId: inputs['cssCorrelationId'] || '',
     registrationDate: inputs['registrationDate'] || '',
     cosDate: inputs['cosDate'] || inputs['registrationDate'] || '',
     meterInstalledDate: inputs['meterInstalledDate'] || '',

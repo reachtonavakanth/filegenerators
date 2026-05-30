@@ -48,6 +48,37 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
     ],
   },
   {
+    id: 'css-registration',
+    label: 'CSS Registration',
+    icon: '🔗',
+    fields: [
+      {
+        id: 'supplierGeneratedReference',
+        label: 'Supplier Generated Reference',
+        type: 'text',
+        required: true,
+        placeholder: 'SC000000549',
+        helpText: 'Supplier-generated reference used in CSS02380_01 and CSS02300_01',
+      },
+      {
+        id: 'registrationRequestId',
+        label: 'Registration ID',
+        type: 'text',
+        required: true,
+        placeholder: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+        helpText: 'GUID — registrationRequestId in CSS02380_01 / registrationId in CSS02300_01',
+      },
+      {
+        id: 'cssCorrelationId',
+        label: 'Correlation ID',
+        type: 'text',
+        required: true,
+        placeholder: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+        helpText: 'GUID — correlationId shared across CSS02380_01 and CSS02300_01',
+      },
+    ],
+  },
+  {
     id: 'market-parties',
     label: 'Market Parties',
     icon: '🏢',
@@ -88,7 +119,7 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
       { id: 'collectorType',          label: 'Data Collector Type',          type: 'select', required: true, options: HH_TYPE_OPTIONS },
       { id: 'mopType',                label: 'Meter Operator Type',          type: 'select', required: true, options: HH_TYPE_OPTIONS },
       { id: 'appointmentRef',         label: 'Appointment Reference',        type: 'text',   required: true, placeholder: 'GMTRNDA001' },
-      { id: 'registerCode',           label: 'Register Code',                type: 'text',   required: true, placeholder: '01' },
+      { id: 'registerCode',           label: 'Service Reference',            type: 'text',   required: true, placeholder: '01', maxLength: 4, helpText: 'Used as Service Reference & Service Level Reference in D0011 038 (same value, alphanumeric max 4)' },
       {
         id: 'mpan',
         label: 'MPAN',

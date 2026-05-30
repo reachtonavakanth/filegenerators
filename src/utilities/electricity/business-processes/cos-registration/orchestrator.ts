@@ -55,8 +55,7 @@ function makeEnvelope(
 export function orchestrateCOSRegistration(
   m: ElectricityCOSRegistrationModel
 ): GeneratedOutput {
-  const t = currentHHMMSS();
-  const ts = `${m.fileDate.slice(0, 4)}-${m.fileDate.slice(4, 6)}-${m.fileDate.slice(6, 8)}T${t.slice(0, 2)}:${t.slice(2, 4)}:${t.slice(4, 6)}Z`;
+  const ts = new Date().toISOString(); // ISO 8601 with milliseconds e.g. "2026-05-28T12:19:00.000Z"
   const correlationId = `COR-${m.mpan.slice(-6)}-${m.fileDate}`;
   const qryRef = `QRY-${m.mpan.slice(-6)}-${m.fileDate}`;
   const fileIdBase = generateFileIdBase();
@@ -68,34 +67,25 @@ export function orchestrateCOSRegistration(
   const da   = [m.daRoleCode, m.daParticipantId]             as const;
   const dc   = [m.dcRoleCode, m.dcParticipantId]             as const;
 
-  // ---- CSS02300_01 ----
-  const css02300 = buildCSS02300_01({
-    mpan: m.mpan,
-    currentSupplierId: m.oldSupplierParticipantId,
-    newSupplierId: m.supplierParticipantId,
-    requestedSupplyStartDate: m.registrationDate,
-    customerAgreementDate: m.registrationDate,
-    timestamp: ts,
-    correlationId,
-    testIndicator: m.testFlag,
-  });
-
   // ---- CSS02380_01 ----
   const css02380 = buildCSS02380_01({
-    mpan: m.mpan,
-    newSupplierId: m.supplierParticipantId,
-    oldSupplierId: m.oldSupplierParticipantId,
-    requestedSupplyStartDate: m.registrationDate,
-    registrationDate: m.registrationDate,
-    profileClass: m.profileClass,
-    measurementClass: m.measurementClass,
-    gspGroupId: m.gspGroupId,
-    llfClass: m.llfClass,
-    ssc: m.ssc,
-    distributorId: m.distributorParticipantId,
+    mpxn: m.mpan,
+    registrationRequestId: m.registrationRequestId,
+    supplierGeneratedReference: m.supplierGeneratedReference,
+    correlationId: m.cssCorrelationId,
     timestamp: ts,
-    correlationId,
-    testIndicator: m.testFlag,
+  });
+
+  // ---- CSS02300_01 ----
+  const css02300 = buildCSS02300_01({
+    mpxn: m.mpan,
+    supplierGeneratedReference: m.supplierGeneratedReference,
+    supplyStartDate: m.cosDate,
+    registrationId: m.registrationRequestId,
+    supplierRole: m.supplierRoleCode,
+    supplierMpid: m.supplierParticipantId,
+    correlationId: m.cssCorrelationId,
+    timestamp: ts,
   });
 
   // ---- CSS02370_01 ----

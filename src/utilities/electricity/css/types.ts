@@ -14,44 +14,55 @@ export interface CSSMessageHeader {
   version: string;          // message schema version e.g. '01'
 }
 
-// CSS02380_01 — Supplier Registration Notification (CSS → New Supplier)
-export interface CSS02380_01_Body {
+// CSS02380_01 — Registration Validation Notification (CSS → GainingSupplier)
+export interface CSS02380_01_DataItem {
+  registrationRequestStatus: 'Validated' | 'Rejected' | 'Pending';
+  registrationRequestId: string;
+  supplierGeneratedReference: string;
+  mpxn: string;
+}
+
+export interface CSS02380_01_Event {
+  eventId: string;
+  updatedProperties: string[];
+  data: CSS02380_01_DataItem[];
+  eventStatus: 'Ok' | 'Error';
+  contextType: 'GainingSupplier';
+  eventDescription: string;
+  correlationId: string;
+  eventType: 'RegistrationValidationNotification';
+  version: string;
+  eventDate: string;
+}
+
+// CSS02300_01 — Registration Pending Notification (CSS → GainingSupplier)
+export interface CSS02300_01_Data {
+  registrationStatus: 'Pending' | 'Accepted' | 'Rejected';
+  registrationStatusFromDate: string;
+  supplierGeneratedReference: string;
+  mpxn: string;
+  supplyStartDate: string;
+  erroneousSwitchResolutionInd: boolean;
+  changeOfOccupancyInd: boolean;
+  domesticPremisesInd: boolean;
+  fuelType: string;
   registrationId: string;
-  mpan: string;
-  newSupplierId: string;
-  oldSupplierId: string;
-  requestedSupplyStartDate: string;
-  registrationDate: string;
-  registrationStatus: 'ACCEPTED' | 'REJECTED' | 'PENDING';
-  rejectionReasonCode?: string;
-  rejectionReasonDescription?: string;
-  profileClass: string;
-  measurementClass: string;
-  gspGroupId: string;
-  llfClass: string;
-  ssc: string;
-  distributorId: string;
+  registrationInitiator: 'GainingSupplier';
+  supplierRole: string;
+  supplierMpid: string;
 }
 
-export interface CSS02380_01_Message {
-  header: CSSMessageHeader;
-  body: CSS02380_01_Body;
-}
-
-// CSS02300_01 — Change of Supplier Initiation Request (Supplier → CSS)
-export interface CSS02300_01_Body {
-  requestId: string;
-  mpan: string;
-  currentSupplierId: string;
-  newSupplierId: string;
-  requestedSupplyStartDate: string;
-  customerAgreementDate: string;
-  objectType: 'DOMESTIC' | 'NON_DOMESTIC';
-}
-
-export interface CSS02300_01_Message {
-  header: CSSMessageHeader;
-  body: CSS02300_01_Body;
+export interface CSS02300_01_Event {
+  eventId: string;
+  updatedProperties: string[];
+  data: CSS02300_01_Data;
+  eventStatus: 'Ok' | 'Error';
+  contextType: 'GainingSupplier';
+  eventDescription: string;
+  correlationId: string;
+  eventType: 'RegistrationPendingNotification';
+  version: string;
+  eventDate: string;
 }
 
 // CSS02370_01 — CSS Query (Supplier → CSS)

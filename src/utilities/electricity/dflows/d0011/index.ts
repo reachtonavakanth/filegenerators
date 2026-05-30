@@ -31,7 +31,7 @@ export interface D0011Model {
   appointmentType: D0011AppointmentType;
   record034: D0011_034;
   appointmentDate: string;  // date for the middle record (035/036/037) — cosDate
-  registerRef: string;      // 038 field[1] and field[2] — same value, alphanumeric max 4
+  registerRef: string;      // 038 Service Reference (field[1]) & Service Level Reference (field[2]) — same value, alphanumeric max 4
 }
 
 export function buildD0011(model: D0011Model): DFlowFile {
