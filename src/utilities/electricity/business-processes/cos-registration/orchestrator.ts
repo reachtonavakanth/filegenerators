@@ -12,7 +12,7 @@ import {
 
 import { buildD0260 } from '../../dflows/d0260';
 import { buildD0217 } from '../../dflows/d0217';
-import { buildD0011_MOP, buildD0011_DC, buildD0011_DA } from '../../dflows/d0011';
+import { buildD0011 } from '../../dflows/d0011';
 import { buildD0149 } from '../../dflows/d0149';
 import { buildD0150 } from '../../dflows/d0150';
 import { buildD0052 } from '../../dflows/d0052';
@@ -151,71 +151,58 @@ export function orchestrateCOSRegistration(
   // ---- D0217: MPAS → Supplier ----
   const d0217 = buildD0217({
     envelope: makeEnvelope(m, 'D0217', fileIdBase, 2, '001', ...mpas, ...supp),
-    record026: {
+    record492: {
+      instructionNumber: m.instructionNumber,
+      instructionType: m.d0217InstructionType,
       mpan: m.mpan,
-      newSupplierId: m.supplierParticipantId,
-      registrationDate: m.registrationDate,
-      oldSupplierId: m.oldSupplierParticipantId,
+      currentDate: m.fileDate,
       cosDate: m.cosDate,
-      profileClass: m.profileClass,
-      measurementClass: m.measurementClass,
-      gspGroupId: m.gspGroupId,
+      postcode: m.postcode,
       llfClass: m.llfClass,
+      gspGroupId: m.gspGroupId,
+      energisationStatus: m.energisationStatus,
+      measurementClass: m.measurementClass,
+      mtc: m.mtc,
+      profileClass: m.profileClass,
       ssc: m.ssc,
-      distributorId: m.distributorParticipantId,
+      aggrParticipantId: m.daParticipantId,
+      aggrType: m.aggrType,
+      collectorParticipantId: m.dcParticipantId,
+      collectorType: m.collectorType,
+      mopParticipantId: m.mopParticipantId,
+      mopType: m.mopType,
+      relatedMpanIndicator: STANDING_DATA_STATUS_ACTIVE,
     },
   });
 
-  // ---- D0011 MOP → Supplier ----
-  const d0011_mop = buildD0011_MOP({
+  // Shared D0011 record data (034/038) — same for MOP, DC, DA
+  const d0011Common = {
+    record034: { mpan: m.mpan, contractRef: m.appointmentRef, cosDate: m.cosDate },
+    appointmentDate: m.cosDate,
+    registerRef: m.registerCode,
+  };
+
+  // ---- D0011 MOP → Supplier (036 row) ----
+  const d0011_mop = buildD0011({
     envelope: makeEnvelope(m, 'D0011', fileIdBase, 3, '001', ...mop, ...supp),
-    record058: {
-      mpan: m.mpan,
-      msn: m.msn,
-      meterType: m.meterType,
-      mtc: m.mtc,
-      meterMake: m.meterMake,
-      ctPrimaryRatio: m.ctPrimaryRatio,
-      vtPrimaryRatio: m.vtPrimaryRatio,
-      installedDate: m.meterInstalledDate,
-      removedDate: '',
-    },
-    record059: {
-      mpan: m.mpan,
-      msn: m.msn,
-      registerId: m.registerId,
-      measurementQuantityId: m.measurementQuantityId,
-      backRegisterIndicator: STANDING_DATA_STATUS_ACTIVE,
-      timePatternRegiment: m.timePatternRegiment,
-      numberOfDigits: m.numberOfDigits,
-    },
+    appointmentType: 'MOP',
+    ...d0011Common,
   });
   d0011_mop.fileName = `D0011_MOP_${m.fileDate}_001.usr`;
 
-  // ---- D0011 DC → Supplier ----
-  const d0011_dc = buildD0011_DC({
+  // ---- D0011 DC → Supplier (035 row) ----
+  const d0011_dc = buildD0011({
     envelope: makeEnvelope(m, 'D0011', fileIdBase, 4, '002', ...dc, ...supp),
-    record028: {
-      mpan: m.mpan,
-      profileClass: m.profileClass,
-      measurementClass: m.measurementClass,
-      estimatedAnnualConsumption: m.estimatedAnnualConsumption,
-      effectiveFromDate: m.registrationDate,
-      reasonCode: '01',
-    },
+    appointmentType: 'DC',
+    ...d0011Common,
   });
   d0011_dc.fileName = `D0011_DC_${m.fileDate}_001.usr`;
 
-  // ---- D0011 DA → Supplier ----
-  const d0011_da = buildD0011_DA({
+  // ---- D0011 DA → Supplier (037 row) ----
+  const d0011_da = buildD0011({
     envelope: makeEnvelope(m, 'D0011', fileIdBase, 5, '003', ...da, ...supp),
-    record029: {
-      mpan: m.mpan,
-      dataAggregatorId: m.daParticipantId,
-      nominatedDistributorId: m.distributorParticipantId,
-      effectiveFromDate: m.registrationDate,
-      settlementDate: m.cosDate,
-    },
+    appointmentType: 'DA',
+    ...d0011Common,
   });
   d0011_da.fileName = `D0011_DA_${m.fileDate}_001.usr`;
 

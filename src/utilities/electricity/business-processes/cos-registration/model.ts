@@ -25,13 +25,21 @@ export interface ElectricityCOSRegistrationModel {
   dcRoleCode: string;
   dcParticipantId: string;
 
-  // D0260 / D0217 758/492 body fields
-  instructionNumber: string;  // up to 10-digit integer reference
-  instructionType: string;    // e.g. 'SP43' — dropdown
-  energisationStatus: string; // 'E' | 'D'
-  aggrType: string;           // Data Aggregation Type: 'H' | 'N'
-  collectorType: string;      // Data Collector Type:   'H' | 'N'
-  mopType: string;            // Meter Operator Type:   'H' | 'N'
+  // D0260 758 / D0217 492 body fields
+  instructionNumber: string;     // up to 10-digit integer reference (shared)
+  instructionType: string;       // D0260 instruction type e.g. 'SP43'
+  d0217InstructionType: string;  // D0217 instruction type e.g. 'SP40'
+  energisationStatus: string;    // 'E' | 'D'
+  aggrType: string;              // Data Aggregation Type: 'H' | 'N'
+  collectorType: string;         // Data Collector Type:   'H' | 'N'
+  mopType: string;               // Meter Operator Type:   'H' | 'N'
+
+  // D0217 492 — postcode (field[16])
+  postcode: string;
+
+  // D0011 034/037/038 fields
+  appointmentRef: string;  // e.g. 'GMTRNDA001'
+  registerCode: string;    // 038 field[2]
 
   // Supply point
   mpan: string;        // 13-digit MPAN
@@ -91,10 +99,14 @@ export function mapFormToCOSModel(
     dcParticipantId: inputs['dcParticipantId'] || '',
     instructionNumber: inputs['instructionNumber'] || '',
     instructionType: inputs['instructionType'] || 'SP43',
+    d0217InstructionType: inputs['d0217InstructionType'] || 'SP40',
     energisationStatus: inputs['energisationStatus'] || 'E',
     aggrType: inputs['aggrType'] || '',
     collectorType: inputs['collectorType'] || '',
     mopType: inputs['mopType'] || '',
+    postcode: inputs['postcode'] || '',
+    appointmentRef: inputs['appointmentRef'] || '',
+    registerCode: inputs['registerCode'] || '',
     mpan: inputs['mpan'] || '',
     msn: inputs['msn'] || '',
     profileClass: inputs['profileClass'] || '',

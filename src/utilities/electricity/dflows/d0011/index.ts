@@ -1,99 +1,50 @@
-// D0011 — Standing Data Amendment (three role variants: MOP / DC / DA)
+// D0011 — Provide Standing Data (Appointment Notification)
+// File structure: ZHV → 034 → 035|036|037 → 038 → ZPT
+//
+// Three variants — differ only in the middle record:
+//   DA  appointment → 037|cosDate|
+//   DC  appointment → 035|cosDate|
+//   MOP appointment → 036|cosDate|
+//
+// 034|mpan|contractRef|cosDate|
+// 038|registerRef|registerRef|   (same value both fields, alphanumeric max 4)
 
 import { DFLOW_FILE_EXT } from '../../industry-constants';
 import type { DFlowFile, DFlowEnvelope } from '../../../../shared/domain/types';
 
-// ---- MOP version ----
-export interface D0011_MOP_058 {
-  mpan: string;
-  msn: string;
-  meterType: string;
-  mtc: string;
-  meterMake: string;
-  ctPrimaryRatio: string;
-  vtPrimaryRatio: string;
-  installedDate: string;
-  removedDate: string;
+export type D0011AppointmentType = 'DA' | 'DC' | 'MOP';
+
+const APPOINTMENT_RECORD_TYPE: Record<D0011AppointmentType, string> = {
+  DA:  '037',
+  DC:  '035',
+  MOP: '036',
+};
+
+export interface D0011_034 {
+  mpan: string;         // field[1]
+  contractRef: string;  // field[2] — contract reference, alphanumeric
+  cosDate: string;      // field[3] — Change of Supplier date YYYYMMDD
 }
 
-export interface D0011_MOP_059 {
-  mpan: string;
-  msn: string;
-  registerId: string;
-  measurementQuantityId: string;
-  backRegisterIndicator: string;
-  timePatternRegiment: string;
-  numberOfDigits: string;
-}
-
-export interface D0011_MOPModel {
+export interface D0011Model {
   envelope: DFlowEnvelope;
-  record058: D0011_MOP_058;
-  record059: D0011_MOP_059;
+  appointmentType: D0011AppointmentType;
+  record034: D0011_034;
+  appointmentDate: string;  // date for the middle record (035/036/037) — cosDate
+  registerRef: string;      // 038 field[1] and field[2] — same value, alphanumeric max 4
 }
 
-export function buildD0011_MOP(model: D0011_MOPModel): DFlowFile {
-  const { envelope, record058: r58, record059: r59 } = model;
+export function buildD0011(model: D0011Model): DFlowFile {
+  const { envelope, record034: r, appointmentType } = model;
+  const middleRecord = APPOINTMENT_RECORD_TYPE[appointmentType];
   return {
     envelope,
     fileName: `${envelope.xRef}${DFLOW_FILE_EXT}`,
-    trailerType: 'ZTT',
+    trailerType: 'ZPT',
     records: [
-      { recordType: '058', fields: [r58.mpan, r58.msn, r58.meterType, r58.mtc, r58.meterMake, r58.ctPrimaryRatio, r58.vtPrimaryRatio, r58.installedDate, r58.removedDate] },
-      { recordType: '059', fields: [r59.mpan, r59.msn, r59.registerId, r59.measurementQuantityId, r59.backRegisterIndicator, r59.timePatternRegiment, r59.numberOfDigits] },
-    ],
-  };
-}
-
-// ---- DC version ----
-export interface D0011_DC_028 {
-  mpan: string;
-  profileClass: string;
-  measurementClass: string;
-  estimatedAnnualConsumption: string;
-  effectiveFromDate: string;
-  reasonCode: string;
-}
-
-export interface D0011_DCModel {
-  envelope: DFlowEnvelope;
-  record028: D0011_DC_028;
-}
-
-export function buildD0011_DC(model: D0011_DCModel): DFlowFile {
-  const { envelope, record028: r } = model;
-  return {
-    envelope,
-    fileName: `${envelope.xRef}${DFLOW_FILE_EXT}`,
-    trailerType: 'ZTT',
-    records: [
-      { recordType: '028', fields: [r.mpan, r.profileClass, r.measurementClass, r.estimatedAnnualConsumption, r.effectiveFromDate, r.reasonCode] },
-    ],
-  };
-}
-
-// ---- DA version ----
-export interface D0011_DA_029 {
-  mpan: string;
-  dataAggregatorId: string;
-  nominatedDistributorId: string;
-  effectiveFromDate: string;
-  settlementDate: string;
-}
-
-export interface D0011_DAModel {
-  envelope: DFlowEnvelope;
-  record029: D0011_DA_029;
-}
-
-export function buildD0011_DA(model: D0011_DAModel): DFlowFile {
-  const { envelope, record029: r } = model;
-  return {
-    envelope,
-    fileName: `${envelope.xRef}${DFLOW_FILE_EXT}`,
-    trailerType: 'ZTT',
-    records: [
-      { recordType: '029', fields: [r.mpan, r.dataAggregatorId, r.nominatedDistributorId, r.effectiveFromDate, r.settlementDate] },
+      { recordType: '034', fields: [r.mpan, r.contractRef, r.cosDate] },
+      { recordType: middleRecord, fields: [model.appointmentDate] },
+      { recordType: '038', fields: [model.registerRef, model.registerRef] },
     ],
   };
 }
