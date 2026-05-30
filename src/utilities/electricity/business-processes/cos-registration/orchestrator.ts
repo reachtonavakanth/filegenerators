@@ -56,8 +56,6 @@ export function orchestrateCOSRegistration(
   m: ElectricityCOSRegistrationModel
 ): GeneratedOutput {
   const ts = new Date().toISOString(); // ISO 8601 with milliseconds e.g. "2026-05-28T12:19:00.000Z"
-  const correlationId = `COR-${m.mpan.slice(-6)}-${m.fileDate}`;
-  const qryRef = `QRY-${m.mpan.slice(-6)}-${m.fileDate}`;
   const fileIdBase = generateFileIdBase();
 
   // Party routing shortcuts — (fromRoleCode, fromParticipantId, toRoleCode, toParticipantId)
@@ -86,30 +84,28 @@ export function orchestrateCOSRegistration(
     supplierMpid: m.supplierParticipantId,
     correlationId: m.cssCorrelationId,
     timestamp: ts,
+    registrationDate: m.registrationDate,
   });
 
   // ---- CSS02370_01 ----
   const css02370_01 = buildCSS02370_01({
-    mpan: m.mpan,
-    queryingPartyId: m.supplierParticipantId,
-    queryDate: m.registrationDate,
+    mpxn: m.mpan,
+    supplierGeneratedReference: m.supplierGeneratedReference,
+    registrationId: m.registrationRequestId,
+    registrationActiveDate: m.cosDate,
+    correlationId: m.cssCorrelationId,
     timestamp: ts,
-    correlationId,
-    testIndicator: m.testFlag,
+    registrationDate: m.registrationDate,
   });
 
   // ---- CSS02370_03 ----
   const css02370_03 = buildCSS02370_03({
-    mpan: m.mpan,
-    queryReference: qryRef,
-    responseDate: m.registrationDate,
-    supplierId: m.supplierParticipantId,
-    profileClass: m.profileClass,
-    measurementClass: m.measurementClass,
-    registrationStatus: 'ACCEPTED',
+    mpxn: m.mpan,
+    supplierGeneratedReference: m.supplierGeneratedReference,
+    registrationId: m.registrationRequestId,
+    correlationId: m.cssCorrelationId,
     timestamp: ts,
-    correlationId,
-    testIndicator: m.testFlag,
+    registrationDate: m.registrationDate,
   });
 
   // fileIndex = unique position in batch; xRefSeq = per-file-type sequence suffix

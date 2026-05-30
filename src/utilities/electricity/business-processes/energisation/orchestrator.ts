@@ -111,17 +111,15 @@ export function orchestrateEnergisation(
     correlationId,
     timestamp: ts,
   });
-  css02380.messageType = 'CSS02380_01_ENERGISATION';
-  css02380.fileName = `CSS02380_01_EN_${m.mpan.slice(-6)}.json`;
-
-  // ---- CSS02370_01: Status Query ----
+  // ---- CSS02370_01: Registration Secured Active Notification ----
   const css02370 = buildCSS02370_01({
-    mpan: m.mpan,
-    queryingPartyId: m.supplierParticipantId,
-    queryDate: m.requestedDate,
-    timestamp: ts,
+    mpxn: m.mpan,
+    supplierGeneratedReference: '',
+    registrationId: '',
+    registrationActiveDate: m.requestedDate,
     correlationId,
-    testIndicator: m.testFlag,
+    timestamp: ts,
+    registrationDate: m.requestedDate,
   });
 
   return {
