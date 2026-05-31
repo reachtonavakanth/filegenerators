@@ -195,30 +195,37 @@ export function orchestrateCOSRegistration(
   // ---- D0149: MOP → Supplier ----
   const d0149 = buildD0149({
     envelope: makeEnvelope(m, 'D0149', fileIdBase, 6, '001', ...mop, ...supp),
-    records026: [
-      {
-        mpan: m.mpan,
-        msn: m.msn,
-        registerId: m.registerId,
-        readDate: m.readingDate,
-        readingType: m.readingType,
-        readValue: m.readingValue,
-        measurementQuantityId: m.measurementQuantityId,
-      },
-    ],
+    mpan: m.mpan,
+    cosDate: m.cosDate,
+    ssc: m.ssc,
+    timePatternRegiment: m.timePatternRegiment,
+    msn: m.msn,
+    registerId: m.registerId,
+    registerMappingCoefficient: m.registerMappingCoefficient,
   });
 
-  // ---- D0150: DC → Supplier ----
+  // ---- D0150: MOP → Supplier ----
   const d0150 = buildD0150({
-    envelope: makeEnvelope(m, 'D0150', fileIdBase, 7, '001', ...dc, ...supp),
-    record026: {
-      mpan: m.mpan,
-      msn: m.msn,
-      estimatedAnnualConsumption: m.estimatedAnnualConsumption,
-      eacReadDate: m.readingDate,
-      aahedc: '0',
-      siteVisitRequired: 'N',
-    },
+    envelope: makeEnvelope(m, 'D0150', fileIdBase, 7, '001', ...mop, ...supp),
+    mpan: m.mpan,
+    cosDate: m.cosDate,
+    energisationStatus: m.energisationStatus,
+    ssc: m.ssc,
+    msn: m.msn,
+    meterLocation: m.meterLocation,
+    manufacturersMakeAndType: [m.meterMake, m.meterModel].filter(Boolean).join(' '),
+    meterAssetProviderId: m.meterAssetProviderId,
+    meterType: m.d0150MeterType,
+    meterInstalledDate: m.meterInstalledDate,
+    certificationDate: m.certificationDate,
+    retrievalMethod: m.retrievalMethod,
+    retrievalMethodEffectiveDate: m.retrievalMethodEffectiveDate,
+    ctRatio: m.ctPrimaryRatio,
+    registerId: m.registerId,
+    meterRegisterType: m.meterRegisterType,
+    measurementQuantityId: m.measurementQuantityId,
+    registerMappingCoefficient: m.registerMappingCoefficient,
+    numberOfDigits: m.numberOfDigits,
   });
 
   // ---- D0052: MOP → Supplier ----

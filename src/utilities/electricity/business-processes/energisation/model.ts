@@ -55,6 +55,16 @@ export interface ElectricityEnergisationModel {
   readingValue: string;
   readingDate: string;
   estimatedAnnualConsumption: string;
+
+  // D0149 / D0150 standing data fields
+  meterLocation: string;
+  meterAssetProviderId: string;
+  d0150MeterType: string;
+  certificationDate: string;
+  retrievalMethod: string;
+  retrievalMethodEffectiveDate: string;
+  meterRegisterType: string;
+  registerMappingCoefficient: string;
 }
 
 export function mapFormToEnergisationModel(
@@ -100,5 +110,13 @@ export function mapFormToEnergisationModel(
     readingValue: inputs['readingValue'] || '00000',
     readingDate: inputs['readingDate'] || inputs['requestedDate'] || '',
     estimatedAnnualConsumption: inputs['estimatedAnnualConsumption'] || '3100',
+    meterLocation: inputs['meterLocation'] || 'J',
+    meterAssetProviderId: inputs['meterAssetProviderId'] || '',
+    d0150MeterType: inputs['d0150MeterType'] || '',
+    certificationDate: inputs['certificationDate'] || '',
+    retrievalMethod: inputs['retrievalMethod'] || 'R',
+    retrievalMethodEffectiveDate: inputs['retrievalMethodEffectiveDate'] || '',
+    meterRegisterType: inputs['meterRegisterType'] || 'C',
+    registerMappingCoefficient: inputs['registerMappingCoefficient'] || '1.00',
   };
 }

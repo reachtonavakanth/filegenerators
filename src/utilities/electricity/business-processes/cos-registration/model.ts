@@ -80,6 +80,16 @@ export interface ElectricityCOSRegistrationModel {
   readingValue: string;
   readingDate: string;           // YYYYMMDD
   estimatedAnnualConsumption: string; // kWh
+
+  // D0149 / D0150 standing data fields
+  meterLocation: string;                 // D0150 290[4] — Meter Location code (A–Z)
+  meterAssetProviderId: string;          // D0150 290[6] — MAP participant ID e.g. 'UFUN'
+  d0150MeterType: string;                // D0150 290[17] — MAP meter type code e.g. 'RCAMY'
+  certificationDate: string;             // D0150 290[19] — YYYYMMDD certification date
+  retrievalMethod: string;               // D0150 290[23] — H/M/N/R/S/U
+  retrievalMethodEffectiveDate: string;  // D0150 290[24] — YYYYMMDD
+  meterRegisterType: string;             // D0150 293[1] — C/M/1/2/3/4
+  registerMappingCoefficient: string;    // D0149 284[2] / D0150 293[3] — e.g. '1' / '1.00'
 }
 
 export function mapFormToCOSModel(
@@ -140,5 +150,13 @@ export function mapFormToCOSModel(
     readingValue: inputs['readingValue'] || '00000',
     readingDate: inputs['readingDate'] || inputs['registrationDate'] || '',
     estimatedAnnualConsumption: inputs['estimatedAnnualConsumption'] || '3100',
+    meterLocation: inputs['meterLocation'] || 'J',
+    meterAssetProviderId: inputs['meterAssetProviderId'] || '',
+    d0150MeterType: inputs['d0150MeterType'] || '',
+    certificationDate: inputs['certificationDate'] || '',
+    retrievalMethod: inputs['retrievalMethod'] || 'R',
+    retrievalMethodEffectiveDate: inputs['retrievalMethodEffectiveDate'] || '',
+    meterRegisterType: inputs['meterRegisterType'] || 'C',
+    registerMappingCoefficient: inputs['registerMappingCoefficient'] || '1.00',
   };
 }

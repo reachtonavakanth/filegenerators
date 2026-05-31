@@ -65,8 +65,10 @@ export const NUMBER_OF_DIGITS_OPTIONS: FormFieldOption[] = [
 
 export const MEASUREMENT_QUANTITY_OPTIONS: FormFieldOption[] = [
   { label: 'AI — Active Import', value: 'AI' },
+  { label: 'AE — Active Export', value: 'AE' },
   { label: 'RI — Reactive Import', value: 'RI' },
-  { label: 'AQ — Active Export', value: 'AQ' },
+  { label: 'RE — Reactive Export', value: 'RE' },
+  { label: 'UN — Unassigned', value: 'UN' },
 ];
 
 export const READING_TYPE_OPTIONS: FormFieldOption[] = [
@@ -168,3 +170,53 @@ export const CUSTOMER_CLASSIFICATION_NATP = 'NATP';   // National Tariff Profile
 export const CUSTOMER_CLASSIFICATION_D    = 'D';      // Domestic
 export const STANDING_DATA_STATUS_ACTIVE  = 'N';      // 'N' = normal/active in standing data records
 export const VALIDATION_METHOD_VRA        = 'VRA';    // Validate Reading Automatically
+
+// ---- D0150 Meter Location (record 290 field[4]) ----
+export const METER_LOCATION_OPTIONS: FormFieldOption[] = [
+  { label: 'A — Attic', value: 'A' },
+  { label: 'B — Bedroom', value: 'B' },
+  { label: 'C — Cellar/Basement', value: 'C' },
+  { label: 'D — Other not specified', value: 'D' },
+  { label: 'E — Indoors', value: 'E' },
+  { label: 'F — Not known', value: 'F' },
+  { label: 'G — Garage/Greenhouse', value: 'G' },
+  { label: 'H — Hall', value: 'H' },
+  { label: 'I — Cupboard', value: 'I' },
+  { label: 'J — Intake', value: 'J' },
+  { label: 'K — Kitchen', value: 'K' },
+  { label: 'L — Landing', value: 'L' },
+  { label: 'M — Sub Station', value: 'M' },
+  { label: 'N — TC Chamber', value: 'N' },
+  { label: 'O — Outbuilding/Barn', value: 'O' },
+  { label: 'P — Pole', value: 'P' },
+  { label: 'R — Ladder required', value: 'R' },
+  { label: 'S — Understairs', value: 'S' },
+  { label: 'T — Toilet', value: 'T' },
+  { label: 'U — Upstairs', value: 'U' },
+  { label: 'V — Vestry', value: 'V' },
+  { label: 'W — Under Window', value: 'W' },
+  { label: 'X — Outside Box', value: 'X' },
+  { label: 'Y — O/S Box with restricted access', value: 'Y' },
+  { label: 'Z — Communal Cupboard', value: 'Z' },
+];
+
+// ---- D0150 Retrieval Method (record 290 field[23]) ----
+export const RETRIEVAL_METHOD_OPTIONS: FormFieldOption[] = [
+  { label: 'H — Visual', value: 'H' },
+  { label: 'M — Manual (Electronic Download to Hand Held Unit)', value: 'M' },
+  { label: 'N — Not known at time of appointment', value: 'N' },
+  { label: 'R — Remote reading', value: 'R' },
+  { label: 'S — Supplier sourced HH smart meter readings', value: 'S' },
+  { label: 'U — Unmetered reading', value: 'U' },
+];
+
+// ---- D0150 Meter Register Type (record 293 field[1]) ----
+export const METER_REGISTER_TYPE_OPTIONS: FormFieldOption[] = [
+  { label: 'C — Cumulative', value: 'C' },
+  { label: 'M — Maximum Demand', value: 'M' },
+  { label: '1 — Cumulative Maximum Demand', value: '1' },
+  { label: '2 — Month End Cumulative', value: '2' },
+  { label: '3 — Month End Maximum Demand', value: '3' },
+  { label: '4 — Month End Cumulative Maximum Demand', value: '4' },
+];
+
