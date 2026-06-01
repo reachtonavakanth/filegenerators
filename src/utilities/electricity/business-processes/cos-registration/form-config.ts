@@ -300,7 +300,7 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
       },
       {
         id: 'readingValue',
-        label: 'Opening Meter Reading',
+        label: 'Meter Reading',
         type: 'text',
         required: true,
         placeholder: '00000',

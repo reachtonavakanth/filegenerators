@@ -315,7 +315,7 @@ export function orchestrateCOSRegistration(
 
   return {
     processId: 'cos-registration',
-    processLabel: 'Electricity COS Registration',
+    processLabel: 'Electricity NHH COS Registration',
     dflows: [
       d0260,
       d0217,

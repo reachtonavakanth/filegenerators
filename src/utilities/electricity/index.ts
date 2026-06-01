@@ -14,11 +14,11 @@ export const electricityUtility: UtilityDefinition = {
   id: 'electricity',
   label: 'Electricity',
   icon: '⚡',
-  description: 'COS Registration, Energisation',
+  description: 'NHH COS Registration, Energisation',
   processes: [
     {
       id: 'cos-registration',
-      label: 'COS Registration',
+      label: 'NHH COS Registration',
       description:
         'Change of Supplier Registration — generates D0260, D0217, D0011 (MOP/DC/DA), D0149, D0150, D0052, D0010, D0086, D0012, D0019 + CSS02300_01, CSS02380_01, CSS02370_01/03',
       utilityType: 'electricity',
