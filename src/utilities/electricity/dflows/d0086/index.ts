@@ -1,30 +1,39 @@
-// D0086 — Profile Class and Measurement Class Amendment
+// D0086 — Provide Meter Readings (DC to Supplier)
+// File structure: ZHV → 196 → 197 → 198 → ZPT
+// Mirrors D0010 structure; record numbers 196/197/198 instead of 026/028/030
+//
+// Sample: ZHV|0006597907|D0086002|D|UDMS|X|GMTR|20260515153500||||OPER|
+//         196|1100013222946|V|
+//         197|E12Z070779|A|
+//         198|S|20260518000000|256980.0|||T|N|
+//         ZPT|0006597907|3||1|20260515154000|
 
 import { DFLOW_FILE_EXT } from '../../industry-constants';
 import type { DFlowFile, DFlowEnvelope } from '../../../../shared/domain/types';
 
-export interface D0086_026 {
-  mpan: string;
-  newProfileClass: string;
-  newMeasurementClass: string;
-  effectiveFromDate: string;
-  reasonCode: string;
-  ssc: string;
-}
-
 export interface D0086Model {
   envelope: DFlowEnvelope;
-  record026: D0086_026;
+  mpan: string;                // 196[0]
+  bscValidationStatus: string; // 196[1] — V/U/F
+  msn: string;                 // 197[0]
+  readingType: string;         // 197[1]
+  registerId: string;          // 198[0]
+  readingDateTime: string;     // 198[1] — YYYYMMDDHHMMSS
+  readingValue: string;        // 198[2] — NUM(9,1)
+  meterReadingFlag: string;    // 198[5] — T/F
+  readingMethod: string;       // 198[6] — N/P
 }
 
 export function buildD0086(model: D0086Model): DFlowFile {
-  const { envelope, record026: r } = model;
+  const { envelope: env, ...r } = model;
   return {
-    envelope,
-    fileName: `${envelope.xRef}${DFLOW_FILE_EXT}`,
-    trailerType: 'ZTT',
+    envelope: env,
+    fileName: `${env.xRef}${DFLOW_FILE_EXT}`,
+    trailerType: 'ZPT',
     records: [
-      { recordType: '026', fields: [r.mpan, r.newProfileClass, r.newMeasurementClass, r.effectiveFromDate, r.reasonCode, r.ssc] },
+      { recordType: '196', fields: [r.mpan, r.bscValidationStatus] },
+      { recordType: '197', fields: [r.msn, r.readingType] },
+      { recordType: '198', fields: [r.registerId, r.readingDateTime, r.readingValue, '', '', r.meterReadingFlag, r.readingMethod] },
     ],
   };
 }

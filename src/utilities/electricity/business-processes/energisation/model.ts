@@ -65,6 +65,9 @@ export interface ElectricityEnergisationModel {
   retrievalMethodEffectiveDate: string;
   meterRegisterType: string;
   registerMappingCoefficient: string;
+  bscValidationStatus: string;
+  meterReadingFlag: string;
+  readingMethod: string;
 }
 
 export function mapFormToEnergisationModel(
@@ -118,5 +121,8 @@ export function mapFormToEnergisationModel(
     retrievalMethodEffectiveDate: inputs['retrievalMethodEffectiveDate'] || '',
     meterRegisterType: inputs['meterRegisterType'] || 'C',
     registerMappingCoefficient: inputs['registerMappingCoefficient'] || '1.00',
+    bscValidationStatus: inputs['bscValidationStatus'] || 'V',
+    meterReadingFlag: inputs['meterReadingFlag'] || 'T',
+    readingMethod: inputs['readingMethod'] || 'N',
   };
 }

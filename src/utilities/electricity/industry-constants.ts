@@ -72,13 +72,40 @@ export const MEASUREMENT_QUANTITY_OPTIONS: FormFieldOption[] = [
 ];
 
 export const READING_TYPE_OPTIONS: FormFieldOption[] = [
-  { label: 'A — Actual (physical read)', value: 'A' },
-  { label: 'I — Initial (start of supply)', value: 'I' },
-  { label: 'F — Final (end of supply)', value: 'F' },
-  { label: 'P — Periodic (routine scheduled)', value: 'P' },
-  { label: 'C — Customer self-read', value: 'C' },
-  { label: 'E — Estimated', value: 'E' },
-  { label: 'D — Deemed', value: 'D' },
+  { label: 'A — Actual Change of Supplier Read', value: 'A' },
+  { label: 'C — Customer own read', value: 'C' },
+  { label: 'D — Deemed / Estimated', value: 'D' },
+  { label: 'F — Final', value: 'F' },
+  { label: 'I — Initial', value: 'I' },
+  { label: 'M — MAR', value: 'M' },
+  { label: 'O — Old Supplier Estimated CoS Reading', value: 'O' },
+  { label: 'P — Electronically collected via PPMIP', value: 'P' },
+  { label: 'Q — Meter Reading modified manually by DC', value: 'Q' },
+  { label: 'R — Routine', value: 'R' },
+  { label: 'S — Special', value: 'S' },
+  { label: 'T — Proving Test Reading', value: 'T' },
+  { label: 'U — Forward Migration CoA', value: 'U' },
+  { label: 'V — Forward Migration CoS', value: 'V' },
+  { label: 'W — Withdrawn', value: 'W' },
+  { label: 'X — Supplier Agreed Switch Read', value: 'X' },
+  { label: 'Y — Reverse Migration CoS', value: 'Y' },
+  { label: 'Z — Actual Change of Tenancy Read', value: 'Z' },
+];
+
+export const BSC_VALIDATION_STATUS_OPTIONS: FormFieldOption[] = [
+  { label: 'V — Validated', value: 'V' },
+  { label: 'U — Not Validated', value: 'U' },
+  { label: 'F — Failed', value: 'F' },
+];
+
+export const METER_READING_FLAG_OPTIONS: FormFieldOption[] = [
+  { label: 'T — Valid', value: 'T' },
+  { label: 'F — Suspect', value: 'F' },
+];
+
+export const READING_METHOD_OPTIONS: FormFieldOption[] = [
+  { label: 'N — Not viewed by an Agent / Non Site Visit', value: 'N' },
+  { label: 'P — Viewed by an Agent / Site Visit', value: 'P' },
 ];
 
 export const TEST_FLAG_OPTIONS: FormFieldOption[] = [
@@ -170,6 +197,23 @@ export const CUSTOMER_CLASSIFICATION_NATP = 'NATP';   // National Tariff Profile
 export const CUSTOMER_CLASSIFICATION_D    = 'D';      // Domestic
 export const STANDING_DATA_STATUS_ACTIVE  = 'N';      // 'N' = normal/active in standing data records
 export const VALIDATION_METHOD_VRA        = 'VRA';    // Validate Reading Automatically
+
+// ---- D0012 Regular Reading Cycle (record 039 field[2]) ----
+export const REGULAR_READING_CYCLE_OPTIONS: FormFieldOption[] = [
+  { label: 'A — Annually', value: 'A' },
+  { label: 'B — Bi-monthly', value: 'B' },
+  { label: 'D — Daily', value: 'D' },
+  { label: 'E — Eighteen Monthly', value: 'E' },
+  { label: 'H — Half Monthly', value: 'H' },
+  { label: 'M — Monthly', value: 'M' },
+  { label: 'N — No Read Required', value: 'N' },
+  { label: 'O — Other', value: 'O' },
+  { label: 'Q — Quarterly', value: 'Q' },
+  { label: 'S — Six Monthly', value: 'S' },
+  { label: 'T — Twenty Eight Days Cycle', value: 'T' },
+  { label: 'W — Weekly', value: 'W' },
+  { label: 'Z — Twenty Four Monthly', value: 'Z' },
+];
 
 // ---- D0150 Meter Location (record 290 field[4]) ----
 export const METER_LOCATION_OPTIONS: FormFieldOption[] = [
