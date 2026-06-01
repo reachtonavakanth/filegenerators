@@ -1,19 +1,18 @@
 // ============================================================
-// Electricity CoS Registration — Process Orchestrator
-// Produces all 16 D-flow + CSS outputs for a CoS Registration
+// Electricity COS Registration — Process Orchestrator
+// Produces all 16 D-flow + CSS outputs for a COS Registration
 // ============================================================
 
 import type { GeneratedOutput, DFlowEnvelope } from '../../../../shared/domain/types';
-import type { ElectricityCoSRegistrationModel } from './model';
+import type { ElectricityCOSRegistrationModel } from './model';
 import { makeDateTime, makeXRef, currentHHMMSS, generateFileIdBase } from '../../../../shared/rendering/dflow-renderer';
 import {
-  CUSTOMER_CLASSIFICATION_NATP,
   STANDING_DATA_STATUS_ACTIVE, VALIDATION_METHOD_VRA,
 } from '../../industry-constants';
 
 import { buildD0260 } from '../../dflows/d0260';
 import { buildD0217 } from '../../dflows/d0217';
-import { buildD0011_MOP, buildD0011_DC, buildD0011_DA } from '../../dflows/d0011';
+import { buildD0011 } from '../../dflows/d0011';
 import { buildD0149 } from '../../dflows/d0149';
 import { buildD0150 } from '../../dflows/d0150';
 import { buildD0052 } from '../../dflows/d0052';
@@ -30,7 +29,7 @@ import {
 
 
 function makeEnvelope(
-  m: ElectricityCoSRegistrationModel,
+  m: ElectricityCOSRegistrationModel,
   flowId: string,
   fileIdBase: number,
   fileIndex: number,
@@ -53,13 +52,10 @@ function makeEnvelope(
   };
 }
 
-export function orchestrateCoSRegistration(
-  m: ElectricityCoSRegistrationModel
+export function orchestrateCOSRegistration(
+  m: ElectricityCOSRegistrationModel
 ): GeneratedOutput {
-  const t = currentHHMMSS();
-  const ts = `${m.fileDate.slice(0, 4)}-${m.fileDate.slice(4, 6)}-${m.fileDate.slice(6, 8)}T${t.slice(0, 2)}:${t.slice(2, 4)}:${t.slice(4, 6)}Z`;
-  const correlationId = `COR-${m.mpan.slice(-6)}-${m.fileDate}`;
-  const qryRef = `QRY-${m.mpan.slice(-6)}-${m.fileDate}`;
+  const ts = new Date().toISOString(); // ISO 8601 with milliseconds e.g. "2026-05-28T12:19:00.000Z"
   const fileIdBase = generateFileIdBase();
 
   // Party routing shortcuts — (fromRoleCode, fromParticipantId, toRoleCode, toParticipantId)
@@ -69,58 +65,47 @@ export function orchestrateCoSRegistration(
   const da   = [m.daRoleCode, m.daParticipantId]             as const;
   const dc   = [m.dcRoleCode, m.dcParticipantId]             as const;
 
-  // ---- CSS02300_01 ----
-  const css02300 = buildCSS02300_01({
-    mpan: m.mpan,
-    currentSupplierId: m.oldSupplierId,
-    newSupplierId: m.newSupplierId,
-    requestedSupplyStartDate: m.registrationDate,
-    customerAgreementDate: m.registrationDate,
-    timestamp: ts,
-    correlationId,
-    testIndicator: m.testFlag,
-  });
-
   // ---- CSS02380_01 ----
   const css02380 = buildCSS02380_01({
-    mpan: m.mpan,
-    newSupplierId: m.newSupplierId,
-    oldSupplierId: m.oldSupplierId,
-    requestedSupplyStartDate: m.registrationDate,
-    registrationDate: m.registrationDate,
-    profileClass: m.profileClass,
-    measurementClass: m.measurementClass,
-    gspGroupId: m.gspGroupId,
-    llfClass: m.llfClass,
-    ssc: m.ssc,
-    distributorId: m.distributorId,
+    mpxn: m.mpan,
+    registrationRequestId: m.registrationRequestId,
+    supplierGeneratedReference: m.supplierGeneratedReference,
+    correlationId: m.cssCorrelationId,
     timestamp: ts,
-    correlationId,
-    testIndicator: m.testFlag,
+  });
+
+  // ---- CSS02300_01 ----
+  const css02300 = buildCSS02300_01({
+    mpxn: m.mpan,
+    supplierGeneratedReference: m.supplierGeneratedReference,
+    supplyStartDate: m.cosDate,
+    registrationId: m.registrationRequestId,
+    supplierRole: m.supplierRoleCode,
+    supplierMpid: m.supplierParticipantId,
+    correlationId: m.cssCorrelationId,
+    timestamp: ts,
+    registrationDate: m.registrationDate,
   });
 
   // ---- CSS02370_01 ----
   const css02370_01 = buildCSS02370_01({
-    mpan: m.mpan,
-    queryingPartyId: m.newSupplierId,
-    queryDate: m.registrationDate,
+    mpxn: m.mpan,
+    supplierGeneratedReference: m.supplierGeneratedReference,
+    registrationId: m.registrationRequestId,
+    registrationActiveDate: m.cosDate,
+    correlationId: m.cssCorrelationId,
     timestamp: ts,
-    correlationId,
-    testIndicator: m.testFlag,
+    registrationDate: m.registrationDate,
   });
 
   // ---- CSS02370_03 ----
   const css02370_03 = buildCSS02370_03({
-    mpan: m.mpan,
-    queryReference: qryRef,
-    responseDate: m.registrationDate,
-    supplierId: m.newSupplierId,
-    profileClass: m.profileClass,
-    measurementClass: m.measurementClass,
-    registrationStatus: 'ACCEPTED',
+    mpxn: m.mpan,
+    supplierGeneratedReference: m.supplierGeneratedReference,
+    registrationId: m.registrationRequestId,
+    correlationId: m.cssCorrelationId,
     timestamp: ts,
-    correlationId,
-    testIndicator: m.testFlag,
+    registrationDate: m.registrationDate,
   });
 
   // fileIndex = unique position in batch; xRefSeq = per-file-type sequence suffix
@@ -128,125 +113,119 @@ export function orchestrateCoSRegistration(
   const d0260 = buildD0260({
     envelope: makeEnvelope(m, 'D0260', fileIdBase, 1, '002', ...mpas, ...supp),
     record758: {
-      mddReference: '',
-      supplierId: m.newSupplierId,
+      instructionNumber: m.instructionNumber,
+      instructionType: m.instructionType,
       mpan: m.mpan,
-      effectiveDate: m.registrationDate,
-      customerClassification: CUSTOMER_CLASSIFICATION_NATP,
-      energisationStatus: 'E',
+      cosDate: m.cosDate,
+      oldSupplierParticipantId: m.oldSupplierParticipantId,
+      energisationStatus: m.energisationStatus,
       measurementClass: m.measurementClass,
-      llfClass: m.llfClass,
+      mtc: m.mtc,
       profileClass: m.profileClass,
       ssc: m.ssc,
-      mobId: m.mobId,
-      mobStatus: STANDING_DATA_STATUS_ACTIVE,
-      dcId: m.dcId,
-      dcStatus: STANDING_DATA_STATUS_ACTIVE,
-      daId: m.daId,
-      daStatus: STANDING_DATA_STATUS_ACTIVE,
+      aggrParticipantId: m.daParticipantId,
+      aggrType: m.aggrType,
+      collectorParticipantId: m.dcParticipantId,
+      collectorType: m.collectorType,
+      mopParticipantId: m.mopParticipantId,
+      mopType: m.mopType,
       field18: '', field19: '', field20: '', field21: '', field22: '',
-      newConnectionFlag: STANDING_DATA_STATUS_ACTIVE,
+      relatedMpanIndicator: STANDING_DATA_STATUS_ACTIVE,
     },
   });
 
   // ---- D0217: MPAS → Supplier ----
   const d0217 = buildD0217({
     envelope: makeEnvelope(m, 'D0217', fileIdBase, 2, '001', ...mpas, ...supp),
-    record026: {
+    record492: {
+      instructionNumber: m.instructionNumber,
+      instructionType: m.d0217InstructionType,
       mpan: m.mpan,
-      newSupplierId: m.newSupplierId,
-      registrationDate: m.registrationDate,
-      oldSupplierId: m.oldSupplierId,
+      currentDate: m.fileDate,
       cosDate: m.cosDate,
-      profileClass: m.profileClass,
-      measurementClass: m.measurementClass,
-      gspGroupId: m.gspGroupId,
+      postcode: m.postcode,
       llfClass: m.llfClass,
+      gspGroupId: m.gspGroupId,
+      energisationStatus: m.energisationStatus,
+      measurementClass: m.measurementClass,
+      mtc: m.mtc,
+      profileClass: m.profileClass,
       ssc: m.ssc,
-      distributorId: m.distributorId,
+      aggrParticipantId: m.daParticipantId,
+      aggrType: m.aggrType,
+      collectorParticipantId: m.dcParticipantId,
+      collectorType: m.collectorType,
+      mopParticipantId: m.mopParticipantId,
+      mopType: m.mopType,
+      relatedMpanIndicator: STANDING_DATA_STATUS_ACTIVE,
     },
   });
 
-  // ---- D0011 MOP → Supplier ----
-  const d0011_mop = buildD0011_MOP({
+  // Shared D0011 record data (034/038) — same for MOP, DC, DA
+  const d0011Common = {
+    record034: { mpan: m.mpan, contractRef: m.appointmentRef, cosDate: m.cosDate },
+    appointmentDate: m.cosDate,
+    registerRef: m.registerCode,
+  };
+
+  // ---- D0011 MOP → Supplier (036 row) ----
+  const d0011_mop = buildD0011({
     envelope: makeEnvelope(m, 'D0011', fileIdBase, 3, '001', ...mop, ...supp),
-    record058: {
-      mpan: m.mpan,
-      msn: m.msn,
-      meterType: m.meterType,
-      mtc: m.mtc,
-      meterMake: m.meterMake,
-      ctPrimaryRatio: m.ctPrimaryRatio,
-      vtPrimaryRatio: m.vtPrimaryRatio,
-      installedDate: m.meterInstalledDate,
-      removedDate: '',
-    },
-    record059: {
-      mpan: m.mpan,
-      msn: m.msn,
-      registerId: m.registerId,
-      measurementQuantityId: m.measurementQuantityId,
-      backRegisterIndicator: STANDING_DATA_STATUS_ACTIVE,
-      timePatternRegiment: m.timePatternRegiment,
-      numberOfDigits: m.numberOfDigits,
-    },
+    appointmentType: 'MOP',
+    ...d0011Common,
   });
   d0011_mop.fileName = `D0011_MOP_${m.fileDate}_001.usr`;
 
-  // ---- D0011 DC → Supplier ----
-  const d0011_dc = buildD0011_DC({
+  // ---- D0011 DC → Supplier (035 row) ----
+  const d0011_dc = buildD0011({
     envelope: makeEnvelope(m, 'D0011', fileIdBase, 4, '002', ...dc, ...supp),
-    record028: {
-      mpan: m.mpan,
-      profileClass: m.profileClass,
-      measurementClass: m.measurementClass,
-      estimatedAnnualConsumption: m.estimatedAnnualConsumption,
-      effectiveFromDate: m.registrationDate,
-      reasonCode: '01',
-    },
+    appointmentType: 'DC',
+    ...d0011Common,
   });
   d0011_dc.fileName = `D0011_DC_${m.fileDate}_001.usr`;
 
-  // ---- D0011 DA → Supplier ----
-  const d0011_da = buildD0011_DA({
+  // ---- D0011 DA → Supplier (037 row) ----
+  const d0011_da = buildD0011({
     envelope: makeEnvelope(m, 'D0011', fileIdBase, 5, '003', ...da, ...supp),
-    record029: {
-      mpan: m.mpan,
-      dataAggregatorId: m.daId,
-      nominatedDistributorId: m.distributorId,
-      effectiveFromDate: m.registrationDate,
-      settlementDate: m.cosDate,
-    },
+    appointmentType: 'DA',
+    ...d0011Common,
   });
   d0011_da.fileName = `D0011_DA_${m.fileDate}_001.usr`;
 
   // ---- D0149: MOP → Supplier ----
   const d0149 = buildD0149({
     envelope: makeEnvelope(m, 'D0149', fileIdBase, 6, '001', ...mop, ...supp),
-    records026: [
-      {
-        mpan: m.mpan,
-        msn: m.msn,
-        registerId: m.registerId,
-        readDate: m.readingDate,
-        readingType: m.readingType,
-        readValue: m.readingValue,
-        measurementQuantityId: m.measurementQuantityId,
-      },
-    ],
+    mpan: m.mpan,
+    cosDate: m.cosDate,
+    ssc: m.ssc,
+    timePatternRegiment: m.timePatternRegiment,
+    msn: m.msn,
+    registerId: m.registerId,
+    registerMappingCoefficient: m.registerMappingCoefficient,
   });
 
-  // ---- D0150: DC → Supplier ----
+  // ---- D0150: MOP → Supplier ----
   const d0150 = buildD0150({
-    envelope: makeEnvelope(m, 'D0150', fileIdBase, 7, '001', ...dc, ...supp),
-    record026: {
-      mpan: m.mpan,
-      msn: m.msn,
-      estimatedAnnualConsumption: m.estimatedAnnualConsumption,
-      eacReadDate: m.readingDate,
-      aahedc: '0',
-      siteVisitRequired: 'N',
-    },
+    envelope: makeEnvelope(m, 'D0150', fileIdBase, 7, '001', ...mop, ...supp),
+    mpan: m.mpan,
+    cosDate: m.cosDate,
+    energisationStatus: m.energisationStatus,
+    ssc: m.ssc,
+    msn: m.msn,
+    meterLocation: m.meterLocation,
+    manufacturersMakeAndType: [m.meterMake, m.meterModel].filter(Boolean).join(' '),
+    meterAssetProviderId: m.meterAssetProviderId,
+    meterType: m.d0150MeterType,
+    meterInstalledDate: m.meterInstalledDate,
+    certificationDate: m.certificationDate,
+    retrievalMethod: m.retrievalMethod,
+    retrievalMethodEffectiveDate: m.retrievalMethodEffectiveDate,
+    ctRatio: m.ctPrimaryRatio,
+    registerId: m.registerId,
+    meterRegisterType: m.meterRegisterType,
+    measurementQuantityId: m.measurementQuantityId,
+    registerMappingCoefficient: m.registerMappingCoefficient,
+    numberOfDigits: m.numberOfDigits,
   });
 
   // ---- D0052: MOP → Supplier ----
@@ -336,7 +315,7 @@ export function orchestrateCoSRegistration(
 
   return {
     processId: 'cos-registration',
-    processLabel: 'Electricity CoS Registration',
+    processLabel: 'Electricity NHH COS Registration',
     dflows: [
       d0260,
       d0217,

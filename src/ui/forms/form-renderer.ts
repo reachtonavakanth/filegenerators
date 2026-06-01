@@ -102,13 +102,6 @@ function buildField(field: FormFieldDefinition): HTMLElement {
     wrapper.appendChild(input);
   }
 
-  if (field.helpText) {
-    const help = document.createElement('span');
-    help.className = 'field-help';
-    help.textContent = field.helpText;
-    wrapper.appendChild(help);
-  }
-
   return wrapper;
 }
 

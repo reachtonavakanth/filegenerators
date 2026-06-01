@@ -67,19 +67,54 @@ function renderProcessSelector(utility: UtilityDefinition): void {
   const container = document.getElementById('process-selector')!;
   container.innerHTML = '';
 
+  // Search input — create once, reuse on utility switch
+  let searchInput = document.getElementById('process-search') as HTMLInputElement | null;
+  if (!searchInput) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'process-search-wrapper';
+    searchInput = document.createElement('input');
+    searchInput.id = 'process-search';
+    searchInput.type = 'text';
+    searchInput.className = 'process-search-input';
+    searchInput.placeholder = '🔍 Search processes…';
+    wrapper.appendChild(searchInput);
+    panel.insertBefore(wrapper, container);
+  }
+  searchInput.value = '';
+
+  // Build list items
   for (const process of utility.processes) {
     const btn = document.createElement('button');
     btn.className = 'selector-btn';
     btn.dataset.processId = process.id;
+    btn.dataset.searchText = process.label.toLowerCase();
     btn.innerHTML = `
       <span class="btn-icon">📄</span>
-      <span>
-        ${process.label}
-      </span>
+      <span>${process.label}</span>
     `;
     btn.addEventListener('click', () => selectProcess(process));
     container.appendChild(btn);
   }
+
+  // No-results placeholder
+  const noResults = document.createElement('p');
+  noResults.id = 'process-no-results';
+  noResults.className = 'process-no-results';
+  noResults.textContent = 'No matching processes';
+  noResults.style.display = 'none';
+  container.appendChild(noResults);
+
+  // Live filter
+  searchInput.oninput = () => {
+    const q = (searchInput as HTMLInputElement).value.toLowerCase().trim();
+    let visible = 0;
+    container.querySelectorAll<HTMLButtonElement>('.selector-btn').forEach(btn => {
+      const match = !q || (btn.dataset.searchText ?? '').includes(q);
+      btn.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+    noResults.style.display = visible === 0 ? 'block' : 'none';
+  };
 
   panel.style.display = 'block';
 }
@@ -153,17 +188,24 @@ async function handleDownload(): Promise<void> {
   if (!lastOutput) return;
   try {
     if (supportsFileSystemAccess()) {
-      // Writes directly to chosen folder — no Zone.Identifier mark, no Windows warning
-      const saved = await saveToDirectory(lastOutput);
-      showStatus('success', `Saved ${saved.length} file(s) to selected folder.`);
-    } else {
-      // Fallback: ZIP blob download (Firefox / older browsers)
-      const dateStamp = new Date().toISOString().slice(0, 19).replace(/[-:T]/g, '');
-      await buildAndDownloadZip(lastOutput, dateStamp);
-      showStatus('info', `ZIP downloaded: ${lastOutput.processId}_${dateStamp}.zip`);
+      try {
+        const saved = await saveToDirectory(lastOutput);
+        showStatus('success', `Saved ${saved.length} file(s) to selected folder.`);
+        return;
+      } catch (fsErr) {
+        if (fsErr instanceof DOMException && fsErr.name === 'AbortError') return;
+        // Enterprise policy blocks showDirectoryPicker — fall through to ZIP
+        if (!(fsErr instanceof DOMException && (fsErr.name === 'SecurityError' || fsErr.name === 'NotAllowedError'))) {
+          throw fsErr;
+        }
+      }
     }
+    // ZIP fallback (Firefox, older browsers, or blocked File System Access API)
+    const dateStamp = new Date().toISOString().slice(0, 19).replace(/[-:T]/g, '');
+    await buildAndDownloadZip(lastOutput, dateStamp);
+    showStatus('info', `ZIP downloaded: ${lastOutput.processId}_${dateStamp}.zip`);
   } catch (err) {
-    if (err instanceof DOMException && err.name === 'AbortError') return; // user cancelled picker
+    if (err instanceof DOMException && err.name === 'AbortError') return;
     showStatus('error', `Save failed: ${err instanceof Error ? err.message : String(err)}`);
   }
 }

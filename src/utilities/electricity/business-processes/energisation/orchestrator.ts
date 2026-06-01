@@ -39,8 +39,7 @@ function makeEnvelope(
 export function orchestrateEnergisation(
   m: ElectricityEnergisationModel
 ): GeneratedOutput {
-  const t = currentHHMMSS();
-  const ts = `${m.fileDate.slice(0, 4)}-${m.fileDate.slice(4, 6)}-${m.fileDate.slice(6, 8)}T${t.slice(0, 2)}:${t.slice(2, 4)}:${t.slice(4, 6)}Z`;
+  const ts = new Date().toISOString();
   const correlationId = `COR-EN-${m.mpan.slice(-6)}-${m.fileDate}`;
   const fileIdBase = generateFileIdBase();
 
@@ -80,58 +79,56 @@ export function orchestrateEnergisation(
   // ---- D0149: MOP → Supplier ----
   const d0149 = buildD0149({
     envelope: makeEnvelope(m, 'D0149', fileIdBase, 3, '001', ...mop, ...supp),
-    records026: [{
-      mpan: m.mpan,
-      msn: m.msn,
-      registerId: m.registerId,
-      readDate: m.readingDate,
-      readingType: m.readingType,
-      readValue: m.readingValue,
-      measurementQuantityId: m.measurementQuantityId,
-    }],
-  });
-
-  // ---- D0150: DC → Supplier ----
-  const d0150 = buildD0150({
-    envelope: makeEnvelope(m, 'D0150', fileIdBase, 4, '001', ...dc, ...supp),
-    record026: {
-      mpan: m.mpan,
-      msn: m.msn,
-      estimatedAnnualConsumption: m.estimatedAnnualConsumption,
-      eacReadDate: m.readingDate,
-      aahedc: '0',
-      siteVisitRequired: 'N',
-    },
-  });
-
-  // ---- CSS02380_01: Registration/Energisation Notification ----
-  const css02380 = buildCSS02380_01({
     mpan: m.mpan,
-    newSupplierId: m.supplierId,
-    oldSupplierId: '',
-    requestedSupplyStartDate: m.requestedDate,
-    registrationDate: m.requestedDate,
-    profileClass: m.profileClass,
-    measurementClass: m.measurementClass,
-    gspGroupId: m.gspGroupId,
-    llfClass: m.llfClass,
+    cosDate: m.requestedDate,
     ssc: m.ssc,
-    distributorId: m.distributorId,
-    timestamp: ts,
-    correlationId,
-    testIndicator: m.testFlag,
+    timePatternRegiment: m.timePatternRegiment,
+    msn: m.msn,
+    registerId: m.registerId,
+    registerMappingCoefficient: m.registerMappingCoefficient,
   });
-  css02380.messageType = 'CSS02380_01_ENERGISATION';
-  css02380.fileName = `CSS02380_01_EN_${m.mpan.slice(-6)}.json`;
 
-  // ---- CSS02370_01: Status Query ----
-  const css02370 = buildCSS02370_01({
+  // ---- D0150: MOP → Supplier ----
+  const d0150 = buildD0150({
+    envelope: makeEnvelope(m, 'D0150', fileIdBase, 4, '001', ...mop, ...supp),
     mpan: m.mpan,
-    queryingPartyId: m.supplierId,
-    queryDate: m.requestedDate,
-    timestamp: ts,
+    cosDate: m.requestedDate,
+    energisationStatus: m.actionRequired,
+    ssc: m.ssc,
+    msn: m.msn,
+    meterLocation: m.meterLocation,
+    manufacturersMakeAndType: [m.meterMake, m.meterModel].filter(Boolean).join(' '),
+    meterAssetProviderId: m.meterAssetProviderId,
+    meterType: m.d0150MeterType,
+    meterInstalledDate: m.meterInstalledDate,
+    certificationDate: m.certificationDate,
+    retrievalMethod: m.retrievalMethod,
+    retrievalMethodEffectiveDate: m.retrievalMethodEffectiveDate,
+    ctRatio: m.ctPrimaryRatio,
+    registerId: m.registerId,
+    meterRegisterType: m.meterRegisterType,
+    measurementQuantityId: m.measurementQuantityId,
+    registerMappingCoefficient: m.registerMappingCoefficient,
+    numberOfDigits: m.numberOfDigits,
+  });
+
+  // ---- CSS02380_01: Energisation Notification ----
+  const css02380 = buildCSS02380_01({
+    mpxn: m.mpan,
+    registrationRequestId: '',
+    supplierGeneratedReference: '',
     correlationId,
-    testIndicator: m.testFlag,
+    timestamp: ts,
+  });
+  // ---- CSS02370_01: Registration Secured Active Notification ----
+  const css02370 = buildCSS02370_01({
+    mpxn: m.mpan,
+    supplierGeneratedReference: '',
+    registrationId: '',
+    registrationActiveDate: m.requestedDate,
+    correlationId,
+    timestamp: ts,
+    registrationDate: m.requestedDate,
   });
 
   return {

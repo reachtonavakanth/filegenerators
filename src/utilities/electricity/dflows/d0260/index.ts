@@ -10,28 +10,28 @@ import { DFLOW_FILE_EXT } from '../../industry-constants';
 import type { DFlowFile, DFlowEnvelope } from '../../../../shared/domain/types';
 
 export interface D0260_758 {
-  mddReference: string;          // field[2]  — MDD internal reference e.g. '17658'
-  supplierId: string;            // field[3]  — current supplier e.g. 'SP43'
-  mpan: string;                  // field[4]  — 13-digit MPAN
-  effectiveDate: string;         // field[5]  — YYYYMMDD
-  customerClassification: string;// field[6]  — e.g. 'NATP'
-  energisationStatus: string;    // field[7]  — 'E' | 'D'
-  measurementClass: string;      // field[8]  — 'A'–'I'
-  llfClass: string;              // field[9]  — Line Loss Factor Class
-  profileClass: string;          // field[10] — '01'–'08'
-  ssc: string;                   // field[11] — Standard Settlement Config (blank for HH)
-  mobId: string;                 // field[12] — Meter Operator party ID
-  mobStatus: string;             // field[13] — 'N' active
-  dcId: string;                  // field[14] — Data Collector party ID
-  dcStatus: string;              // field[15] — 'N' active
-  daId: string;                  // field[16] — Data Aggregator party ID
-  daStatus: string;              // field[17] — 'N' active
-  field18: string;               // spare
-  field19: string;               // spare
-  field20: string;               // spare
-  field21: string;               // spare
-  field22: string;               // spare
-  newConnectionFlag: string;     // field[23] — 'N'
+  instructionNumber: string;       // field[2]  — up to 10-digit integer reference
+  instructionType: string;         // field[3]  — e.g. 'SP43'
+  mpan: string;                    // field[4]  — 13-digit MPAN
+  cosDate: string;                 // field[5]  — Change of Supplier date YYYYMMDD
+  oldSupplierParticipantId: string;// field[6]  — Old supplier participant ID
+  energisationStatus: string;      // field[7]  — 'E' | 'D'
+  measurementClass: string;        // field[8]  — 'A'–'I'
+  mtc: string;                     // field[9]  — Meter Timeswitch Code
+  profileClass: string;            // field[10] — '01'–'08'
+  ssc: string;                     // field[11] — Standard Settlement Config
+  aggrParticipantId: string;       // field[12] — Data Aggregator participant ID
+  aggrType: string;                // field[13] — 'H' | 'N'
+  collectorParticipantId: string;  // field[14] — Data Collector participant ID
+  collectorType: string;           // field[15] — 'H' | 'N'
+  mopParticipantId: string;        // field[16] — Meter Operator participant ID
+  mopType: string;                 // field[17] — 'H' | 'N'
+  field18: string;
+  field19: string;
+  field20: string;
+  field21: string;
+  field22: string;
+  relatedMpanIndicator: string;    // field[23] — 'N'
 }
 
 export interface D0260Model {
@@ -52,28 +52,28 @@ export function buildD0260(model: D0260Model): DFlowFile {
       {
         recordType: '758',
         fields: [
-          r.mddReference,
-          r.supplierId,
+          r.instructionNumber,
+          r.instructionType,
           r.mpan,
-          r.effectiveDate,
-          r.customerClassification,
+          r.cosDate,
+          r.oldSupplierParticipantId,
           r.energisationStatus,
           r.measurementClass,
-          r.llfClass,
+          r.mtc,
           r.profileClass,
           r.ssc,
-          r.mobId,
-          r.mobStatus,
-          r.dcId,
-          r.dcStatus,
-          r.daId,
-          r.daStatus,
+          r.aggrParticipantId,
+          r.aggrType,
+          r.collectorParticipantId,
+          r.collectorType,
+          r.mopParticipantId,
+          r.mopType,
           r.field18,
           r.field19,
           r.field20,
           r.field21,
           r.field22,
-          r.newConnectionFlag,
+          r.relatedMpanIndicator,
         ],
       },
     ],

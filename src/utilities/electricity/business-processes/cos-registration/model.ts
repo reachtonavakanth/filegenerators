@@ -1,36 +1,49 @@
 // ============================================================
-// Electricity CoS Registration — Domain Model
+// Electricity COS Registration — Domain Model
 // ============================================================
 
 import type { TestFlag } from '../../../../shared/domain/types';
 
-export interface ElectricityCoSRegistrationModel {
+export interface ElectricityCOSRegistrationModel {
   // Envelope / file settings
   testFlag: TestFlag;
   fileDate: string;    // YYYYMMDD
 
-  // ZHV routing — per-party DTN codes (fromRoleCode|fromParticipantId → toRoleCode|toParticipantId)
-  mpasRoleCode: string;           // MPAS/Distributor role code   e.g. 'P'  — D0260, D0217 FROM
-  mpasParticipantId: string;      // MPAS participant ID           e.g. 'EMEB' — varies per MPAN
-  supplierRoleCode: string;       // Supplier role code            e.g. 'X'  — TO for most D-flows
-  supplierParticipantId: string;  // Supplier participant ID       e.g. 'GMTR'
-  mopRoleCode: string;            // MOB role code                 e.g. 'M'  — D0011/D0149/D0052 FROM
-  mopParticipantId: string;       // MOB participant ID            e.g. 'BMET'
-  daRoleCode: string;             // DA role code                  e.g. 'B'  — D0011 DA FROM
-  daParticipantId: string;        // DA participant ID             e.g. 'UDMS'
-  dcRoleCode: string;             // DC role code                  e.g. 'D'  — D0011/D0010/D0150 FROM
-  dcParticipantId: string;        // DC participant ID             e.g. 'UDMS'
+  // ZHV routing — per party: Role Code + Participant ID (participant ID also used in D-flow body records)
+  supplierRoleCode: string;
+  supplierParticipantId: string;
+  oldSupplierRoleCode: string;
+  oldSupplierParticipantId: string;
+  distributorRoleCode: string;
+  distributorParticipantId: string;
+  mpasRoleCode: string;
+  mpasParticipantId: string;
+  mopRoleCode: string;
+  mopParticipantId: string;
+  daRoleCode: string;
+  daParticipantId: string;
+  dcRoleCode: string;
+  dcParticipantId: string;
+
+  // D0260 758 / D0217 492 body fields
+  instructionNumber: string;     // up to 10-digit integer reference (shared)
+  instructionType: string;       // D0260 instruction type e.g. 'SP43'
+  d0217InstructionType: string;  // D0217 instruction type e.g. 'SP40'
+  energisationStatus: string;    // 'E' | 'D'
+  aggrType: string;              // Data Aggregation Type: 'H' | 'N'
+  collectorType: string;         // Data Collector Type:   'H' | 'N'
+  mopType: string;               // Meter Operator Type:   'H' | 'N'
+
+  // D0217 492 — postcode (field[16])
+  postcode: string;
+
+  // D0011 034/037/038 fields
+  appointmentRef: string;  // e.g. 'GMTRNDA001'
+  registerCode: string;    // D0011 038 Service Reference (field[1]) & Service Level Reference (field[2]) — same value, alphanumeric max 4
 
   // Supply point
   mpan: string;        // 13-digit MPAN
   msn: string;         // Meter Serial Number
-
-  // Parties
-  newSupplierId: string;
-  oldSupplierId: string;
-  mobId: string;       // Meter Operator
-  dcId: string;        // Data Collector
-  daId: string;        // Data Aggregator
 
   // Technical attributes
   profileClass: string;
@@ -38,7 +51,6 @@ export interface ElectricityCoSRegistrationModel {
   gspGroupId: string;
   llfClass: string;    // Line Loss Factor Class
   ssc: string;         // Standard Settlement Configuration
-  distributorId: string;
 
   // Meter details
   meterType: string;   // e.g. 'S1A', 'E7A', 'H'
@@ -53,6 +65,11 @@ export interface ElectricityCoSRegistrationModel {
   timePatternRegiment: string;   // TPR code
   scalingFactor: string;
 
+  // CSS Registration identifiers (user-provided)
+  supplierGeneratedReference: string; // e.g. SC000000549
+  registrationRequestId: string;      // GUID — registrationRequestId in CSS02380_01
+  cssCorrelationId: string;           // GUID — correlationId shared across CSS02380_01 & CSS02300_01
+
   // Dates
   registrationDate: string;      // YYYYMMDD supply start
   cosDate: string;               // YYYYMMDD change of supplier effective date
@@ -63,37 +80,55 @@ export interface ElectricityCoSRegistrationModel {
   readingValue: string;
   readingDate: string;           // YYYYMMDD
   estimatedAnnualConsumption: string; // kWh
+
+  // D0149 / D0150 standing data fields
+  meterLocation: string;                 // D0150 290[4] — Meter Location code (A–Z)
+  meterAssetProviderId: string;          // D0150 290[6] — MAP participant ID e.g. 'UFUN'
+  d0150MeterType: string;                // D0150 290[17] — MAP meter type code e.g. 'RCAMY'
+  certificationDate: string;             // D0150 290[19] — YYYYMMDD certification date
+  retrievalMethod: string;               // D0150 290[23] — H/M/N/R/S/U
+  retrievalMethodEffectiveDate: string;  // D0150 290[24] — YYYYMMDD
+  meterRegisterType: string;             // D0150 293[1] — C/M/1/2/3/4
+  registerMappingCoefficient: string;    // D0149 284[2] / D0150 293[3] — e.g. '1' / '1.00'
 }
 
-export function mapFormToCoSModel(
+export function mapFormToCOSModel(
   inputs: Record<string, string>
-): ElectricityCoSRegistrationModel {
+): ElectricityCOSRegistrationModel {
   return {
     testFlag: (inputs['testFlag'] as TestFlag) || 'OPER',
     fileDate: inputs['fileDate'] || '',
-    mpasRoleCode: inputs['mpasRoleCode'] || 'P',
-    mpasParticipantId: inputs['mpasParticipantId'] || '',
     supplierRoleCode: inputs['supplierRoleCode'] || 'X',
     supplierParticipantId: inputs['supplierParticipantId'] || 'GMTR',
-    mopRoleCode: inputs['mopRoleCode'] || 'M',
+    oldSupplierRoleCode: inputs['oldSupplierRoleCode'] || '',
+    oldSupplierParticipantId: inputs['oldSupplierParticipantId'] || '',
+    distributorRoleCode: inputs['distributorRoleCode'] || '',
+    distributorParticipantId: inputs['distributorParticipantId'] || '',
+    mpasRoleCode: inputs['mpasRoleCode'] || '',
+    mpasParticipantId: inputs['mpasParticipantId'] || '',
+    mopRoleCode: inputs['mopRoleCode'] || '',
     mopParticipantId: inputs['mopParticipantId'] || '',
-    daRoleCode: inputs['daRoleCode'] || 'B',
+    daRoleCode: inputs['daRoleCode'] || '',
     daParticipantId: inputs['daParticipantId'] || '',
-    dcRoleCode: inputs['dcRoleCode'] || 'D',
+    dcRoleCode: inputs['dcRoleCode'] || '',
     dcParticipantId: inputs['dcParticipantId'] || '',
+    instructionNumber: inputs['instructionNumber'] || '',
+    instructionType: inputs['instructionType'] || 'SP43',
+    d0217InstructionType: inputs['d0217InstructionType'] || 'SP40',
+    energisationStatus: inputs['energisationStatus'] || 'E',
+    aggrType: inputs['aggrType'] || '',
+    collectorType: inputs['collectorType'] || '',
+    mopType: inputs['mopType'] || '',
+    postcode: inputs['postcode'] || '',
+    appointmentRef: '01',
+    registerCode: '01',
     mpan: inputs['mpan'] || '',
     msn: inputs['msn'] || '',
-    newSupplierId: inputs['newSupplierId'] || '',
-    oldSupplierId: inputs['oldSupplierId'] || '',
-    mobId: inputs['mobId'] || '',
-    dcId: inputs['dcId'] || '',
-    daId: inputs['daId'] || '',
     profileClass: inputs['profileClass'] || '',
     measurementClass: inputs['measurementClass'] || '',
     gspGroupId: inputs['gspGroupId'] || '',
     llfClass: inputs['llfClass'] || '001',
     ssc: inputs['ssc'] || '0000',
-    distributorId: inputs['distributorId'] || '',
     meterType: inputs['meterType'] || 'S1A',
     mtc: inputs['mtc'] || '001',
     meterMake: inputs['meterMake'] || '',
@@ -105,6 +140,9 @@ export function mapFormToCoSModel(
     measurementQuantityId: inputs['measurementQuantityId'] || 'AI',
     timePatternRegiment: inputs['timePatternRegiment'] || '00001',
     scalingFactor: inputs['scalingFactor'] || '1',
+    supplierGeneratedReference: inputs['supplierGeneratedReference'] || '',
+    registrationRequestId: inputs['registrationRequestId'] || '',
+    cssCorrelationId: inputs['cssCorrelationId'] || '',
     registrationDate: inputs['registrationDate'] || '',
     cosDate: inputs['cosDate'] || inputs['registrationDate'] || '',
     meterInstalledDate: inputs['meterInstalledDate'] || '',
@@ -112,5 +150,13 @@ export function mapFormToCoSModel(
     readingValue: inputs['readingValue'] || '00000',
     readingDate: inputs['readingDate'] || inputs['registrationDate'] || '',
     estimatedAnnualConsumption: inputs['estimatedAnnualConsumption'] || '3100',
+    meterLocation: inputs['meterLocation'] || 'J',
+    meterAssetProviderId: inputs['meterAssetProviderId'] || '',
+    d0150MeterType: inputs['d0150MeterType'] || '',
+    certificationDate: inputs['certificationDate'] || '',
+    retrievalMethod: inputs['retrievalMethod'] || 'R',
+    retrievalMethodEffectiveDate: inputs['retrievalMethodEffectiveDate'] || '',
+    meterRegisterType: inputs['meterRegisterType'] || 'C',
+    registerMappingCoefficient: inputs['registerMappingCoefficient'] || '1.00',
   };
 }
