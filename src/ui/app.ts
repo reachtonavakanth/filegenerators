@@ -242,4 +242,103 @@ function wireButtons(): void {
   document.getElementById('btn-download')!.addEventListener('click', () => {
     handleDownload().catch(console.error);
   });
+  wireIndustryLookup();
+}
+
+// ---- Industry Data Lookup ----
+
+function wireIndustryLookup(): void {
+  document.getElementById('industry-lookup-toggle')!.addEventListener('click', () => {
+    toggleCollapsible('industry-lookup-body', 'industry-lookup-toggle');
+  });
+
+  document.getElementById('industry-response-toggle')!.addEventListener('click', () => {
+    toggleCollapsible('industry-response-body', 'industry-response-toggle');
+  });
+
+  document.getElementById('industry-config-file')!.addEventListener('change', (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const config = JSON.parse(ev.target?.result as string) as Record<string, unknown>;
+        if (typeof config.url === 'string') {
+          (document.getElementById('industry-api-url') as HTMLInputElement).value = config.url;
+        }
+        if (typeof config.authKey === 'string') {
+          (document.getElementById('industry-auth-key') as HTMLInputElement).value = config.authKey;
+        }
+        showStatus('success', `Config loaded from ${file.name}`);
+      } catch {
+        showStatus('error', 'Failed to parse JSON config file');
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById('btn-get-industry-data')!.addEventListener('click', () => {
+    handleGetIndustryData().catch(console.error);
+  });
+}
+
+function toggleCollapsible(bodyId: string, toggleId: string): void {
+  const body = document.getElementById(bodyId)!;
+  const toggle = document.getElementById(toggleId)!;
+  const chevron = toggle.querySelector('.collapsible-chevron') as HTMLElement;
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  toggle.setAttribute('aria-expanded', String(!isOpen));
+  chevron.textContent = isOpen ? '▼' : '▲';
+}
+
+async function handleGetIndustryData(): Promise<void> {
+  const url = (document.getElementById('industry-api-url') as HTMLInputElement).value.trim();
+  const authKey = (document.getElementById('industry-auth-key') as HTMLInputElement).value.trim();
+  const mpan = (document.getElementById('industry-mpan') as HTMLInputElement).value.trim();
+
+  if (!url) { showStatus('error', 'API URL is required'); return; }
+  if (!mpan) { showStatus('error', 'MPAN is required'); return; }
+
+  const btn = document.getElementById('btn-get-industry-data') as HTMLButtonElement;
+  btn.disabled = true;
+  btn.textContent = '⏳ Fetching...';
+
+  try {
+    const fullUrl = new URL(url);
+    fullUrl.searchParams.set('MPAN', mpan);
+
+    const headers: Record<string, string> = { 'Accept': 'application/json' };
+    if (authKey) headers['Authorization'] = authKey;
+
+    const res = await fetch(fullUrl.toString(), { headers });
+
+    let data: unknown;
+    const contentType = res.headers.get('content-type') ?? '';
+    if (contentType.includes('application/json')) {
+      data = await res.json();
+    } else {
+      data = await res.text();
+    }
+
+    const responsePanel = document.getElementById('industry-response-panel')!;
+    const responseContent = document.getElementById('industry-response-content')!;
+    const responseBody = document.getElementById('industry-response-body')!;
+    const responseToggle = document.getElementById('industry-response-toggle')!;
+    const chevron = responseToggle.querySelector('.collapsible-chevron') as HTMLElement;
+
+    responsePanel.style.display = 'block';
+    responseBody.style.display = 'block';
+    responseToggle.setAttribute('aria-expanded', 'true');
+    chevron.textContent = '▲';
+    responseContent.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+
+    responsePanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    showStatus(res.ok ? 'success' : 'error', `Industry data: ${res.status} ${res.statusText}`);
+  } catch (err) {
+    showStatus('error', `Fetch failed: ${err instanceof Error ? err.message : String(err)}`);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔍 Get Industry Data';
+  }
 }
