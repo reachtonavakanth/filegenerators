@@ -4,6 +4,17 @@
 // ============================================================
 
 import type { CSSMessage } from '../../../shared/domain/types';
+
+// Accepts YYYYMMDD (8) or YYYY-MM-DD (10) → YYYY-MM-DDT00:00:00.000Z
+function toIsoDateTime(dateStr: string): string {
+  if (dateStr.length === 8) {
+    return `${dateStr.slice(0, 4)}-${dateStr.slice(4, 6)}-${dateStr.slice(6, 8)}T00:00:00.000Z`;
+  }
+  if (dateStr.length === 10) {
+    return `${dateStr}T00:00:00.000Z`;
+  }
+  return dateStr;
+}
 import type {
   CSS02380_01_Event,
   CSS02300_01_Event,
@@ -34,14 +45,10 @@ export function buildCSS02300_01(params: {
     updatedProperties: [],
     data: {
       registrationStatus: 'Pending',
-      registrationStatusFromDate: params.registrationDate.length === 10
-        ? `${params.registrationDate}T00:00:00.000Z`
-        : params.registrationDate,
+      registrationStatusFromDate: toIsoDateTime(params.registrationDate),
       supplierGeneratedReference: params.supplierGeneratedReference,
       mpxn: params.mpxn,
-      supplyStartDate: params.supplyStartDate.length === 10
-        ? `${params.supplyStartDate}T00:00:00.000Z`
-        : params.supplyStartDate,
+      supplyStartDate: toIsoDateTime(params.supplyStartDate),
       erroneousSwitchResolutionInd: false,
       changeOfOccupancyInd: false,
       domesticPremisesInd: false,
@@ -116,14 +123,10 @@ export function buildCSS02370_01(params: {
     data: {
       registrationStatus: 'SecuredActive',
       fuelType: 'E',
-      registrationStatusFromDate: params.registrationDate.length === 10
-        ? `${params.registrationDate}T00:00:00.000Z`
-        : params.registrationDate,
+      registrationStatusFromDate: toIsoDateTime(params.registrationDate),
       supplierGeneratedReference: params.supplierGeneratedReference,
       registrationId: params.registrationId,
-      registrationActiveDate: params.registrationActiveDate.length === 10
-        ? `${params.registrationActiveDate}T00:00:00.000Z`
-        : params.registrationActiveDate,
+      registrationActiveDate: toIsoDateTime(params.registrationActiveDate),
       mpxn: params.mpxn,
     },
     eventStatus: 'Ok',
@@ -156,9 +159,7 @@ export function buildCSS02370_03(params: {
     data: {
       registrationStatus: 'Confirmed',
       fuelType: 'E',
-      registrationStatusFromDate: params.registrationDate.length === 10
-        ? `${params.registrationDate}T00:00:00.000Z`
-        : params.registrationDate,
+      registrationStatusFromDate: toIsoDateTime(params.registrationDate),
       supplierGeneratedReference: params.supplierGeneratedReference,
       registrationId: params.registrationId,
       mpxn: params.mpxn,
