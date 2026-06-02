@@ -29,7 +29,7 @@ export function supportsFileSystemAccess(): boolean {
   return typeof window !== 'undefined' && 'showDirectoryPicker' in window;
 }
 
-export async function saveToDirectory(output: GeneratedOutput): Promise<string[]> {
+export async function saveToDirectory(output: GeneratedOutput, inputsJson: unknown): Promise<string[]> {
   const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite', startIn: 'downloads' });
   const saved: string[] = [];
 
@@ -53,6 +53,12 @@ export async function saveToDirectory(output: GeneratedOutput): Promise<string[]
     saved.push(`${output.processLabel}/css/${cssMsg.fileName}`);
   }
 
+  const inputsFh = await processDir.getFileHandle('inputs.json', { create: true });
+  const inputsWritable = await inputsFh.createWritable();
+  await inputsWritable.write(JSON.stringify(inputsJson, null, 2));
+  await inputsWritable.close();
+  saved.push(`${output.processLabel}/inputs.json`);
+
   return saved;
 }
 
@@ -60,7 +66,8 @@ export async function saveToDirectory(output: GeneratedOutput): Promise<string[]
 
 export async function buildAndDownloadZip(
   output: GeneratedOutput,
-  dateStamp: string
+  dateStamp: string,
+  inputsJson: unknown
 ): Promise<void> {
   const zip = new JSZip();
 
@@ -73,6 +80,8 @@ export async function buildAndDownloadZip(
   for (const cssMsg of output.cssMessages) {
     cssFolder!.file(cssMsg.fileName, JSON.stringify(cssMsg.content, null, 2));
   }
+
+  zip.file('inputs.json', JSON.stringify(inputsJson, null, 2));
 
   const blob = await zip.generateAsync({ type: 'blob' });
   triggerDownload(blob, `${sanitiseName(output.processLabel)}_${dateStamp}.zip`);
@@ -87,6 +96,11 @@ function triggerDownload(blob: Blob, filename: string): void {
   anchor.click();
   document.body.removeChild(anchor);
   URL.revokeObjectURL(url);
+}
+
+export function downloadJSONFile(data: unknown, filename: string): void {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  triggerDownload(blob, filename);
 }
 
 function sanitiseName(name: string): string {
