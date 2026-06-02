@@ -31,15 +31,12 @@ export interface ElectricityEnergisationModel {
 
   meterType: string;
   mtc: string;
-  meterMake: string;
-  meterModel: string;
+  manufacturersMakeAndType: string;
   ctPrimaryRatio: string;
-  vtPrimaryRatio: string;
   numberOfDigits: string;
   registerId: string;
   measurementQuantityId: string;
   timePatternRegiment: string;
-  scalingFactor: string;
   meterInstalledDate: string;
 
   // Energisation specific
@@ -59,7 +56,6 @@ export interface ElectricityEnergisationModel {
   // D0149 / D0150 standing data fields
   meterLocation: string;
   meterAssetProviderId: string;
-  d0150MeterType: string;
   certificationDate: string;
   retrievalMethod: string;
   retrievalMethodEffectiveDate: string;
@@ -93,15 +89,12 @@ export function mapFormToEnergisationModel(
     ssc: inputs['ssc'] || '0000',
     meterType: inputs['meterType'] || 'S1A',
     mtc: inputs['mtc'] || '001',
-    meterMake: inputs['meterMake'] || '',
-    meterModel: inputs['meterModel'] || '',
+    manufacturersMakeAndType: inputs['manufacturersMakeAndType'] || '',
     ctPrimaryRatio: inputs['ctPrimaryRatio'] || '1',
-    vtPrimaryRatio: inputs['vtPrimaryRatio'] || '1',
     numberOfDigits: inputs['numberOfDigits'] || '5',
     registerId: inputs['registerId'] || '01',
     measurementQuantityId: inputs['measurementQuantityId'] || 'AI',
     timePatternRegiment: inputs['timePatternRegiment'] || '00001',
-    scalingFactor: inputs['scalingFactor'] || '1',
     meterInstalledDate: inputs['meterInstalledDate'] || '',
     actionRequired: (inputs['actionRequired'] as EnergisationActionType) || 'E',
     requestedDate: inputs['requestedDate'] || '',
@@ -115,7 +108,6 @@ export function mapFormToEnergisationModel(
     estimatedAnnualConsumption: inputs['estimatedAnnualConsumption'] || '3100',
     meterLocation: inputs['meterLocation'] || 'J',
     meterAssetProviderId: inputs['meterAssetProviderId'] || '',
-    d0150MeterType: inputs['d0150MeterType'] || '',
     certificationDate: inputs['certificationDate'] || '',
     retrievalMethod: inputs['retrievalMethod'] || 'R',
     retrievalMethodEffectiveDate: inputs['retrievalMethodEffectiveDate'] || '',

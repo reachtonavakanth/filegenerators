@@ -55,15 +55,12 @@ export interface ElectricityCOSRegistrationModel {
   // Meter details
   meterType: string;   // e.g. 'S1A', 'E7A', 'H'
   mtc: string;         // Meter Timeswitch Code
-  meterMake: string;
-  meterModel: string;
+  manufacturersMakeAndType: string;
   ctPrimaryRatio: string;
-  vtPrimaryRatio: string;
   numberOfDigits: string;
   registerId: string;  // default '01'
   measurementQuantityId: string; // AI / RI / AQ
   timePatternRegiment: string;   // TPR code
-  scalingFactor: string;
 
   // CSS Registration identifiers (user-provided)
   supplierGeneratedReference: string; // e.g. SC000000549
@@ -84,7 +81,6 @@ export interface ElectricityCOSRegistrationModel {
   // D0149 / D0150 standing data fields
   meterLocation: string;                 // D0150 290[4] — Meter Location code (A–Z)
   meterAssetProviderId: string;          // D0150 290[6] — MAP participant ID e.g. 'UFUN'
-  d0150MeterType: string;                // D0150 290[17] — MAP meter type code e.g. 'RCAMY'
   certificationDate: string;             // D0150 290[19] — YYYYMMDD certification date
   retrievalMethod: string;               // D0150 290[23] — H/M/N/R/S/U
   retrievalMethodEffectiveDate: string;  // D0150 290[24] — YYYYMMDD
@@ -112,8 +108,8 @@ export function mapFormToCOSModel(
     oldSupplierParticipantId: inputs['oldSupplierParticipantId'] || '',
     distributorRoleCode: inputs['distributorRoleCode'] || '',
     distributorParticipantId: inputs['distributorParticipantId'] || '',
-    mpasRoleCode: inputs['mpasRoleCode'] || '',
-    mpasParticipantId: inputs['mpasParticipantId'] || '',
+    mpasRoleCode: inputs['distributorRoleCode'] || '',
+    mpasParticipantId: inputs['distributorParticipantId'] || '',
     mopRoleCode: inputs['mopRoleCode'] || '',
     mopParticipantId: inputs['mopParticipantId'] || '',
     daRoleCode: inputs['daRoleCode'] || '',
@@ -139,15 +135,12 @@ export function mapFormToCOSModel(
     ssc: inputs['ssc'] || '0000',
     meterType: inputs['meterType'] || 'S1A',
     mtc: inputs['mtc'] || '001',
-    meterMake: inputs['meterMake'] || '',
-    meterModel: inputs['meterModel'] || '',
+    manufacturersMakeAndType: inputs['manufacturersMakeAndType'] || '',
     ctPrimaryRatio: inputs['ctPrimaryRatio'] || '1',
-    vtPrimaryRatio: inputs['vtPrimaryRatio'] || '1',
     numberOfDigits: inputs['numberOfDigits'] || '5',
     registerId: inputs['registerId'] || '01',
     measurementQuantityId: inputs['measurementQuantityId'] || 'AI',
     timePatternRegiment: inputs['timePatternRegiment'] || '00001',
-    scalingFactor: inputs['scalingFactor'] || '1',
     supplierGeneratedReference: inputs['supplierGeneratedReference'] || '',
     registrationRequestId: inputs['registrationRequestId'] || '',
     cssCorrelationId: inputs['cssCorrelationId'] || '',
@@ -160,7 +153,6 @@ export function mapFormToCOSModel(
     estimatedAnnualConsumption: inputs['estimatedAnnualConsumption'] || '3100',
     meterLocation: inputs['meterLocation'] || 'J',
     meterAssetProviderId: inputs['meterAssetProviderId'] || '',
-    d0150MeterType: inputs['d0150MeterType'] || '',
     certificationDate: inputs['certificationDate'] || '',
     retrievalMethod: inputs['retrievalMethod'] || 'R',
     retrievalMethodEffectiveDate: inputs['retrievalMethodEffectiveDate'] || '',

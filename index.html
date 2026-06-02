@@ -65,7 +65,52 @@
               </div>
             </div>
 
+            <!-- Industry Data Lookup (collapsible) -->
+            <div id="industry-lookup-panel" class="collapsible-panel">
+              <button id="industry-lookup-toggle" class="collapsible-header" aria-expanded="false">
+                <span class="group-icon">🔍</span>
+                <span>Industry Data Lookup</span>
+                <span class="collapsible-chevron">▼</span>
+              </button>
+              <div id="industry-lookup-body" class="collapsible-body" style="display:none;">
+                <div class="lookup-config-row">
+                  <label class="field-label" for="industry-config-file">Load Config from JSON file</label>
+                  <input type="file" id="industry-config-file" accept=".json" class="field-input" />
+                  <span class="field-help">JSON file should contain: <code>{ "url": "...", "authKey": "..." }</code></span>
+                </div>
+                <div class="lookup-fields-grid">
+                  <div class="field-wrapper">
+                    <label class="field-label" for="industry-api-url">API URL <span class="field-required">*</span></label>
+                    <input type="text" id="industry-api-url" class="field-input" placeholder="https://..." />
+                  </div>
+                  <div class="field-wrapper">
+                    <label class="field-label" for="industry-auth-key">Authorization</label>
+                    <input type="text" id="industry-auth-key" class="field-input" placeholder="Bearer token or API key" />
+                  </div>
+                  <div class="field-wrapper">
+                    <label class="field-label" for="industry-mpan">MPAN <span class="field-required">*</span></label>
+                    <input type="text" id="industry-mpan" class="field-input" placeholder="13-digit MPAN" maxlength="13" />
+                  </div>
+                </div>
+                <div>
+                  <button id="btn-get-industry-data" class="btn btn-amber">🔍 Get Industry Data</button>
+                </div>
+              </div>
+            </div>
+
             <div id="form-body" class="form-body"></div>
+
+            <!-- Industry Data Response (collapsible) -->
+            <div id="industry-response-panel" class="collapsible-panel" style="display:none;">
+              <button id="industry-response-toggle" class="collapsible-header" aria-expanded="true">
+                <span class="group-icon">📊</span>
+                <span>Industry Data Response</span>
+                <span class="collapsible-chevron">▲</span>
+              </button>
+              <div id="industry-response-body" class="collapsible-body">
+                <pre id="industry-response-content" class="response-json"></pre>
+              </div>
+            </div>
 
             <div id="status-bar" class="status-bar" style="display:none;">
               <span id="status-icon">✓</span>
