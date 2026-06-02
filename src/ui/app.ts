@@ -203,7 +203,7 @@ async function handleDownload(): Promise<void> {
     // ZIP fallback (Firefox, older browsers, or blocked File System Access API)
     const dateStamp = new Date().toISOString().slice(0, 19).replace(/[-:T]/g, '');
     await buildAndDownloadZip(lastOutput, dateStamp);
-    showStatus('info', `ZIP downloaded: ${lastOutput.processId}_${dateStamp}.zip`);
+    showStatus('info', `ZIP downloaded: ${lastOutput.processLabel}_${dateStamp}.zip`);
   } catch (err) {
     if (err instanceof DOMException && err.name === 'AbortError') return;
     showStatus('error', `Save failed: ${err instanceof Error ? err.message : String(err)}`);

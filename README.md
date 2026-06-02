@@ -11,6 +11,7 @@ A local browser-based tool for generating UK electricity market D-flow (`.usr`) 
 
 ```bash
 npm install
+npm run build
 npm run dev
 ```
 
