@@ -109,7 +109,7 @@ export function orchestrateCOSRegistration(
   });
 
   // fileIndex = unique position in batch; xRefSeq = per-file-type sequence suffix
-  // ---- D0260: MPAS → Supplier ----
+  // ---- D0260: Distributor / MPAS → Supplier ----
   const d0260 = buildD0260({
     envelope: makeEnvelope(m, 'D0260', fileIdBase, 1, '002', ...mpas, ...supp),
     record758: {
@@ -134,7 +134,7 @@ export function orchestrateCOSRegistration(
     },
   });
 
-  // ---- D0217: MPAS → Supplier ----
+  // ---- D0217: Distributor / MPAS → Supplier ----
   const d0217 = buildD0217({
     envelope: makeEnvelope(m, 'D0217', fileIdBase, 2, '001', ...mpas, ...supp),
     record492: {
@@ -228,72 +228,53 @@ export function orchestrateCOSRegistration(
     numberOfDigits: m.numberOfDigits,
   });
 
-  // ---- D0052: MOP → Supplier ----
+  // ---- D0052: Supplier → DC ----
   const d0052 = buildD0052({
-    envelope: makeEnvelope(m, 'D0052', fileIdBase, 8, '001', ...mop, ...supp),
-    record026: {
-      mpan: m.mpan,
-      msn: m.msn,
-      meterType: m.meterType,
-      mtc: m.mtc,
-      meterMake: m.meterMake,
-      meterModel: m.meterModel,
-      ctPrimaryRatio: m.ctPrimaryRatio,
-      vtPrimaryRatio: m.vtPrimaryRatio,
-      meterLocation: 'INTERNAL',
-      installedDate: m.meterInstalledDate,
-      outstationId: '',
-    },
-    record028: {
-      mpan: m.mpan,
-      msn: m.msn,
-      registerId: m.registerId,
-      measurementQuantityId: m.measurementQuantityId,
-      numberOfDigits: m.numberOfDigits,
-      scalingFactor: m.scalingFactor,
-      timePatternRegiment: m.timePatternRegiment,
-      backRegisterIndicator: STANDING_DATA_STATUS_ACTIVE,
-    },
+    envelope: makeEnvelope(m, 'D0052', fileIdBase, 8, '001', ...supp, ...dc),
+    mpan: m.mpan,
+    cosDate: m.cosDate,
+    profileClass: m.profileClass,
+    measurementClass: m.measurementClass,
+    ssc: m.ssc,
+    gspGroupId: m.gspGroupId,
+    timePatternRegiment: m.timePatternRegiment,
+    estimatedAnnualConsumption: m.estimatedAnnualConsumption,
   });
 
   // ---- D0010: DC → Supplier ----
   const d0010 = buildD0010({
     envelope: makeEnvelope(m, 'D0010', fileIdBase, 9, '001', ...dc, ...supp),
-    meterPoints: [{
-      mpan: m.mpan,
-      msn: m.msn,
-      energisationStatus: 'E',
-      registerId: m.registerId,
-      readDate: m.readingDate,
-      readValue: m.readingValue,
-      readFlag: m.readingType,
-    }],
+    mpan: m.mpan,
+    bscValidationStatus: m.bscValidationStatus,
+    msn: m.msn,
+    readingType: m.readingType,
+    registerId: m.registerId,
+    readingDateTime: m.readingDate + '000000',
+    readingValue: m.readingValue,
+    meterReadingFlag: m.meterReadingFlag,
+    readingMethod: m.readingMethod,
   });
 
   // ---- D0086: DC → Supplier ----
   const d0086 = buildD0086({
     envelope: makeEnvelope(m, 'D0086', fileIdBase, 10, '001', ...dc, ...supp),
-    record026: {
-      mpan: m.mpan,
-      newProfileClass: m.profileClass,
-      newMeasurementClass: m.measurementClass,
-      effectiveFromDate: m.registrationDate,
-      reasonCode: '01',
-      ssc: m.ssc,
-    },
+    mpan: m.mpan,
+    bscValidationStatus: m.bscValidationStatus,
+    msn: m.msn,
+    readingType: m.readingType,
+    registerId: m.registerId,
+    readingDateTime: m.readingDate + '000000',
+    readingValue: m.readingValue,
+    meterReadingFlag: m.meterReadingFlag,
+    readingMethod: m.readingMethod,
   });
 
-  // ---- D0012: Supplier → MOP ----
+  // ---- D0012: DC → Supplier ----
   const d0012 = buildD0012({
-    envelope: makeEnvelope(m, 'D0012', fileIdBase, 11, '001', ...supp, ...mop),
-    record026: {
-      mpan: m.mpan,
-      msn: m.msn,
-      requestedReadDate: m.registrationDate,
-      reasonCode: '01',
-      originalScheduledReadDate: '',
-      registerId: m.registerId,
-    },
+    envelope: makeEnvelope(m, 'D0012', fileIdBase, 11, '001', ...dc, ...supp),
+    mpan: m.mpan,
+    cosDate: m.cosDate,
+    regularReadingCycle: m.regularReadingCycle,
   });
 
   // ---- D0019: DC → Supplier ----

@@ -1,48 +1,40 @@
-// D0052 — Provide Meter Technical Details
+// D0052 — Provide Standing Data (Profile Class, Measurement Class, SSC, GSP, TPR, EAC)
+// File structure: ZHV → 121 → 122 → 124 → ZPT
+//
+// Sample: ZHV|W000896813|D0052001|X|GMTR|M|DCOL|20260518120000||||OPER|
+//         121|1100013222946|20260518|03||20260518|A||20260518|
+//         122|0393|20260518|_A|20260518|
+//         124|00001|3100|20260518|
+//         ZPT|W000896813|3||1|20260518120000|
 
 import { DFLOW_FILE_EXT } from '../../industry-constants';
 import type { DFlowFile, DFlowEnvelope } from '../../../../shared/domain/types';
 
-export interface D0052_026 {
-  mpan: string;
-  msn: string;
-  meterType: string;
-  mtc: string;
-  meterMake: string;
-  meterModel: string;
-  ctPrimaryRatio: string;
-  vtPrimaryRatio: string;
-  meterLocation: string;
-  installedDate: string;
-  outstationId: string;
-}
-
-export interface D0052_028 {
-  mpan: string;
-  msn: string;
-  registerId: string;
-  measurementQuantityId: string;
-  numberOfDigits: string;
-  scalingFactor: string;
-  timePatternRegiment: string;
-  backRegisterIndicator: string;
-}
-
 export interface D0052Model {
   envelope: DFlowEnvelope;
-  record026: D0052_026;
-  record028: D0052_028;
+  mpan: string;              // 121[0]
+  cosDate: string;           // 121[1], 121[4], 121[7], 122[1], 122[3], 124[2] — YYYYMMDD
+  profileClass: string;      // 121[2]
+  measurementClass: string;  // 121[5]
+  ssc: string;               // 122[0]
+  gspGroupId: string;        // 122[2]
+  timePatternRegiment: string;          // 124[0]
+  estimatedAnnualConsumption: string;   // 124[1]
 }
 
 export function buildD0052(model: D0052Model): DFlowFile {
-  const { envelope, record026: r26, record028: r28 } = model;
+  const { envelope: env, ...r } = model;
   return {
-    envelope,
-    fileName: `${envelope.xRef}${DFLOW_FILE_EXT}`,
-    trailerType: 'ZTT',
+    envelope: env,
+    fileName: `${env.xRef}${DFLOW_FILE_EXT}`,
+    trailerType: 'ZPT',
     records: [
-      { recordType: '026', fields: [r26.mpan, r26.msn, r26.meterType, r26.mtc, r26.meterMake, r26.meterModel, r26.ctPrimaryRatio, r26.vtPrimaryRatio, r26.meterLocation, r26.installedDate, r26.outstationId] },
-      { recordType: '028', fields: [r28.mpan, r28.msn, r28.registerId, r28.measurementQuantityId, r28.numberOfDigits, r28.scalingFactor, r28.timePatternRegiment, r28.backRegisterIndicator] },
+      // 121: MPAN | COS Date | Profile Class | | COS Date | Measurement Class | | COS Date
+      { recordType: '121', fields: [r.mpan, r.cosDate, r.profileClass, '', r.cosDate, r.measurementClass, '', r.cosDate] },
+      // 122: SSC | COS Date | GSP Group ID | COS Date
+      { recordType: '122', fields: [r.ssc, r.cosDate, r.gspGroupId, r.cosDate] },
+      // 124: Time Pattern Regime | EAC (kWh) | COS Date
+      { recordType: '124', fields: [r.timePatternRegiment, r.estimatedAnnualConsumption, r.cosDate] },
     ],
   };
 }

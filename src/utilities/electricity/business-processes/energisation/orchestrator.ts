@@ -65,15 +65,15 @@ export function orchestrateEnergisation(
   // ---- D0010: DC → Supplier ----
   const d0010 = buildD0010({
     envelope: makeEnvelope(m, 'D0010', fileIdBase, 2, '001', ...dc, ...supp),
-    meterPoints: [{
-      mpan: m.mpan,
-      msn: m.msn,
-      energisationStatus: m.actionRequired,
-      registerId: m.registerId,
-      readDate: m.readingDate,
-      readValue: m.readingValue,
-      readFlag: m.readingType,
-    }],
+    mpan: m.mpan,
+    bscValidationStatus: m.bscValidationStatus,
+    msn: m.msn,
+    readingType: m.readingType,
+    registerId: m.registerId,
+    readingDateTime: m.readingDate + '000000',
+    readingValue: m.readingValue,
+    meterReadingFlag: m.meterReadingFlag,
+    readingMethod: m.readingMethod,
   });
 
   // ---- D0149: MOP → Supplier ----

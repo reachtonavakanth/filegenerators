@@ -90,6 +90,14 @@ export interface ElectricityCOSRegistrationModel {
   retrievalMethodEffectiveDate: string;  // D0150 290[24] — YYYYMMDD
   meterRegisterType: string;             // D0150 293[1] — C/M/1/2/3/4
   registerMappingCoefficient: string;    // D0149 284[2] / D0150 293[3] — e.g. '1' / '1.00'
+
+  // D0010 / D0086 fields
+  bscValidationStatus: string;  // 026[1] / 196[1] — V/U/F
+  meterReadingFlag: string;     // 030[5] / 198[5] — T/F
+  readingMethod: string;        // 030[6] / 198[6] — N/P
+
+  // D0012 field
+  regularReadingCycle: string;  // 039[2] — A/B/D/E/H/M/N/O/Q/S/T/W/Z
 }
 
 export function mapFormToCOSModel(
@@ -100,7 +108,7 @@ export function mapFormToCOSModel(
     fileDate: inputs['fileDate'] || '',
     supplierRoleCode: inputs['supplierRoleCode'] || 'X',
     supplierParticipantId: inputs['supplierParticipantId'] || 'GMTR',
-    oldSupplierRoleCode: inputs['oldSupplierRoleCode'] || '',
+    oldSupplierRoleCode: inputs['oldSupplierRoleCode'] || 'X',
     oldSupplierParticipantId: inputs['oldSupplierParticipantId'] || '',
     distributorRoleCode: inputs['distributorRoleCode'] || '',
     distributorParticipantId: inputs['distributorParticipantId'] || '',
@@ -158,5 +166,9 @@ export function mapFormToCOSModel(
     retrievalMethodEffectiveDate: inputs['retrievalMethodEffectiveDate'] || '',
     meterRegisterType: inputs['meterRegisterType'] || 'C',
     registerMappingCoefficient: inputs['registerMappingCoefficient'] || '1.00',
+    bscValidationStatus: inputs['bscValidationStatus'] || 'V',
+    meterReadingFlag: inputs['meterReadingFlag'] || 'T',
+    readingMethod: inputs['readingMethod'] || 'N',
+    regularReadingCycle: inputs['regularReadingCycle'] || 'D',
   };
 }
