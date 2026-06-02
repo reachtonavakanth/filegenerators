@@ -136,7 +136,7 @@ export function orchestrateCOSRegistration(
 
   // ---- D0217: Distributor / MPAS → Supplier ----
   const d0217 = buildD0217({
-    envelope: makeEnvelope(m, 'D0217', fileIdBase, 2, '001', ...mpas, ...supp),
+    envelope: makeEnvelope(m, 'D0217', fileIdBase, 2, '002', ...mpas, ...supp),
     record492: {
       instructionNumber: m.instructionNumber,
       instructionType: m.d0217InstructionType,

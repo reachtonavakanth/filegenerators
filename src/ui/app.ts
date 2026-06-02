@@ -5,8 +5,8 @@
 import type { ProcessDefinition, GeneratedOutput } from '../shared/domain/types';
 import type { UtilityDefinition } from '../shared/domain/types';
 import { allUtilities } from '../utilities';
-import { renderFormGroups, collectFormValues, validateForm } from './forms/form-renderer';
-import { buildAndDownloadZip, saveToDirectory, supportsFileSystemAccess } from '../shared/downloads/zip-builder';
+import { renderFormGroups, collectFormValues, collectFormValuesGrouped, validateForm } from './forms/form-renderer';
+import { buildAndDownloadZip, saveToDirectory, supportsFileSystemAccess, downloadJSONFile } from '../shared/downloads/zip-builder';
 
 let selectedProcess: ProcessDefinition | null = null;
 let lastOutput: GeneratedOutput | null = null;
@@ -155,6 +155,16 @@ function hideForm(): void {
   document.getElementById('form-area')!.style.display = 'none';
 }
 
+// ---- Export JSON ----
+
+function handleExportJSON(): void {
+  if (!selectedProcess) return;
+  const formBody = document.getElementById('form-body')!;
+  const grouped = collectFormValuesGrouped(formBody, selectedProcess.formGroups, selectedProcess.label);
+  const filename = `${selectedProcess.label.replace(/[/\\:*?"<>|]/g, '-')}_inputs.json`;
+  downloadJSONFile(grouped, filename);
+}
+
 // ---- Generate ----
 
 function handleGenerate(): void {
@@ -185,11 +195,13 @@ function handleGenerate(): void {
 // ---- Download ----
 
 async function handleDownload(): Promise<void> {
-  if (!lastOutput) return;
+  if (!lastOutput || !selectedProcess) return;
+  const formBody = document.getElementById('form-body')!;
+  const inputsJson = collectFormValuesGrouped(formBody, selectedProcess.formGroups, selectedProcess.label);
   try {
     if (supportsFileSystemAccess()) {
       try {
-        const saved = await saveToDirectory(lastOutput);
+        const saved = await saveToDirectory(lastOutput, inputsJson);
         showStatus('success', `Saved ${saved.length} file(s) to selected folder.`);
         return;
       } catch (fsErr) {
@@ -202,8 +214,8 @@ async function handleDownload(): Promise<void> {
     }
     // ZIP fallback (Firefox, older browsers, or blocked File System Access API)
     const dateStamp = new Date().toISOString().slice(0, 19).replace(/[-:T]/g, '');
-    await buildAndDownloadZip(lastOutput, dateStamp);
-    showStatus('info', `ZIP downloaded: ${lastOutput.processId}_${dateStamp}.zip`);
+    await buildAndDownloadZip(lastOutput, dateStamp, inputsJson);
+    showStatus('info', `ZIP downloaded: ${lastOutput.processLabel}_${dateStamp}.zip`);
   } catch (err) {
     if (err instanceof DOMException && err.name === 'AbortError') return;
     showStatus('error', `Save failed: ${err instanceof Error ? err.message : String(err)}`);
@@ -233,8 +245,10 @@ function hideStatus(): void {
 function setButtonStates(generateEnabled: boolean, downloadEnabled: boolean): void {
   const btnGenerate = document.getElementById('btn-generate') as HTMLButtonElement;
   const btnDownload = document.getElementById('btn-download') as HTMLButtonElement;
+  const btnExportJson = document.getElementById('btn-export-json') as HTMLButtonElement;
   btnGenerate.disabled = !generateEnabled;
   btnDownload.disabled = !downloadEnabled;
+  btnExportJson.disabled = !generateEnabled;
 }
 
 function wireButtons(): void {
@@ -242,6 +256,7 @@ function wireButtons(): void {
   document.getElementById('btn-download')!.addEventListener('click', () => {
     handleDownload().catch(console.error);
   });
+  document.getElementById('btn-export-json')!.addEventListener('click', handleExportJSON);
   wireIndustryLookup();
 }
 

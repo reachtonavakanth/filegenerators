@@ -29,27 +29,35 @@ export function supportsFileSystemAccess(): boolean {
   return typeof window !== 'undefined' && 'showDirectoryPicker' in window;
 }
 
-export async function saveToDirectory(output: GeneratedOutput): Promise<string[]> {
+export async function saveToDirectory(output: GeneratedOutput, inputsJson: unknown): Promise<string[]> {
   const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite', startIn: 'downloads' });
   const saved: string[] = [];
 
-  const dflowsDir = await dirHandle.getDirectoryHandle('dflows', { create: true });
+  const processDir = await dirHandle.getDirectoryHandle(sanitiseName(output.processLabel), { create: true });
+
+  const dflowsDir = await processDir.getDirectoryHandle('dflows', { create: true });
   for (const dflow of output.dflows) {
     const fh = await dflowsDir.getFileHandle(dflow.fileName, { create: true });
     const writable = await fh.createWritable();
     await writable.write(renderDFlowFile(dflow));
     await writable.close();
-    saved.push(`dflows/${dflow.fileName}`);
+    saved.push(`${output.processLabel}/dflows/${dflow.fileName}`);
   }
 
-  const cssDir = await dirHandle.getDirectoryHandle('css', { create: true });
+  const cssDir = await processDir.getDirectoryHandle('css', { create: true });
   for (const cssMsg of output.cssMessages) {
     const fh = await cssDir.getFileHandle(cssMsg.fileName, { create: true });
     const writable = await fh.createWritable();
     await writable.write(JSON.stringify(cssMsg.content, null, 2));
     await writable.close();
-    saved.push(`css/${cssMsg.fileName}`);
+    saved.push(`${output.processLabel}/css/${cssMsg.fileName}`);
   }
+
+  const inputsFh = await processDir.getFileHandle('inputs.json', { create: true });
+  const inputsWritable = await inputsFh.createWritable();
+  await inputsWritable.write(JSON.stringify(inputsJson, null, 2));
+  await inputsWritable.close();
+  saved.push(`${output.processLabel}/inputs.json`);
 
   return saved;
 }
@@ -58,7 +66,8 @@ export async function saveToDirectory(output: GeneratedOutput): Promise<string[]
 
 export async function buildAndDownloadZip(
   output: GeneratedOutput,
-  dateStamp: string
+  dateStamp: string,
+  inputsJson: unknown
 ): Promise<void> {
   const zip = new JSZip();
 
@@ -72,8 +81,10 @@ export async function buildAndDownloadZip(
     cssFolder!.file(cssMsg.fileName, JSON.stringify(cssMsg.content, null, 2));
   }
 
+  zip.file('inputs.json', JSON.stringify(inputsJson, null, 2));
+
   const blob = await zip.generateAsync({ type: 'blob' });
-  triggerDownload(blob, `${output.processId}_${dateStamp}.zip`);
+  triggerDownload(blob, `${sanitiseName(output.processLabel)}_${dateStamp}.zip`);
 }
 
 function triggerDownload(blob: Blob, filename: string): void {
@@ -85,6 +96,15 @@ function triggerDownload(blob: Blob, filename: string): void {
   anchor.click();
   document.body.removeChild(anchor);
   URL.revokeObjectURL(url);
+}
+
+export function downloadJSONFile(data: unknown, filename: string): void {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  triggerDownload(blob, filename);
+}
+
+function sanitiseName(name: string): string {
+  return name.replace(/[/\\:*?"<>|]/g, '-').trim();
 }
 
 export function buildFileSummary(output: GeneratedOutput): string[] {

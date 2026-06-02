@@ -105,6 +105,26 @@ function buildField(field: FormFieldDefinition): HTMLElement {
   return wrapper;
 }
 
+export function collectFormValuesGrouped(
+  container: HTMLElement,
+  groups: FormGroupDefinition[],
+  processLabel: string
+): Record<string, unknown> {
+  const result: Record<string, unknown> = {
+    process: processLabel,
+    exportedAt: new Date().toISOString(),
+  };
+  for (const group of groups) {
+    const groupValues: Record<string, string> = {};
+    for (const field of group.fields) {
+      const el = container.querySelector(`#field-${field.id}`) as HTMLInputElement | HTMLSelectElement | null;
+      if (el) groupValues[field.id] = el.value.trim();
+    }
+    result[group.label] = groupValues;
+  }
+  return result;
+}
+
 export function collectFormValues(
   container: HTMLElement,
   groups: FormGroupDefinition[]

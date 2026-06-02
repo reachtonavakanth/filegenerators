@@ -6,7 +6,7 @@
 // [6-15]blank [16]postcode [17]blank [18]llfClass [19]gspGroupId
 // [20]energisationStatus [21]measurementClass [22]mtc [23]profileClass [24]ssc
 // [25]aggrParticipantId [26]aggrType [27]collectorParticipantId [28]collectorType
-// [29]mopParticipantId [30]mopType [31-35]blank [36]relatedMpanIndicator
+// [29]mopParticipantId [30]mopType [31-37]blank [38]relatedMpanIndicator
 
 import { DFLOW_FILE_EXT } from '../../industry-constants';
 import type { DFlowFile, DFlowEnvelope } from '../../../../shared/domain/types';
@@ -33,8 +33,8 @@ export interface D0217_492 {
   collectorType: string;            // field[28] — 'H' | 'N'
   mopParticipantId: string;         // field[29] — Meter Operator participant ID
   mopType: string;                  // field[30] — 'H' | 'N'
-  // fields[31-35] blank
-  relatedMpanIndicator: string;     // field[36]
+  // fields[31-37] blank
+  relatedMpanIndicator: string;     // field[38]
 }
 
 export interface D0217Model {
@@ -76,7 +76,7 @@ export function buildD0217(model: D0217Model): DFlowFile {
           r.collectorType,
           r.mopParticipantId,
           r.mopType,
-          '', '', '', '', '', // fields[31-35] blank
+          '', '', '', '', '', '', '', // fields[31-37] blank
           r.relatedMpanIndicator,
         ],
       },
