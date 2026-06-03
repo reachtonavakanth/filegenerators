@@ -201,12 +201,12 @@ export function orchestrateCOSRegistration(
     timePatternRegiment: m.timePatternRegiment,
     msn: m.msn,
     registerId: m.registerId,
-    registerMappingCoefficient: m.registerMappingCoefficient,
+    registerCoefficient: m.d0149RegisterCoefficient,
   });
 
   // ---- D0150: MOP → Supplier ----
   const d0150 = buildD0150({
-    envelope: makeEnvelope(m, 'D0150', fileIdBase, 7, '001', ...mop, ...supp),
+    envelope: makeEnvelope(m, 'D0150', fileIdBase, 7, '002', ...mop, ...supp),
     mpan: m.mpan,
     cosDate: m.cosDate,
     energisationStatus: m.energisationStatus,
@@ -243,7 +243,7 @@ export function orchestrateCOSRegistration(
 
   // ---- D0010: DC → Supplier ----
   const d0010 = buildD0010({
-    envelope: makeEnvelope(m, 'D0010', fileIdBase, 9, '001', ...dc, ...supp),
+    envelope: makeEnvelope(m, 'D0010', fileIdBase, 9, '002', ...dc, ...supp),
     mpan: m.mpan,
     bscValidationStatus: m.bscValidationStatus,
     msn: m.msn,
@@ -257,7 +257,7 @@ export function orchestrateCOSRegistration(
 
   // ---- D0086: DC → Supplier ----
   const d0086 = buildD0086({
-    envelope: makeEnvelope(m, 'D0086', fileIdBase, 10, '001', ...dc, ...supp),
+    envelope: makeEnvelope(m, 'D0086', fileIdBase, 10, '002', ...dc, ...supp),
     mpan: m.mpan,
     bscValidationStatus: m.bscValidationStatus,
     msn: m.msn,

@@ -236,9 +236,10 @@ export const energisationFormGroups: FormGroupDefinition[] = [
       },
       {
         id: 'timePatternRegiment',
-        label: 'Time Pattern Regiment',
+        label: 'Time Pattern Regime',
         type: 'text',
         required: true,
+        placeholder: '00001',
         maxLength: 5,
         helpText: '5-digit TPR code — D0149 778[0]',
       },
@@ -295,7 +296,16 @@ export const energisationFormGroups: FormGroupDefinition[] = [
         type: 'text',
         required: true,
         maxLength: 2,
-        helpText: "D0149 284[1] / D0150 293[0] — 'S' for NHH single register, or '01'",
+        helpText: "D0149 284[0] / D0150 293[0] — 'S' for NHH single register, or '01'",
+      },
+      {
+        id: 'd0149RegisterCoefficient',
+        label: 'Register Mapping Coefficient (D0149)',
+        type: 'text',
+        required: true,
+        defaultValue: '1',
+        placeholder: '1 or -1',
+        helpText: "D0149 284[1] — '1' or '-1'",
       },
       {
         id: 'meterRegisterType',
@@ -316,11 +326,11 @@ export const energisationFormGroups: FormGroupDefinition[] = [
       },
       {
         id: 'registerMappingCoefficient',
-        label: 'Register Mapping Coefficient',
+        label: 'Meter Register Multiplier (D0150)',
         type: 'text',
         required: true,
         defaultValue: '1.00',
-        helpText: 'D0149 284[2] / D0150 293[3] — e.g. 1 or 1.00',
+        helpText: 'D0150 293[3] — NUM(9,2) e.g. 1.00',
       },
       {
         id: 'numberOfDigits',

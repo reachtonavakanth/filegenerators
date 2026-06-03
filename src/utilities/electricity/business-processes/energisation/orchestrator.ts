@@ -64,7 +64,7 @@ export function orchestrateEnergisation(
 
   // ---- D0010: DC → Supplier ----
   const d0010 = buildD0010({
-    envelope: makeEnvelope(m, 'D0010', fileIdBase, 2, '001', ...dc, ...supp),
+    envelope: makeEnvelope(m, 'D0010', fileIdBase, 2, '002', ...dc, ...supp),
     mpan: m.mpan,
     bscValidationStatus: m.bscValidationStatus,
     msn: m.msn,
@@ -85,12 +85,12 @@ export function orchestrateEnergisation(
     timePatternRegiment: m.timePatternRegiment,
     msn: m.msn,
     registerId: m.registerId,
-    registerMappingCoefficient: m.registerMappingCoefficient,
+    registerCoefficient: m.d0149RegisterCoefficient,
   });
 
   // ---- D0150: MOP → Supplier ----
   const d0150 = buildD0150({
-    envelope: makeEnvelope(m, 'D0150', fileIdBase, 4, '001', ...mop, ...supp),
+    envelope: makeEnvelope(m, 'D0150', fileIdBase, 4, '002', ...mop, ...supp),
     mpan: m.mpan,
     cosDate: m.requestedDate,
     energisationStatus: m.actionRequired,
