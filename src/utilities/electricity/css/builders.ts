@@ -5,13 +5,15 @@
 
 import type { CSSMessage } from '../../../shared/domain/types';
 
-// Accepts YYYYMMDD (8) or YYYY-MM-DD (10) → YYYY-MM-DDT00:00:00.000Z
-function toIsoDateTime(dateStr: string): string {
+// Accepts YYYYMMDD (8) or YYYY-MM-DD (10) → YYYY-MM-DDT{time}
+// Pass a timestamp (ISO string) to use its time part; omit for T00:00:00.000Z
+function toIsoDateTime(dateStr: string, timestamp?: string): string {
+  const time = timestamp ? timestamp.slice(11) : '00:00:00.000Z';
   if (dateStr.length === 8) {
-    return `${dateStr.slice(0, 4)}-${dateStr.slice(4, 6)}-${dateStr.slice(6, 8)}T00:00:00.000Z`;
+    return `${dateStr.slice(0, 4)}-${dateStr.slice(4, 6)}-${dateStr.slice(6, 8)}T${time}`;
   }
   if (dateStr.length === 10) {
-    return `${dateStr}T00:00:00.000Z`;
+    return `${dateStr}T${time}`;
   }
   return dateStr;
 }
@@ -45,7 +47,7 @@ export function buildCSS02300_01(params: {
     updatedProperties: [],
     data: {
       registrationStatus: 'Pending',
-      registrationStatusFromDate: toIsoDateTime(params.registrationDate),
+      registrationStatusFromDate: toIsoDateTime(params.registrationDate, params.timestamp),
       supplierGeneratedReference: params.supplierGeneratedReference,
       mpxn: params.mpxn,
       supplyStartDate: toIsoDateTime(params.supplyStartDate),
@@ -123,7 +125,7 @@ export function buildCSS02370_01(params: {
     data: {
       registrationStatus: 'SecuredActive',
       fuelType: 'E',
-      registrationStatusFromDate: toIsoDateTime(params.registrationDate),
+      registrationStatusFromDate: toIsoDateTime(params.registrationDate, params.timestamp),
       supplierGeneratedReference: params.supplierGeneratedReference,
       registrationId: params.registrationId,
       registrationActiveDate: toIsoDateTime(params.registrationActiveDate),
@@ -159,7 +161,7 @@ export function buildCSS02370_03(params: {
     data: {
       registrationStatus: 'Confirmed',
       fuelType: 'E',
-      registrationStatusFromDate: toIsoDateTime(params.registrationDate),
+      registrationStatusFromDate: toIsoDateTime(params.registrationDate, params.timestamp),
       supplierGeneratedReference: params.supplierGeneratedReference,
       registrationId: params.registrationId,
       mpxn: params.mpxn,
