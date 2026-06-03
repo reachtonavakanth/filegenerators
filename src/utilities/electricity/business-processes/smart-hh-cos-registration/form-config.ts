@@ -1,5 +1,6 @@
 // ============================================================
-// COS Registration — Form Group Definitions
+// Smart HH COS Registration — Form Group Definitions
+// (mirrors NHH COS Registration — diverge here when needed)
 // ============================================================
 
 import type { FormGroupDefinition } from '../../../../shared/domain/types';
@@ -28,7 +29,7 @@ function localDateISO(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export const cosRegistrationFormGroups: FormGroupDefinition[] = [
+export const smartHHCOSRegistrationFormGroups: FormGroupDefinition[] = [
   {
     id: 'file-settings',
     label: 'File Details',
@@ -233,7 +234,6 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
         placeholder: 'EDMI AtlasMk10A',
         helpText: 'D0150 290[5] — e.g. EDMI AtlasMk10A',
       },
-      // D0150 290[18]
       {
         id: 'meterInstalledDate',
         label: 'Meter Installed Date',
@@ -241,7 +241,6 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
         required: true,
         helpText: 'Date meter was installed — D0150 290[18]',
       },
-      // D0150 291[0]
       {
         id: 'ctPrimaryRatio',
         label: 'CT Ratio',
@@ -250,7 +249,6 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
         placeholder: '200/5',
         helpText: 'Current Transformer ratio — D0150 291[0] (e.g. 200/5 or 1 for NHH)',
       },
-      // Remaining meter fields (D0052 / D0260)
       {
         id: 'meterType',
         label: 'Meter Type',
