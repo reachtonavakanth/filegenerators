@@ -4,6 +4,12 @@
 
 import type { FormGroupDefinition, FormFieldDefinition } from '../../shared/domain/types';
 
+export interface ImportResult {
+  matched: number;
+  missing: Array<{ id: string; label: string }>;
+  extra: string[];
+}
+
 
 export function renderFormGroups(
   container: HTMLElement,
@@ -145,6 +151,79 @@ export function collectFormValues(
     }
   }
   return values;
+}
+
+const IMPORT_METADATA_KEYS = new Set(['process', 'exportedAt']);
+
+export function populateFormFromData(
+  container: HTMLElement,
+  groups: FormGroupDefinition[],
+  data: Record<string, unknown>
+): ImportResult {
+  // Flatten grouped JSON { "Group Label": { fieldId: value } } into { fieldId: value }
+  const flat: Record<string, string> = {};
+  for (const [key, value] of Object.entries(data)) {
+    if (IMPORT_METADATA_KEYS.has(key)) continue;
+    if (value !== null && typeof value === 'object') {
+      for (const [fieldId, fieldValue] of Object.entries(value as Record<string, unknown>)) {
+        // Accept both string and number — number fields may be serialised as JSON numbers
+        if (typeof fieldValue === 'string' || typeof fieldValue === 'number') {
+          flat[fieldId] = String(fieldValue);
+        }
+      }
+    } else if (typeof value === 'string' || typeof value === 'number') {
+      flat[key] = String(value);
+    }
+  }
+
+  const formFields = groups.flatMap(g => g.fields);
+  const formFieldIds = new Set(formFields.map(f => f.id));
+
+  // Reset all non-readonly fields to form-config defaults first
+  for (const field of formFields) {
+    if (field.readOnly) continue;
+    const el = container.querySelector(`#field-${field.id}`) as HTMLInputElement | HTMLSelectElement | null;
+    if (!el) continue;
+    el.value = field.defaultValue ?? '';
+    syncFieldClass(el, field.type);
+  }
+
+  // Overlay values from JSON and track results
+  let matched = 0;
+  const missing: Array<{ id: string; label: string }> = [];
+
+  for (const field of formFields) {
+    if (field.readOnly) continue;
+    if (field.id in flat) {
+      const el = container.querySelector(`#field-${field.id}`) as HTMLInputElement | HTMLSelectElement | null;
+      if (el) {
+        el.value = normaliseDateValue(flat[field.id], field.type);
+        syncFieldClass(el, field.type);
+        el.classList.remove('invalid');
+        matched++;
+      }
+    } else {
+      missing.push({ id: field.id, label: field.label });
+    }
+  }
+
+  const extra = Object.keys(flat).filter(k => !formFieldIds.has(k));
+  return { matched, missing, extra };
+}
+
+function normaliseDateValue(value: string, type: string): string {
+  if (type === 'date' && /^\d{8}$/.test(value)) {
+    return `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}`;
+  }
+  return value;
+}
+
+function syncFieldClass(el: HTMLInputElement | HTMLSelectElement, type: string): void {
+  if (el instanceof HTMLSelectElement) {
+    el.classList.toggle('select-empty', el.value === '');
+  } else if (type === 'date') {
+    el.classList.toggle('date-empty', !el.value);
+  }
 }
 
 export function validateForm(

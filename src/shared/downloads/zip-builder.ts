@@ -53,11 +53,12 @@ export async function saveToDirectory(output: GeneratedOutput, inputsJson: unkno
     saved.push(`${output.processLabel}/css/${cssMsg.fileName}`);
   }
 
-  const inputsFh = await processDir.getFileHandle('inputs.json', { create: true });
+  const inputFileName = `${output.processId}_input.json`;
+  const inputsFh = await processDir.getFileHandle(inputFileName, { create: true });
   const inputsWritable = await inputsFh.createWritable();
   await inputsWritable.write(JSON.stringify(inputsJson, null, 2));
   await inputsWritable.close();
-  saved.push(`${output.processLabel}/inputs.json`);
+  saved.push(`${output.processLabel}/${inputFileName}`);
 
   return saved;
 }
@@ -81,7 +82,7 @@ export async function buildAndDownloadZip(
     cssFolder!.file(cssMsg.fileName, JSON.stringify(cssMsg.content, null, 2));
   }
 
-  zip.file('inputs.json', JSON.stringify(inputsJson, null, 2));
+  zip.file(`${output.processId}_input.json`, JSON.stringify(inputsJson, null, 2));
 
   const blob = await zip.generateAsync({ type: 'blob' });
   triggerDownload(blob, `${sanitiseName(output.processLabel)}_${dateStamp}.zip`);

@@ -570,6 +570,23 @@ html, body {
   color: var(--accent-blue-light);
 }
 
+.status-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0 2px;
+  color: inherit;
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+.status-close:hover {
+  opacity: 1;
+}
+
 /* ---- Output Panel ---- */
 .output-panel {
   border-color: rgba(34, 197, 94, 0.3);
@@ -585,6 +602,30 @@ html, body {
 .btn-amber:not(:disabled):hover {
   background: #d97706;
   border-color: #d97706;
+}
+
+/* ---- Teal ghost button (Import JSON) ---- */
+.btn-teal {
+  background: rgba(52, 211, 153, 0.12);
+  color: var(--accent-gas);
+  border-color: rgba(52, 211, 153, 0.35);
+}
+
+.btn-teal:not(:disabled):hover {
+  background: rgba(52, 211, 153, 0.22);
+  border-color: var(--accent-gas);
+}
+
+/* ---- Purple ghost button (Export JSON) ---- */
+.btn-purple {
+  background: rgba(168, 85, 247, 0.12);
+  color: var(--accent-purple);
+  border-color: rgba(168, 85, 247, 0.35);
+}
+
+.btn-purple:not(:disabled):hover {
+  background: rgba(168, 85, 247, 0.22);
+  border-color: var(--accent-purple);
 }
 
 /* ---- Collapsible Panel ---- */
@@ -685,6 +726,48 @@ html, body {
   max-height: 400px;
   overflow-y: auto;
   margin: 0;
+}
+
+/* ---- Toast (fixed corner notification) ---- */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 2000;
+  min-width: 280px;
+  max-width: 480px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: var(--shadow);
+  animation: toast-in 0.22s ease;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.toast.success {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: var(--accent-green);
+}
+
+.toast.error {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: var(--accent-red);
+}
+
+.toast.info {
+  background: rgba(79, 110, 247, 0.15);
+  border: 1px solid rgba(79, 110, 247, 0.35);
+  color: var(--accent-blue-light);
 }
 
 /* ---- Scrollbar ---- */
