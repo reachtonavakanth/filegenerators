@@ -94,6 +94,9 @@ export interface ElectricityCOSRegistrationModel {
 
   // D0012 field
   regularReadingCycle: string;  // 039[2] — A/B/D/E/H/M/N/O/Q/S/T/W/Z
+
+  // D0149 284[1] — separate from D0150 293[3] registerMappingCoefficient
+  d0149RegisterCoefficient: string; // '1' or '-1'
 }
 
 export function mapFormToCOSModel(
@@ -162,5 +165,6 @@ export function mapFormToCOSModel(
     meterReadingFlag: inputs['meterReadingFlag'] || 'T',
     readingMethod: inputs['readingMethod'] || 'N',
     regularReadingCycle: inputs['regularReadingCycle'] || 'D',
+    d0149RegisterCoefficient: inputs['d0149RegisterCoefficient'] || '1',
   };
 }

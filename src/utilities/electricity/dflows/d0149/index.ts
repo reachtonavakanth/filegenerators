@@ -19,8 +19,8 @@ export interface D0149Model {
   ssc: string;                       // 281[1] — Standard Settlement Config
   timePatternRegiment: string;       // 778[1] — 5-digit TPR code
   msn: string;                       // 283[1] — Meter Serial Number
-  registerId: string;                // 284[1] — 'S' or '01'
-  registerMappingCoefficient: string;// 284[2] — e.g. '1'
+  registerId: string;                // 284[0] — 'S' or '01'
+  registerCoefficient: string;       // 284[1] — '1' or '-1'
 }
 
 export function buildD0149(model: D0149Model): DFlowFile {
@@ -34,7 +34,7 @@ export function buildD0149(model: D0149Model): DFlowFile {
       { recordType: '281', fields: [r.ssc, r.cosDate] },
       { recordType: '778', fields: [r.timePatternRegiment] },
       { recordType: '283', fields: [r.msn] },
-      { recordType: '284', fields: [r.registerId, r.registerMappingCoefficient] },
+      { recordType: '284', fields: [r.registerId, r.registerCoefficient] },
     ],
   };
 }
