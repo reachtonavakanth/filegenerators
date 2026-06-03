@@ -197,6 +197,16 @@ function handleGenerate(): void {
 async function handleDownload(): Promise<void> {
   if (!lastOutput || !selectedProcess) return;
   const formBody = document.getElementById('form-body')!;
+
+  // Always regenerate from current form values so changes since last Generate are picked up
+  try {
+    const inputs = collectFormValues(formBody, selectedProcess.formGroups);
+    lastOutput = selectedProcess.generate(inputs);
+  } catch (err) {
+    showStatus('error', `Generation failed: ${err instanceof Error ? err.message : String(err)}`);
+    return;
+  }
+
   const inputsJson = collectFormValuesGrouped(formBody, selectedProcess.formGroups, selectedProcess.label);
   try {
     if (supportsFileSystemAccess()) {

@@ -66,6 +66,7 @@ export interface ElectricityCOSRegistrationModel {
   supplierGeneratedReference: string; // e.g. SC000000549
   registrationRequestId: string;      // GUID — registrationRequestId in CSS02380_01
   cssCorrelationId: string;           // GUID — correlationId shared across CSS02380_01 & CSS02300_01
+  timestampFormat: 'utc' | 'local';   // Controls time part of registrationStatusFromDate in CSS messages
 
   // Dates
   registrationDate: string;      // YYYYMMDD supply start
@@ -147,6 +148,7 @@ export function mapFormToCOSModel(
     supplierGeneratedReference: inputs['supplierGeneratedReference'] || '',
     registrationRequestId: inputs['registrationRequestId'] || '',
     cssCorrelationId: inputs['cssCorrelationId'] || '',
+    timestampFormat: (inputs['timestampFormat'] === 'local' ? 'local' : 'utc'),
     registrationDate: inputs['registrationDate'] || '',
     cosDate: inputs['cosDate'] || inputs['registrationDate'] || '',
     meterInstalledDate: inputs['meterInstalledDate'] || '',
