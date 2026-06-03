@@ -82,6 +82,18 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
         placeholder: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
         helpText: 'GUID — registrationRequestId in CSS02380_01 / registrationId in CSS02300_01',
       },
+      {
+        id: 'timestampFormat',
+        label: 'Timestamp Format',
+        type: 'select',
+        required: true,
+        defaultValue: 'utc',
+        options: [
+          { value: 'utc',   label: 'UTC (e.g. 10:30:00.000Z)' },
+          { value: 'local', label: 'Local system clock (e.g. 11:30:00.000)' },
+        ],
+        helpText: 'Controls the time part of registrationStatusFromDate in CSS messages',
+      },
     ],
   },
   {

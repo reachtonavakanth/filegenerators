@@ -52,10 +52,16 @@ function makeEnvelope(
   };
 }
 
+function localISOString(): string {
+  const d = new Date();
+  const p = (n: number, l = 2) => String(n).padStart(l, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(), 3)}`;
+}
+
 export function orchestrateCOSRegistration(
   m: ElectricityCOSRegistrationModel
 ): GeneratedOutput {
-  const ts = new Date().toISOString(); // ISO 8601 with milliseconds e.g. "2026-05-28T12:19:00.000Z"
+  const ts = m.timestampFormat === 'local' ? localISOString() : new Date().toISOString();
   const fileIdBase = generateFileIdBase();
 
   // Party routing shortcuts — (fromRoleCode, fromParticipantId, toRoleCode, toParticipantId)
