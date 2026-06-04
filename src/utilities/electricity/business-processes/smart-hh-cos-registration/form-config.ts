@@ -1,10 +1,14 @@
 // ============================================================
-// Energisation — Form Group Definitions
+// Smart HH COS Registration — Form Group Definitions
+// (mirrors NHH COS Registration — diverge here when needed)
 // ============================================================
 
 import type { FormGroupDefinition } from '../../../../shared/domain/types';
 import {
   TEST_FLAG_OPTIONS,
+  INSTRUCTION_TYPE_OPTIONS,
+  HH_TYPE_OPTIONS,
+  ENERGISATION_STATUS_OPTIONS,
   PROFILE_CLASS_OPTIONS,
   MEASUREMENT_CLASS_OPTIONS,
   GSP_GROUP_OPTIONS,
@@ -14,8 +18,7 @@ import {
   BSC_VALIDATION_STATUS_OPTIONS,
   METER_READING_FLAG_OPTIONS,
   READING_METHOD_OPTIONS,
-  ENERGISATION_ACTION_OPTIONS,
-  ENERGISATION_REASON_OPTIONS,
+  REGULAR_READING_CYCLE_OPTIONS,
   METER_LOCATION_OPTIONS,
   RETRIEVAL_METHOD_OPTIONS,
   METER_REGISTER_TYPE_OPTIONS,
@@ -26,10 +29,10 @@ function localDateISO(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export const energisationFormGroups: FormGroupDefinition[] = [
+export const smartHHCOSRegistrationFormGroups: FormGroupDefinition[] = [
   {
     id: 'file-settings',
-    label: 'File Settings',
+    label: 'File Details',
     icon: '⚙',
     fields: [
       {
@@ -39,6 +42,7 @@ export const energisationFormGroups: FormGroupDefinition[] = [
         required: true,
         defaultValue: 'OPER',
         options: TEST_FLAG_OPTIONS,
+        helpText: 'OPER = operational, TR06 = training',
       },
       {
         id: 'fileDate',
@@ -46,6 +50,50 @@ export const energisationFormGroups: FormGroupDefinition[] = [
         type: 'date',
         required: true,
         defaultValue: localDateISO(),
+        helpText: 'Date used in file headers (YYYYMMDD)',
+      },
+    ],
+  },
+  {
+    id: 'css-registration',
+    label: 'CSS Registration',
+    icon: '🔗',
+    fields: [
+      {
+        id: 'supplierGeneratedReference',
+        label: 'Supplier Generated Reference',
+        type: 'text',
+        required: true,
+        placeholder: 'SC000000549',
+        helpText: 'Supplier-generated reference used in CSS02380_01 and CSS02300_01',
+      },
+      {
+        id: 'cssCorrelationId',
+        label: 'Correlation ID',
+        type: 'text',
+        required: true,
+        placeholder: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+        helpText: 'GUID — correlationId shared across CSS02380_01 and CSS02300_01',
+      },
+      {
+        id: 'registrationRequestId',
+        label: 'Registration ID',
+        type: 'text',
+        required: true,
+        placeholder: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+        helpText: 'GUID — registrationRequestId in CSS02380_01 / registrationId in CSS02300_01',
+      },
+      {
+        id: 'timestampFormat',
+        label: 'Timestamp Format',
+        type: 'select',
+        required: true,
+        defaultValue: 'utc',
+        options: [
+          { value: 'utc',   label: 'UTC (e.g. 10:30:00.000Z)' },
+          { value: 'local', label: 'Local system clock (e.g. 11:30:00.000)' },
+        ],
+        helpText: 'Controls the time part of registrationStatusFromDate in CSS messages',
       },
     ],
   },
@@ -54,18 +102,24 @@ export const energisationFormGroups: FormGroupDefinition[] = [
     label: 'Market Parties',
     icon: '🏢',
     fields: [
-      // ---- Supplier ----
-      { id: 'supplierRoleCode',         label: 'Supplier Role Code',          type: 'text', required: true, defaultValue: 'X', maxLength: 1 },
-      { id: 'supplierParticipantId',    label: 'Supplier Participant ID',     type: 'text', required: true, defaultValue: 'GMTR' },
-      // ---- MOP ----
-      { id: 'mopRoleCode',              label: 'MOP Role Code',               type: 'text', required: true, placeholder: 'M', maxLength: 1 },
-      { id: 'mopParticipantId',         label: 'MOP Participant ID',          type: 'text', required: true },
-      // ---- Data Collector (DC) ----
-      { id: 'dcRoleCode',               label: 'Data Collector Role Code',    type: 'text', required: true, placeholder: 'D', maxLength: 1 },
-      { id: 'dcParticipantId',          label: 'Data Collector Participant ID', type: 'text', required: true },
+      // ---- New Supplier ----
+      { id: 'supplierRoleCode',          label: 'New Supplier Role Code',       type: 'text', required: true, defaultValue: 'X', maxLength: 1 },
+      { id: 'supplierParticipantId',     label: 'New Supplier Participant ID',  type: 'text', required: true, defaultValue: 'GMTR' },
+      // ---- Old Supplier ----
+      { id: 'oldSupplierRoleCode',       label: 'Old Supplier Role Code',       type: 'text', required: true, defaultValue: 'X', maxLength: 1 },
+      { id: 'oldSupplierParticipantId',  label: 'Old Supplier Participant ID',  type: 'text', required: true },
       // ---- Distributor / MPAS ----
-      { id: 'distributorRoleCode',      label: 'Distributor / MPAS Role Code',      type: 'text', required: true, maxLength: 1 },
-      { id: 'distributorParticipantId', label: 'Distributor / MPAS Participant ID', type: 'text', required: true },
+      { id: 'distributorRoleCode',       label: 'Distributor / MPAS Role Code',       type: 'text', required: true, maxLength: 1 },
+      { id: 'distributorParticipantId',  label: 'Distributor / MPAS Participant ID',  type: 'text', required: true },
+      // ---- MOP ----
+      { id: 'mopRoleCode',               label: 'New MOP Role Code',                type: 'text', required: true, placeholder: 'M', maxLength: 1 },
+      { id: 'mopParticipantId',          label: 'New MOP Participant ID',           type: 'text', required: true },
+      // ---- Data Aggregator (DA) ----
+      { id: 'daRoleCode',                label: 'New Data Aggregator Role Code',    type: 'text', required: true, placeholder: 'B', maxLength: 1 },
+      { id: 'daParticipantId',           label: 'New Data Aggregator Participant ID', type: 'text', required: true },
+      // ---- Data Collector (DC) ----
+      { id: 'dcRoleCode',                label: 'New Data Collector Role Code',     type: 'text', required: true, placeholder: 'D', maxLength: 1 },
+      { id: 'dcParticipantId',           label: 'New Data Collector Participant ID', type: 'text', required: true },
     ],
   },
   {
@@ -80,7 +134,19 @@ export const energisationFormGroups: FormGroupDefinition[] = [
         required: true,
         placeholder: '1200012345678',
         maxLength: 13,
-        helpText: '13-digit MPAN',
+      },
+      {
+        id: 'registrationDate',
+        label: 'Registration Date (Supply Start)',
+        type: 'date',
+        required: true,
+        helpText: 'New supply start / COS effective date',
+      },
+      {
+        id: 'cosDate',
+        label: 'Change of Supplier Date',
+        type: 'date',
+        required: true,
       },
       {
         id: 'msn',
@@ -88,59 +154,24 @@ export const energisationFormGroups: FormGroupDefinition[] = [
         type: 'text',
         required: true,
         placeholder: 'MSN12345678',
+        helpText: 'Physical meter serial number',
       },
-    ],
-  },
-  {
-    id: 'energisation-request',
-    label: 'Energisation / De-energisation Request',
-    icon: '🔌',
-    fields: [
+      { id: 'instructionNumber',      label: 'Instruction Number',           type: 'text',   required: true, placeholder: '17658' },
+      { id: 'instructionType',        label: 'D0260 Instruction Type',       type: 'select', required: true, defaultValue: 'SP43', options: INSTRUCTION_TYPE_OPTIONS },
+      { id: 'd0217InstructionType',   label: 'D0217 Instruction Type',       type: 'select', required: true, defaultValue: 'SP40', options: INSTRUCTION_TYPE_OPTIONS },
+      { id: 'energisationStatus',     label: 'Energisation Status',          type: 'select', required: true, defaultValue: 'E',    options: ENERGISATION_STATUS_OPTIONS },
+      { id: 'aggrType',               label: 'Data Aggregation Type',        type: 'select', required: true, options: HH_TYPE_OPTIONS },
+      { id: 'collectorType',          label: 'Data Collector Type',          type: 'select', required: true, options: HH_TYPE_OPTIONS },
+      { id: 'mopType',                label: 'Meter Operator Type',          type: 'select', required: true, options: HH_TYPE_OPTIONS },
+      { id: 'postcode', label: 'Postcode', type: 'text', required: true, placeholder: 'GU1 4HN' },
       {
-        id: 'actionRequired',
-        label: 'Action Required',
+        id: 'regularReadingCycle',
+        label: 'Regular Reading Cycle',
         type: 'select',
         required: true,
-        defaultValue: 'E',
-        options: ENERGISATION_ACTION_OPTIONS,
-        helpText: 'Type of action to perform',
-      },
-      {
-        id: 'requestedDate',
-        label: 'Requested Date',
-        type: 'date',
-        required: true,
-        helpText: 'Date energisation is required',
-      },
-      {
-        id: 'reasonCode',
-        label: 'Reason Code',
-        type: 'select',
-        required: true,
-        defaultValue: '01',
-        options: ENERGISATION_REASON_OPTIONS,
-      },
-      {
-        id: 'accessDetails',
-        label: 'Access Details',
-        type: 'text',
-        required: false,
-        placeholder: 'Key safe code 1234',
-        helpText: 'Any access instructions for MOP',
-      },
-      {
-        id: 'contactName',
-        label: 'Contact Name',
-        type: 'text',
-        required: false,
-        placeholder: 'John Smith',
-      },
-      {
-        id: 'contactNumber',
-        label: 'Contact Number',
-        type: 'text',
-        required: false,
-        placeholder: '07700900000',
+        defaultValue: 'D',
+        options: REGULAR_READING_CYCLE_OPTIONS,
+        helpText: 'D0012 039[2]',
       },
     ],
   },
@@ -177,6 +208,7 @@ export const energisationFormGroups: FormGroupDefinition[] = [
         required: true,
         placeholder: '001',
         maxLength: 3,
+        helpText: '3-digit LLFC code',
       },
       {
         id: 'ssc',
@@ -185,13 +217,14 @@ export const energisationFormGroups: FormGroupDefinition[] = [
         required: true,
         placeholder: '0000',
         maxLength: 4,
+        helpText: 'SSC code (NHH only)',
       },
       {
         id: 'sconDate',
         label: 'Effective from Settlement Date (SCON)',
         type: 'date',
         required: false,
-        syncFrom: 'requestedDate',
+        syncFrom: 'cosDate',
         helpText: 'D0149 281[2] / D0150 289[2] — SSC effective from date',
       },
     ],
@@ -209,7 +242,6 @@ export const energisationFormGroups: FormGroupDefinition[] = [
         placeholder: 'EDMI AtlasMk10A',
         helpText: 'D0150 290[5] — e.g. EDMI AtlasMk10A',
       },
-      // D0150 290[18]
       {
         id: 'meterInstalledDate',
         label: 'Meter Installed Date',
@@ -217,7 +249,6 @@ export const energisationFormGroups: FormGroupDefinition[] = [
         required: true,
         helpText: 'Date meter was installed — D0150 290[18]',
       },
-      // D0150 291[0]
       {
         id: 'ctPrimaryRatio',
         label: 'CT Ratio',
@@ -226,7 +257,6 @@ export const energisationFormGroups: FormGroupDefinition[] = [
         placeholder: '200/5',
         helpText: 'Current Transformer ratio — D0150 291[0] (e.g. 200/5 or 1 for NHH)',
       },
-      // Remaining meter fields (D0052 / D0260)
       {
         id: 'meterType',
         label: 'Meter Type',
@@ -241,6 +271,7 @@ export const energisationFormGroups: FormGroupDefinition[] = [
         required: true,
         placeholder: '001',
         maxLength: 3,
+        helpText: '3-digit MTC code',
       },
       {
         id: 'timePatternRegiment',
@@ -351,9 +382,10 @@ export const energisationFormGroups: FormGroupDefinition[] = [
       },
       {
         id: 'readingDate',
-        label: 'Reading Date',
+        label: 'Meter Reading Date',
         type: 'date',
         required: true,
+        helpText: 'Date reading was taken',
       },
       {
         id: 'bscValidationStatus',
@@ -401,9 +433,10 @@ export const energisationFormGroups: FormGroupDefinition[] = [
       },
       {
         id: 'estimatedAnnualConsumption',
-        label: 'EAC (kWh)',
+        label: 'Estimated Annual Consumption (kWh)',
         type: 'number',
         required: true,
+        helpText: 'EAC in kWh',
       },
     ],
   },

@@ -5,11 +5,12 @@
 import type { ProcessDefinition, GeneratedOutput } from '../shared/domain/types';
 import type { UtilityDefinition } from '../shared/domain/types';
 import { allUtilities } from '../utilities';
-import { renderFormGroups, collectFormValues, collectFormValuesGrouped, validateForm } from './forms/form-renderer';
+import { renderFormGroups, collectFormValues, collectFormValuesGrouped, validateForm, populateFormFromData } from './forms/form-renderer';
 import { buildAndDownloadZip, saveToDirectory, supportsFileSystemAccess, downloadJSONFile } from '../shared/downloads/zip-builder';
 
 let selectedProcess: ProcessDefinition | null = null;
 let lastOutput: GeneratedOutput | null = null;
+let toastTimer: ReturnType<typeof setTimeout> | null = null;
 
 export function initApp(): void {
   renderUtilitySelector();
@@ -155,6 +156,60 @@ function hideForm(): void {
   document.getElementById('form-area')!.style.display = 'none';
 }
 
+// ---- Import JSON ----
+
+function handleImportJSON(): void {
+  if (!selectedProcess) return;
+  // Capture process now — selectedProcess may change before the async FileReader fires
+  const process = selectedProcess;
+  const fileInput = document.getElementById('input-import-json') as HTMLInputElement;
+  const file = fileInput.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const text = ev.target?.result;
+      if (typeof text !== 'string') return;
+
+      const parsed: unknown = JSON.parse(text);
+      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+        showStatus('error', `"${file.name}" is not a valid input JSON — expected an object`);
+        return;
+      }
+      const data = parsed as Record<string, unknown>;
+      const formBody = document.getElementById('form-body')!;
+      const issues: string[] = [];
+
+      if (typeof data.process === 'string' && data.process !== process.label) {
+        issues.push(`process mismatch — file is for "${data.process}"`);
+      }
+
+      const result = populateFormFromData(formBody, process.formGroups, data);
+
+      if (result.missing.length > 0) {
+        const names = result.missing.slice(0, 3).map(f => f.label).join(', ');
+        const tail = result.missing.length > 3 ? ` +${result.missing.length - 3} more` : '';
+        issues.push(`${result.missing.length} field(s) reset to default: ${names}${tail}`);
+      }
+      if (result.extra.length > 0) {
+        const keys = result.extra.slice(0, 3).join(', ');
+        const tail = result.extra.length > 3 ? ` +${result.extra.length - 3} more` : '';
+        issues.push(`${result.extra.length} unknown key(s) ignored: ${keys}${tail}`);
+      }
+
+      let message = `Imported ${result.matched} field(s) from ${file.name}`;
+      if (issues.length > 0) message += '. ' + issues.join('; ');
+      showStatus(issues.length > 0 ? 'info' : 'success', message);
+    } catch {
+      showStatus('error', `Failed to parse "${file.name}" — ensure it is a valid JSON file`);
+    } finally {
+      fileInput.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
 // ---- Export JSON ----
 
 function handleExportJSON(): void {
@@ -244,10 +299,44 @@ function showStatus(type: 'success' | 'error' | 'info', message: string): void {
   icon.textContent = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
   text.textContent = message;
   bar.style.display = 'flex';
+
+  showToast(type, message);
 }
 
 function hideStatus(): void {
   document.getElementById('status-bar')!.style.display = 'none';
+}
+
+// ---- Toast ----
+
+function showToast(type: 'success' | 'error' | 'info', message: string): void {
+  const toast = document.getElementById('toast')!;
+  const icon = document.getElementById('toast-icon')!;
+  const text = document.getElementById('toast-text')!;
+
+  toast.className = `toast ${type}`;
+  icon.textContent = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+  text.textContent = message;
+
+  // Replay animation if toast is already visible
+  toast.style.animation = 'none';
+  void toast.offsetHeight;
+  toast.style.animation = '';
+  toast.style.display = 'flex';
+
+  if (toastTimer) clearTimeout(toastTimer);
+  // Errors stay until dismissed; success/info auto-dismiss after 5s
+  if (type !== 'error') {
+    toastTimer = setTimeout(() => {
+      toast.style.display = 'none';
+      toastTimer = null;
+    }, 5000);
+  }
+}
+
+function hideToast(): void {
+  if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
+  document.getElementById('toast')!.style.display = 'none';
 }
 
 // ---- Button states ----
@@ -256,9 +345,11 @@ function setButtonStates(generateEnabled: boolean, downloadEnabled: boolean): vo
   const btnGenerate = document.getElementById('btn-generate') as HTMLButtonElement;
   const btnDownload = document.getElementById('btn-download') as HTMLButtonElement;
   const btnExportJson = document.getElementById('btn-export-json') as HTMLButtonElement;
+  const btnImportJson = document.getElementById('btn-import-json') as HTMLButtonElement;
   btnGenerate.disabled = !generateEnabled;
   btnDownload.disabled = !downloadEnabled;
   btnExportJson.disabled = !generateEnabled;
+  btnImportJson.disabled = !generateEnabled;
 }
 
 function wireButtons(): void {
@@ -267,6 +358,12 @@ function wireButtons(): void {
     handleDownload().catch(console.error);
   });
   document.getElementById('btn-export-json')!.addEventListener('click', handleExportJSON);
+  document.getElementById('btn-import-json')!.addEventListener('click', () => {
+    (document.getElementById('input-import-json') as HTMLInputElement).click();
+  });
+  document.getElementById('input-import-json')!.addEventListener('change', handleImportJSON);
+  document.getElementById('status-close')!.addEventListener('click', hideStatus);
+  document.getElementById('toast-close')!.addEventListener('click', hideToast);
   wireIndustryLookup();
 }
 

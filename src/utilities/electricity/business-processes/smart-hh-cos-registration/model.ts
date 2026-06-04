@@ -1,31 +1,15 @@
 // ============================================================
-// Electricity COS Registration — Domain Model
+// Electricity Smart HH COS Registration — Domain Model
+// (mirrors NHH COS Registration — diverge here when needed)
 // ============================================================
 
 import type { TestFlag } from '../../../../shared/domain/types';
+import type { RegisterEntry } from '../cos-registration/model';
+export type { RegisterEntry };
 
-export interface RegisterEntry {
-  registerId: string;
-  d0149RegisterCoefficient: string;
-  meterRegisterType: string;
-  measurementQuantityId: string;
-  registerMappingCoefficient: string;
-  numberOfDigits: string;
-  readingDate: string;
-  bscValidationStatus: string;
-  readingType: string;
-  readingValue: string;
-  meterReadingFlag: string;
-  readingMethod: string;
-  estimatedAnnualConsumption: string;
-}
-
-export interface ElectricityCOSRegistrationModel {
-  // Envelope / file settings
+export interface ElectricitySmartHHCOSRegistrationModel {
   testFlag: TestFlag;
-  fileDate: string;    // YYYYMMDD
-
-  // ZHV routing
+  fileDate: string;
   supplierRoleCode: string;
   supplierParticipantId: string;
   oldSupplierRoleCode: string;
@@ -40,8 +24,6 @@ export interface ElectricityCOSRegistrationModel {
   daParticipantId: string;
   dcRoleCode: string;
   dcParticipantId: string;
-
-  // D0260 / D0217 body fields
   instructionNumber: string;
   instructionType: string;
   d0217InstructionType: string;
@@ -50,24 +32,16 @@ export interface ElectricityCOSRegistrationModel {
   collectorType: string;
   mopType: string;
   postcode: string;
-
-  // D0011 fields
   appointmentRef: string;
   registerCode: string;
-
-  // Supply point
   mpan: string;
   msn: string;
-
-  // Technical attributes
   profileClass: string;
   measurementClass: string;
   gspGroupId: string;
   llfClass: string;
   ssc: string;
   sconDate: string;
-
-  // Meter details
   meterType: string;
   mtc: string;
   manufacturersMakeAndType: string;
@@ -79,21 +53,13 @@ export interface ElectricityCOSRegistrationModel {
   retrievalMethod: string;
   retrievalMethodEffectiveDate: string;
   meterInstalledDate: string;
-
-  // CSS identifiers
   supplierGeneratedReference: string;
   registrationRequestId: string;
   cssCorrelationId: string;
   timestampFormat: 'utc' | 'local';
-
-  // Dates
   registrationDate: string;
   cosDate: string;
-
-  // D0012
   regularReadingCycle: string;
-
-  // Per-register data (one entry per register block)
   registers: RegisterEntry[];
 }
 
@@ -119,7 +85,6 @@ function extractRegisters(inputs: Record<string, string>): RegisterEntry[] {
     i++;
   }
   if (registers.length === 0) {
-    // Fallback for legacy single-register flat keys
     registers.push({
       registerId:                 inputs['registerId']                 || '01',
       d0149RegisterCoefficient:   inputs['d0149RegisterCoefficient']   || '1',
@@ -139,9 +104,9 @@ function extractRegisters(inputs: Record<string, string>): RegisterEntry[] {
   return registers;
 }
 
-export function mapFormToCOSModel(
+export function mapFormToSmartHHCOSModel(
   inputs: Record<string, string>
-): ElectricityCOSRegistrationModel {
+): ElectricitySmartHHCOSRegistrationModel {
   return {
     testFlag: (inputs['testFlag'] as TestFlag) || 'OPER',
     fileDate: inputs['fileDate'] || '',

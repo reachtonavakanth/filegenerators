@@ -1,9 +1,9 @@
 // ============================================================
-// Electricity COS Registration — Process Orchestrator
+// Electricity Smart HH COS Registration — Process Orchestrator
 // ============================================================
 
 import type { GeneratedOutput, DFlowEnvelope } from '../../../../shared/domain/types';
-import type { ElectricityCOSRegistrationModel } from './model';
+import type { ElectricitySmartHHCOSRegistrationModel } from './model';
 import { makeDateTime, makeXRef, currentHHMMSS, generateFileIdBase } from '../../../../shared/rendering/dflow-renderer';
 import { STANDING_DATA_STATUS_ACTIVE } from '../../industry-constants';
 
@@ -26,7 +26,7 @@ import {
 
 
 function makeEnvelope(
-  m: ElectricityCOSRegistrationModel,
+  m: ElectricitySmartHHCOSRegistrationModel,
   hhmmss: string,
   flowId: string,
   fileIdBase: number,
@@ -56,8 +56,8 @@ function localISOString(): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(), 3)}`;
 }
 
-export function orchestrateCOSRegistration(
-  m: ElectricityCOSRegistrationModel
+export function orchestrateSmartHHCOSRegistration(
+  m: ElectricitySmartHHCOSRegistrationModel
 ): GeneratedOutput {
   const ts = m.timestampFormat === 'local' ? localISOString() : new Date().toISOString();
   const hhmmss = currentHHMMSS();
@@ -73,7 +73,6 @@ export function orchestrateCOSRegistration(
   const env = (flowId: string, idx: number, seq: string, from: readonly [string, string], to: readonly [string, string]) =>
     makeEnvelope(m, hhmmss, flowId, fileIdBase, idx, seq, from[0], from[1], to[0], to[1]);
 
-  // ---- CSS messages ----
   const css02380 = buildCSS02380_01({
     mpxn: m.mpan,
     registrationRequestId: m.registrationRequestId,
@@ -113,7 +112,6 @@ export function orchestrateCOSRegistration(
     registrationDate: m.registrationDate,
   });
 
-  // ---- D0260 ----
   const d0260 = buildD0260({
     envelope: env('D0260', 1, '002', mpas, supp),
     record758: {
@@ -138,7 +136,6 @@ export function orchestrateCOSRegistration(
     },
   });
 
-  // ---- D0217 ----
   const d0217 = buildD0217({
     envelope: env('D0217', 2, '002', mpas, supp),
     record492: {
@@ -165,7 +162,6 @@ export function orchestrateCOSRegistration(
     },
   });
 
-  // ---- D0011 ----
   const d0011Common = {
     record034: { mpan: m.mpan, contractRef: m.appointmentRef, cosDate: m.cosDate },
     appointmentDate: m.cosDate,
@@ -282,7 +278,6 @@ export function orchestrateCOSRegistration(
     })),
   });
 
-  // ---- D0012 ----
   const d0012 = buildD0012({
     envelope: env('D0012', 11, '001', dc, supp),
     mpan: m.mpan,
@@ -311,8 +306,8 @@ export function orchestrateCOSRegistration(
   });
 
   return {
-    processId: 'cos-registration',
-    processLabel: 'Electricity NHH COS Registration',
+    processId: 'smart-hh-cos-registration',
+    processLabel: 'Electricity Smart HH COS Registration',
     dflows: [
       d0260, d0217,
       d0011_mop, d0011_dc, d0011_da,

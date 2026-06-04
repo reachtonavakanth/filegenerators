@@ -62,10 +62,14 @@
                 <button id="btn-download" class="btn btn-success" disabled>
                   ⬇ Save Files
                 </button>
-                <button id="btn-export-json" class="btn btn-secondary" disabled>
+                <button id="btn-import-json" class="btn btn-teal" disabled>
+                  ⬆ Import JSON
+                </button>
+                <button id="btn-export-json" class="btn btn-purple" disabled>
                   ⬇ Export Input
                 </button>
               </div>
+              <input type="file" id="input-import-json" accept=".json" style="display:none" />
             </div>
 
             <!-- Industry Data Lookup (collapsible) -->
@@ -104,6 +108,7 @@
             <div id="status-bar" class="status-bar" style="display:none;">
               <span id="status-icon">✓</span>
               <span id="status-text"></span>
+              <button id="status-close" class="status-close" aria-label="Dismiss">✕</button>
             </div>
 
             <div id="form-body" class="form-body"></div>
@@ -125,5 +130,11 @@
     </div>
 
     <script type="module" src="/src/main.ts"></script>
+
+    <div id="toast" class="toast" aria-live="polite" style="display:none;">
+      <span id="toast-icon"></span>
+      <span id="toast-text"></span>
+      <button id="toast-close" class="status-close" aria-label="Dismiss">✕</button>
+    </div>
   </body>
 </html>
