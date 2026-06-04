@@ -5,9 +5,7 @@
 import type { GeneratedOutput, DFlowEnvelope } from '../../../../shared/domain/types';
 import type { ElectricitySmartHHCOSRegistrationModel } from './model';
 import { makeDateTime, makeXRef, currentHHMMSS, generateFileIdBase } from '../../../../shared/rendering/dflow-renderer';
-import {
-  STANDING_DATA_STATUS_ACTIVE, VALIDATION_METHOD_VRA,
-} from '../../industry-constants';
+import { STANDING_DATA_STATUS_ACTIVE } from '../../industry-constants';
 
 import { buildD0260 } from '../../dflows/d0260';
 import { buildD0217 } from '../../dflows/d0217';
@@ -29,6 +27,7 @@ import {
 
 function makeEnvelope(
   m: ElectricitySmartHHCOSRegistrationModel,
+  hhmmss: string,
   flowId: string,
   fileIdBase: number,
   fileIndex: number,
@@ -45,7 +44,7 @@ function makeEnvelope(
     fromParticipantId,
     toRoleCode,
     toParticipantId,
-    creationDateTime: makeDateTime(m.fileDate, currentHHMMSS()),
+    creationDateTime: makeDateTime(m.fileDate, hhmmss),
     testFlag: m.testFlag,
     dataFlowId: flowId,
   };
@@ -61,6 +60,7 @@ export function orchestrateSmartHHCOSRegistration(
   m: ElectricitySmartHHCOSRegistrationModel
 ): GeneratedOutput {
   const ts = m.timestampFormat === 'local' ? localISOString() : new Date().toISOString();
+  const hhmmss = currentHHMMSS();
   const fileIdBase = generateFileIdBase();
   const reg0 = m.registers[0];
 
@@ -69,6 +69,9 @@ export function orchestrateSmartHHCOSRegistration(
   const mop  = [m.mopRoleCode, m.mopParticipantId]           as const;
   const da   = [m.daRoleCode, m.daParticipantId]             as const;
   const dc   = [m.dcRoleCode, m.dcParticipantId]             as const;
+
+  const env = (flowId: string, idx: number, seq: string, from: readonly [string, string], to: readonly [string, string]) =>
+    makeEnvelope(m, hhmmss, flowId, fileIdBase, idx, seq, from[0], from[1], to[0], to[1]);
 
   const css02380 = buildCSS02380_01({
     mpxn: m.mpan,
@@ -110,7 +113,7 @@ export function orchestrateSmartHHCOSRegistration(
   });
 
   const d0260 = buildD0260({
-    envelope: makeEnvelope(m, 'D0260', fileIdBase, 1, '002', ...mpas, ...supp),
+    envelope: env('D0260', 1, '002', mpas, supp),
     record758: {
       instructionNumber: m.instructionNumber,
       instructionType: m.instructionType,
@@ -134,7 +137,7 @@ export function orchestrateSmartHHCOSRegistration(
   });
 
   const d0217 = buildD0217({
-    envelope: makeEnvelope(m, 'D0217', fileIdBase, 2, '002', ...mpas, ...supp),
+    envelope: env('D0217', 2, '002', mpas, supp),
     record492: {
       instructionNumber: m.instructionNumber,
       instructionType: m.d0217InstructionType,
@@ -166,21 +169,21 @@ export function orchestrateSmartHHCOSRegistration(
   };
 
   const d0011_mop = buildD0011({
-    envelope: makeEnvelope(m, 'D0011', fileIdBase, 3, '001', ...mop, ...supp),
+    envelope: env('D0011', 3, '001', mop, supp),
     appointmentType: 'MOP',
     ...d0011Common,
   });
   d0011_mop.fileName = `D0011_MOP_${m.fileDate}_001.usr`;
 
   const d0011_dc = buildD0011({
-    envelope: makeEnvelope(m, 'D0011', fileIdBase, 4, '002', ...dc, ...supp),
+    envelope: env('D0011', 4, '002', dc, supp),
     appointmentType: 'DC',
     ...d0011Common,
   });
   d0011_dc.fileName = `D0011_DC_${m.fileDate}_001.usr`;
 
   const d0011_da = buildD0011({
-    envelope: makeEnvelope(m, 'D0011', fileIdBase, 5, '003', ...da, ...supp),
+    envelope: env('D0011', 5, '003', da, supp),
     appointmentType: 'DA',
     ...d0011Common,
   });
@@ -188,7 +191,7 @@ export function orchestrateSmartHHCOSRegistration(
 
   // ---- D0149: one 284 row per register ----
   const d0149 = buildD0149({
-    envelope: makeEnvelope(m, 'D0149', fileIdBase, 6, '001', ...mop, ...supp),
+    envelope: env('D0149', 6, '001', mop, supp),
     mpan: m.mpan,
     cosDate: m.cosDate,
     ssc: m.ssc,
@@ -203,7 +206,7 @@ export function orchestrateSmartHHCOSRegistration(
 
   // ---- D0150: one 293 row per register ----
   const d0150 = buildD0150({
-    envelope: makeEnvelope(m, 'D0150', fileIdBase, 7, '002', ...mop, ...supp),
+    envelope: env('D0150', 7, '002', mop, supp),
     mpan: m.mpan,
     cosDate: m.cosDate,
     energisationStatus: m.energisationStatus,
@@ -230,7 +233,7 @@ export function orchestrateSmartHHCOSRegistration(
 
   // ---- D0052: one 124 row per register ----
   const d0052 = buildD0052({
-    envelope: makeEnvelope(m, 'D0052', fileIdBase, 8, '001', ...supp, ...dc),
+    envelope: env('D0052', 8, '001', supp, dc),
     mpan: m.mpan,
     cosDate: m.cosDate,
     profileClass: m.profileClass,
@@ -245,7 +248,7 @@ export function orchestrateSmartHHCOSRegistration(
 
   // ---- D0010: 026 + 028 once, one 030 per register ----
   const d0010 = buildD0010({
-    envelope: makeEnvelope(m, 'D0010', fileIdBase, 9, '002', ...dc, ...supp),
+    envelope: env('D0010', 9, '002', dc, supp),
     mpan: m.mpan,
     bscValidationStatus: reg0.bscValidationStatus,
     msn: m.msn,
@@ -261,7 +264,7 @@ export function orchestrateSmartHHCOSRegistration(
 
   // ---- D0086: 196 + 197 once, one 198 per register ----
   const d0086 = buildD0086({
-    envelope: makeEnvelope(m, 'D0086', fileIdBase, 10, '002', ...dc, ...supp),
+    envelope: env('D0086', 10, '002', dc, supp),
     mpan: m.mpan,
     bscValidationStatus: reg0.bscValidationStatus,
     msn: m.msn,
@@ -276,24 +279,29 @@ export function orchestrateSmartHHCOSRegistration(
   });
 
   const d0012 = buildD0012({
-    envelope: makeEnvelope(m, 'D0012', fileIdBase, 11, '001', ...dc, ...supp),
+    envelope: env('D0012', 11, '001', dc, supp),
     mpan: m.mpan,
     cosDate: m.cosDate,
     regularReadingCycle: m.regularReadingCycle,
   });
 
-  // ---- D0019: one 026 row per register ----
+  // ---- D0019: MOP → Supplier — one AAD per register ----
   const d0019 = buildD0019({
-    envelope: makeEnvelope(m, 'D0019', fileIdBase, 12, '001', ...dc, ...supp),
-    records026: m.registers.map(r => ({
-      mpan: m.mpan,
-      msn: m.msn,
-      registerId: r.registerId,
-      readDate: r.readingDate,
-      validatedReading: r.readingValue,
-      readingType: r.readingType,
-      validationMethod: VALIDATION_METHOD_VRA,
-      measurementQuantityId: r.measurementQuantityId,
+    envelope: env('D0019', 12, '001', mop, supp),
+    fileSequenceNumber: String(fileIdBase % 9999 + 1),
+    instructionNumber: m.instructionNumber,
+    typeCode: 'NH09',
+    mpan: m.mpan,
+    cosDate: m.cosDate,
+    supplierParticipantId: m.supplierParticipantId,
+    profileClass: m.profileClass,
+    ssc: m.ssc,
+    measurementClass: m.measurementClass,
+    gspGroupId: m.gspGroupId,
+    energisationStatus: m.energisationStatus,
+    aadRecords: m.registers.map(r => ({
+      timePatternRegiment: m.timePatternRegiment,
+      annualisedAdvance: r.estimatedAnnualConsumption,
     })),
   });
 
