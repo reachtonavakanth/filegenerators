@@ -32,7 +32,9 @@ export interface ElectricitySmartHHCOSRegistrationModel {
   collectorType: string;
   mopType: string;
   postcode: string;
-  appointmentRef: string;
+  contractRefMop: string;
+  contractRefDc: string;
+  contractRefDa: string;
   registerCode: string;
   mpan: string;
   msn: string;
@@ -132,7 +134,9 @@ export function mapFormToSmartHHCOSModel(
     collectorType: inputs['collectorType'] || '',
     mopType: inputs['mopType'] || '',
     postcode: inputs['postcode'] || '',
-    appointmentRef: '01',
+    contractRefMop: inputs['contractRefMop'] || '01',
+    contractRefDc:  inputs['contractRefDc']  || '01',
+    contractRefDa:  inputs['contractRefDa']  || '01',
     registerCode: '01',
     mpan: inputs['mpan'] || '',
     msn: inputs['msn'] || '',
