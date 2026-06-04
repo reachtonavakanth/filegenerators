@@ -176,14 +176,14 @@ export function orchestrateSmartHHCOSRegistration(
   d0011_mop.fileName = `D0011_MOP_${m.fileDate}_001.usr`;
 
   const d0011_dc = buildD0011({
-    envelope: env('D0011', 4, '002', dc, supp),
+    envelope: env('D0011', 4, '001', dc, supp),
     appointmentType: 'DC',
     ...d0011Common,
   });
   d0011_dc.fileName = `D0011_DC_${m.fileDate}_001.usr`;
 
   const d0011_da = buildD0011({
-    envelope: env('D0011', 5, '003', da, supp),
+    envelope: env('D0011', 5, '001', da, supp),
     appointmentType: 'DA',
     ...d0011Common,
   });
