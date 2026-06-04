@@ -42,6 +42,7 @@ export function orchestrateEnergisation(
   const ts = new Date().toISOString();
   const correlationId = `COR-EN-${m.mpan.slice(-6)}-${m.fileDate}`;
   const fileIdBase = generateFileIdBase();
+  const reg0 = m.registers[0];
 
   const supp = [m.supplierRoleCode, m.supplierParticipantId] as const;
   const mop  = [m.mopRoleCode, m.mopParticipantId]           as const;
@@ -62,39 +63,45 @@ export function orchestrateEnergisation(
     },
   });
 
-  // ---- D0010: DC → Supplier ----
+  // ---- D0010: DC → Supplier — one 030 per register ----
   const d0010 = buildD0010({
     envelope: makeEnvelope(m, 'D0010', fileIdBase, 2, '002', ...dc, ...supp),
     mpan: m.mpan,
-    bscValidationStatus: m.bscValidationStatus,
+    bscValidationStatus: reg0.bscValidationStatus,
     msn: m.msn,
-    readingType: m.readingType,
-    registerId: m.registerId,
-    readingDateTime: m.readingDate + '000000',
-    readingValue: m.readingValue,
-    meterReadingFlag: m.meterReadingFlag,
-    readingMethod: m.readingMethod,
+    readingType: reg0.readingType,
+    registers: m.registers.map(r => ({
+      registerId: r.registerId,
+      readingDateTime: r.readingDate + '000000',
+      readingValue: r.readingValue,
+      meterReadingFlag: r.meterReadingFlag,
+      readingMethod: r.readingMethod,
+    })),
   });
 
-  // ---- D0149: MOP → Supplier ----
+  // ---- D0149: MOP → Supplier — one 284 per register ----
   const d0149 = buildD0149({
     envelope: makeEnvelope(m, 'D0149', fileIdBase, 3, '001', ...mop, ...supp),
     mpan: m.mpan,
     cosDate: m.requestedDate,
     ssc: m.ssc,
+    sconDate: m.sconDate,
     timePatternRegiment: m.timePatternRegiment,
     msn: m.msn,
-    registerId: m.registerId,
-    registerCoefficient: m.d0149RegisterCoefficient,
+    registers: m.registers.map(r => ({
+      registerId: r.registerId,
+      registerCoefficient: r.d0149RegisterCoefficient,
+    })),
   });
 
-  // ---- D0150: MOP → Supplier ----
+  // ---- D0150: MOP → Supplier — one 293 per register ----
   const d0150 = buildD0150({
     envelope: makeEnvelope(m, 'D0150', fileIdBase, 4, '002', ...mop, ...supp),
     mpan: m.mpan,
     cosDate: m.requestedDate,
     energisationStatus: m.actionRequired,
     ssc: m.ssc,
+    sconDate: m.sconDate,
     msn: m.msn,
     meterLocation: m.meterLocation,
     manufacturersMakeAndType: m.manufacturersMakeAndType,
@@ -105,14 +112,16 @@ export function orchestrateEnergisation(
     retrievalMethod: m.retrievalMethod,
     retrievalMethodEffectiveDate: m.retrievalMethodEffectiveDate,
     ctRatio: m.ctPrimaryRatio,
-    registerId: m.registerId,
-    meterRegisterType: m.meterRegisterType,
-    measurementQuantityId: m.measurementQuantityId,
-    registerMappingCoefficient: m.registerMappingCoefficient,
-    numberOfDigits: m.numberOfDigits,
+    registers: m.registers.map(r => ({
+      registerId: r.registerId,
+      meterRegisterType: r.meterRegisterType,
+      measurementQuantityId: r.measurementQuantityId,
+      registerMappingCoefficient: r.registerMappingCoefficient,
+      numberOfDigits: r.numberOfDigits,
+    })),
   });
 
-  // ---- CSS02380_01: Energisation Notification ----
+  // ---- CSS02380_01 ----
   const css02380 = buildCSS02380_01({
     mpxn: m.mpan,
     registrationRequestId: '',
@@ -120,7 +129,8 @@ export function orchestrateEnergisation(
     correlationId,
     timestamp: ts,
   });
-  // ---- CSS02370_01: Registration Secured Active Notification ----
+
+  // ---- CSS02370_01 ----
   const css02370 = buildCSS02370_01({
     mpxn: m.mpan,
     supplierGeneratedReference: '',

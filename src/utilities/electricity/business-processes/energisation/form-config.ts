@@ -186,6 +186,14 @@ export const energisationFormGroups: FormGroupDefinition[] = [
         placeholder: '0000',
         maxLength: 4,
       },
+      {
+        id: 'sconDate',
+        label: 'Effective from Settlement Date (SCON)',
+        type: 'date',
+        required: false,
+        syncFrom: 'requestedDate',
+        helpText: 'D0149 281[2] / D0150 289[2] — SSC effective from date',
+      },
     ],
   },
   {
@@ -289,6 +297,7 @@ export const energisationFormGroups: FormGroupDefinition[] = [
     id: 'register-readings',
     label: 'Meter Registers & Meter Readings / Consumptions',
     icon: '📋',
+    repeatable: true,
     fields: [
       {
         id: 'registerId',

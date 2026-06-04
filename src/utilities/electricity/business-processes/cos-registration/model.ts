@@ -4,12 +4,28 @@
 
 import type { TestFlag } from '../../../../shared/domain/types';
 
+export interface RegisterEntry {
+  registerId: string;
+  d0149RegisterCoefficient: string;
+  meterRegisterType: string;
+  measurementQuantityId: string;
+  registerMappingCoefficient: string;
+  numberOfDigits: string;
+  readingDate: string;
+  bscValidationStatus: string;
+  readingType: string;
+  readingValue: string;
+  meterReadingFlag: string;
+  readingMethod: string;
+  estimatedAnnualConsumption: string;
+}
+
 export interface ElectricityCOSRegistrationModel {
   // Envelope / file settings
   testFlag: TestFlag;
   fileDate: string;    // YYYYMMDD
 
-  // ZHV routing — per party: Role Code + Participant ID (participant ID also used in D-flow body records)
+  // ZHV routing
   supplierRoleCode: string;
   supplierParticipantId: string;
   oldSupplierRoleCode: string;
@@ -25,79 +41,102 @@ export interface ElectricityCOSRegistrationModel {
   dcRoleCode: string;
   dcParticipantId: string;
 
-  // D0260 758 / D0217 492 body fields
-  instructionNumber: string;     // up to 10-digit integer reference (shared)
-  instructionType: string;       // D0260 instruction type e.g. 'SP43'
-  d0217InstructionType: string;  // D0217 instruction type e.g. 'SP40'
-  energisationStatus: string;    // 'E' | 'D'
-  aggrType: string;              // Data Aggregation Type: 'H' | 'N'
-  collectorType: string;         // Data Collector Type:   'H' | 'N'
-  mopType: string;               // Meter Operator Type:   'H' | 'N'
-
-  // D0217 492 — postcode (field[16])
+  // D0260 / D0217 body fields
+  instructionNumber: string;
+  instructionType: string;
+  d0217InstructionType: string;
+  energisationStatus: string;
+  aggrType: string;
+  collectorType: string;
+  mopType: string;
   postcode: string;
 
-  // D0011 034/037/038 fields
-  appointmentRef: string;  // e.g. 'GMTRNDA001'
-  registerCode: string;    // D0011 038 Service Reference (field[1]) & Service Level Reference (field[2]) — same value, alphanumeric max 4
+  // D0011 fields
+  appointmentRef: string;
+  registerCode: string;
 
   // Supply point
-  mpan: string;        // 13-digit MPAN
-  msn: string;         // Meter Serial Number
+  mpan: string;
+  msn: string;
 
   // Technical attributes
   profileClass: string;
   measurementClass: string;
   gspGroupId: string;
-  llfClass: string;    // Line Loss Factor Class
-  ssc: string;         // Standard Settlement Configuration
+  llfClass: string;
+  ssc: string;
+  sconDate: string;
 
   // Meter details
-  meterType: string;   // e.g. 'S1A', 'E7A', 'H'
-  mtc: string;         // Meter Timeswitch Code
+  meterType: string;
+  mtc: string;
   manufacturersMakeAndType: string;
   ctPrimaryRatio: string;
-  numberOfDigits: string;
-  registerId: string;  // default '01'
-  measurementQuantityId: string; // AI / RI / AQ
-  timePatternRegiment: string;   // TPR code
+  timePatternRegiment: string;
+  meterLocation: string;
+  meterAssetProviderId: string;
+  certificationDate: string;
+  retrievalMethod: string;
+  retrievalMethodEffectiveDate: string;
+  meterInstalledDate: string;
 
-  // CSS Registration identifiers (user-provided)
-  supplierGeneratedReference: string; // e.g. SC000000549
-  registrationRequestId: string;      // GUID — registrationRequestId in CSS02380_01
-  cssCorrelationId: string;           // GUID — correlationId shared across CSS02380_01 & CSS02300_01
-  timestampFormat: 'utc' | 'local';   // Controls time part of registrationStatusFromDate in CSS messages
+  // CSS identifiers
+  supplierGeneratedReference: string;
+  registrationRequestId: string;
+  cssCorrelationId: string;
+  timestampFormat: 'utc' | 'local';
 
   // Dates
-  registrationDate: string;      // YYYYMMDD supply start
-  cosDate: string;               // YYYYMMDD change of supplier effective date
-  meterInstalledDate: string;    // YYYYMMDD
+  registrationDate: string;
+  cosDate: string;
 
-  // Readings
-  readingType: string;           // A=Actual, I=Initial, F=Final, P=Periodic, C=Customer, E=Estimated, D=Deemed
-  readingValue: string;
-  readingDate: string;           // YYYYMMDD
-  estimatedAnnualConsumption: string; // kWh
+  // D0012
+  regularReadingCycle: string;
 
-  // D0149 / D0150 standing data fields
-  meterLocation: string;                 // D0150 290[4] — Meter Location code (A–Z)
-  meterAssetProviderId: string;          // D0150 290[6] — MAP participant ID e.g. 'UFUN'
-  certificationDate: string;             // D0150 290[19] — YYYYMMDD certification date
-  retrievalMethod: string;               // D0150 290[23] — H/M/N/R/S/U
-  retrievalMethodEffectiveDate: string;  // D0150 290[24] — YYYYMMDD
-  meterRegisterType: string;             // D0150 293[1] — C/M/1/2/3/4
-  registerMappingCoefficient: string;    // D0149 284[2] / D0150 293[3] — e.g. '1' / '1.00'
+  // Per-register data (one entry per register block)
+  registers: RegisterEntry[];
+}
 
-  // D0010 / D0086 fields
-  bscValidationStatus: string;  // 026[1] / 196[1] — V/U/F
-  meterReadingFlag: string;     // 030[5] / 198[5] — T/F
-  readingMethod: string;        // 030[6] / 198[6] — N/P
-
-  // D0012 field
-  regularReadingCycle: string;  // 039[2] — A/B/D/E/H/M/N/O/Q/S/T/W/Z
-
-  // D0149 284[1] — separate from D0150 293[3] registerMappingCoefficient
-  d0149RegisterCoefficient: string; // '1' or '-1'
+function extractRegisters(inputs: Record<string, string>): RegisterEntry[] {
+  const registers: RegisterEntry[] = [];
+  let i = 0;
+  while (`registerId_${i}` in inputs) {
+    registers.push({
+      registerId:                 inputs[`registerId_${i}`]                 || '01',
+      d0149RegisterCoefficient:   inputs[`d0149RegisterCoefficient_${i}`]   || '1',
+      meterRegisterType:          inputs[`meterRegisterType_${i}`]          || 'C',
+      measurementQuantityId:      inputs[`measurementQuantityId_${i}`]      || 'AI',
+      registerMappingCoefficient: inputs[`registerMappingCoefficient_${i}`] || '1.00',
+      numberOfDigits:             inputs[`numberOfDigits_${i}`]             || '5',
+      readingDate:                inputs[`readingDate_${i}`]                || '',
+      bscValidationStatus:        inputs[`bscValidationStatus_${i}`]        || 'V',
+      readingType:                inputs[`readingType_${i}`]                || 'I',
+      readingValue:               inputs[`readingValue_${i}`]               || '00000.0',
+      meterReadingFlag:           inputs[`meterReadingFlag_${i}`]           || 'T',
+      readingMethod:              inputs[`readingMethod_${i}`]              || 'N',
+      estimatedAnnualConsumption: inputs[`estimatedAnnualConsumption_${i}`] || '3100',
+    });
+    i++;
+  }
+  if (registers.length === 0) {
+    // Fallback for legacy single-register flat keys
+    registers.push({
+      registerId:                 inputs['registerId']                 || '01',
+      d0149RegisterCoefficient:   inputs['d0149RegisterCoefficient']   || '1',
+      meterRegisterType:          inputs['meterRegisterType']          || 'C',
+      measurementQuantityId:      inputs['measurementQuantityId']      || 'AI',
+      registerMappingCoefficient: inputs['registerMappingCoefficient'] || '1.00',
+      numberOfDigits:             inputs['numberOfDigits']             || '5',
+      readingDate:                inputs['readingDate']                || '',
+      bscValidationStatus:        inputs['bscValidationStatus']        || 'V',
+      readingType:                inputs['readingType']                || 'I',
+      readingValue:               inputs['readingValue']               || '00000.0',
+      meterReadingFlag:           inputs['meterReadingFlag']           || 'T',
+      readingMethod:              inputs['readingMethod']              || 'N',
+      estimatedAnnualConsumption: inputs['estimatedAnnualConsumption'] || '3100',
+    });
+  }
+  return registers;
 }
 
 export function mapFormToCOSModel(
@@ -137,36 +176,25 @@ export function mapFormToCOSModel(
     gspGroupId: inputs['gspGroupId'] || '',
     llfClass: inputs['llfClass'] || '001',
     ssc: inputs['ssc'] || '0000',
+    sconDate: inputs['sconDate'] || inputs['cosDate'] || inputs['registrationDate'] || '',
     meterType: inputs['meterType'] || 'S1A',
     mtc: inputs['mtc'] || '001',
     manufacturersMakeAndType: inputs['manufacturersMakeAndType'] || '',
     ctPrimaryRatio: inputs['ctPrimaryRatio'] || '1',
-    numberOfDigits: inputs['numberOfDigits'] || '5',
-    registerId: inputs['registerId'] || '01',
-    measurementQuantityId: inputs['measurementQuantityId'] || 'AI',
     timePatternRegiment: inputs['timePatternRegiment'] || '00001',
-    supplierGeneratedReference: inputs['supplierGeneratedReference'] || '',
-    registrationRequestId: inputs['registrationRequestId'] || '',
-    cssCorrelationId: inputs['cssCorrelationId'] || '',
-    timestampFormat: (inputs['timestampFormat'] === 'local' ? 'local' : 'utc'),
-    registrationDate: inputs['registrationDate'] || '',
-    cosDate: inputs['cosDate'] || inputs['registrationDate'] || '',
-    meterInstalledDate: inputs['meterInstalledDate'] || '',
-    readingType: inputs['readingType'] || 'A',
-    readingValue: inputs['readingValue'] || '00000',
-    readingDate: inputs['readingDate'] || inputs['registrationDate'] || '',
-    estimatedAnnualConsumption: inputs['estimatedAnnualConsumption'] || '3100',
     meterLocation: inputs['meterLocation'] || 'J',
     meterAssetProviderId: inputs['meterAssetProviderId'] || '',
     certificationDate: inputs['certificationDate'] || '',
     retrievalMethod: inputs['retrievalMethod'] || 'R',
     retrievalMethodEffectiveDate: inputs['retrievalMethodEffectiveDate'] || '',
-    meterRegisterType: inputs['meterRegisterType'] || 'C',
-    registerMappingCoefficient: inputs['registerMappingCoefficient'] || '1.00',
-    bscValidationStatus: inputs['bscValidationStatus'] || 'V',
-    meterReadingFlag: inputs['meterReadingFlag'] || 'T',
-    readingMethod: inputs['readingMethod'] || 'N',
+    meterInstalledDate: inputs['meterInstalledDate'] || '',
+    supplierGeneratedReference: inputs['supplierGeneratedReference'] || '',
+    registrationRequestId: inputs['registrationRequestId'] || '',
+    cssCorrelationId: inputs['cssCorrelationId'] || '',
+    timestampFormat: inputs['timestampFormat'] === 'local' ? 'local' : 'utc',
+    registrationDate: inputs['registrationDate'] || '',
+    cosDate: inputs['cosDate'] || inputs['registrationDate'] || '',
     regularReadingCycle: inputs['regularReadingCycle'] || 'D',
-    d0149RegisterCoefficient: inputs['d0149RegisterCoefficient'] || '1',
+    registers: extractRegisters(inputs),
   };
 }

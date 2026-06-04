@@ -1,6 +1,5 @@
 // ============================================================
 // Electricity Smart HH COS Registration — Process Orchestrator
-// (mirrors NHH COS Registration — diverge here when needed)
 // ============================================================
 
 import type { GeneratedOutput, DFlowEnvelope } from '../../../../shared/domain/types';
@@ -63,6 +62,7 @@ export function orchestrateSmartHHCOSRegistration(
 ): GeneratedOutput {
   const ts = m.timestampFormat === 'local' ? localISOString() : new Date().toISOString();
   const fileIdBase = generateFileIdBase();
+  const reg0 = m.registers[0];
 
   const mpas = [m.mpasRoleCode, m.mpasParticipantId]         as const;
   const supp = [m.supplierRoleCode, m.supplierParticipantId] as const;
@@ -186,23 +186,29 @@ export function orchestrateSmartHHCOSRegistration(
   });
   d0011_da.fileName = `D0011_DA_${m.fileDate}_001.usr`;
 
+  // ---- D0149: one 284 row per register ----
   const d0149 = buildD0149({
     envelope: makeEnvelope(m, 'D0149', fileIdBase, 6, '001', ...mop, ...supp),
     mpan: m.mpan,
     cosDate: m.cosDate,
     ssc: m.ssc,
+    sconDate: m.sconDate,
     timePatternRegiment: m.timePatternRegiment,
     msn: m.msn,
-    registerId: m.registerId,
-    registerCoefficient: m.d0149RegisterCoefficient,
+    registers: m.registers.map(r => ({
+      registerId: r.registerId,
+      registerCoefficient: r.d0149RegisterCoefficient,
+    })),
   });
 
+  // ---- D0150: one 293 row per register ----
   const d0150 = buildD0150({
     envelope: makeEnvelope(m, 'D0150', fileIdBase, 7, '002', ...mop, ...supp),
     mpan: m.mpan,
     cosDate: m.cosDate,
     energisationStatus: m.energisationStatus,
     ssc: m.ssc,
+    sconDate: m.sconDate,
     msn: m.msn,
     meterLocation: m.meterLocation,
     manufacturersMakeAndType: m.manufacturersMakeAndType,
@@ -213,13 +219,16 @@ export function orchestrateSmartHHCOSRegistration(
     retrievalMethod: m.retrievalMethod,
     retrievalMethodEffectiveDate: m.retrievalMethodEffectiveDate,
     ctRatio: m.ctPrimaryRatio,
-    registerId: m.registerId,
-    meterRegisterType: m.meterRegisterType,
-    measurementQuantityId: m.measurementQuantityId,
-    registerMappingCoefficient: m.registerMappingCoefficient,
-    numberOfDigits: m.numberOfDigits,
+    registers: m.registers.map(r => ({
+      registerId: r.registerId,
+      meterRegisterType: r.meterRegisterType,
+      measurementQuantityId: r.measurementQuantityId,
+      registerMappingCoefficient: r.registerMappingCoefficient,
+      numberOfDigits: r.numberOfDigits,
+    })),
   });
 
+  // ---- D0052: one 124 row per register ----
   const d0052 = buildD0052({
     envelope: makeEnvelope(m, 'D0052', fileIdBase, 8, '001', ...supp, ...dc),
     mpan: m.mpan,
@@ -229,33 +238,41 @@ export function orchestrateSmartHHCOSRegistration(
     ssc: m.ssc,
     gspGroupId: m.gspGroupId,
     timePatternRegiment: m.timePatternRegiment,
-    estimatedAnnualConsumption: m.estimatedAnnualConsumption,
+    registers: m.registers.map(r => ({
+      estimatedAnnualConsumption: r.estimatedAnnualConsumption,
+    })),
   });
 
+  // ---- D0010: 026 + 028 once, one 030 per register ----
   const d0010 = buildD0010({
     envelope: makeEnvelope(m, 'D0010', fileIdBase, 9, '002', ...dc, ...supp),
     mpan: m.mpan,
-    bscValidationStatus: m.bscValidationStatus,
+    bscValidationStatus: reg0.bscValidationStatus,
     msn: m.msn,
-    readingType: m.readingType,
-    registerId: m.registerId,
-    readingDateTime: m.readingDate + '000000',
-    readingValue: m.readingValue,
-    meterReadingFlag: m.meterReadingFlag,
-    readingMethod: m.readingMethod,
+    readingType: reg0.readingType,
+    registers: m.registers.map(r => ({
+      registerId: r.registerId,
+      readingDateTime: r.readingDate + '000000',
+      readingValue: r.readingValue,
+      meterReadingFlag: r.meterReadingFlag,
+      readingMethod: r.readingMethod,
+    })),
   });
 
+  // ---- D0086: 196 + 197 once, one 198 per register ----
   const d0086 = buildD0086({
     envelope: makeEnvelope(m, 'D0086', fileIdBase, 10, '002', ...dc, ...supp),
     mpan: m.mpan,
-    bscValidationStatus: m.bscValidationStatus,
+    bscValidationStatus: reg0.bscValidationStatus,
     msn: m.msn,
-    readingType: m.readingType,
-    registerId: m.registerId,
-    readingDateTime: m.readingDate + '000000',
-    readingValue: m.readingValue,
-    meterReadingFlag: m.meterReadingFlag,
-    readingMethod: m.readingMethod,
+    readingType: reg0.readingType,
+    registers: m.registers.map(r => ({
+      registerId: r.registerId,
+      readingDateTime: r.readingDate + '000000',
+      readingValue: r.readingValue,
+      meterReadingFlag: r.meterReadingFlag,
+      readingMethod: r.readingMethod,
+    })),
   });
 
   const d0012 = buildD0012({
@@ -265,20 +282,19 @@ export function orchestrateSmartHHCOSRegistration(
     regularReadingCycle: m.regularReadingCycle,
   });
 
+  // ---- D0019: one 026 row per register ----
   const d0019 = buildD0019({
     envelope: makeEnvelope(m, 'D0019', fileIdBase, 12, '001', ...dc, ...supp),
-    records026: [
-      {
-        mpan: m.mpan,
-        msn: m.msn,
-        registerId: m.registerId,
-        readDate: m.readingDate,
-        validatedReading: m.readingValue,
-        readingType: m.readingType,
-        validationMethod: VALIDATION_METHOD_VRA,
-        measurementQuantityId: m.measurementQuantityId,
-      },
-    ],
+    records026: m.registers.map(r => ({
+      mpan: m.mpan,
+      msn: m.msn,
+      registerId: r.registerId,
+      readDate: r.readingDate,
+      validatedReading: r.readingValue,
+      readingType: r.readingType,
+      validationMethod: VALIDATION_METHOD_VRA,
+      measurementQuantityId: r.measurementQuantityId,
+    })),
   });
 
   return {

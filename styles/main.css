@@ -445,6 +445,86 @@ html, body {
   gap: 14px;
 }
 
+/* ---- Add Another Register button (in group header) ---- */
+.btn-add-register {
+  margin-left: auto;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--accent-blue);
+  background: rgba(79, 110, 247, 0.12);
+  color: var(--accent-blue-light);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.btn-add-register:hover {
+  background: rgba(79, 110, 247, 0.25);
+}
+
+/* ---- Repeatable group body — stacks blocks vertically ---- */
+.repeatable-group-body {
+  display: flex !important;
+  flex-direction: column;
+  gap: 0;
+  padding: 0 !important;
+}
+
+/* ---- Individual register block ---- */
+.register-block {
+  border-bottom: 1px solid var(--border);
+}
+
+.register-block:last-child {
+  border-bottom: none;
+}
+
+.register-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--border);
+}
+
+.register-block-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent-blue-light);
+}
+
+.btn-remove-register {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--accent-red);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-remove-register:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: var(--accent-red);
+}
+
+/* ---- Fields grid inside a register block ---- */
+.register-block-fields {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
 /* ---- Form Fields ---- */
 .field-wrapper {
   display: flex;

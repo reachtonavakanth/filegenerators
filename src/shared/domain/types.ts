@@ -78,6 +78,7 @@ export interface FormFieldDefinition {
   maxLength?: number;
   pattern?: string;
   readOnly?: boolean;
+  syncFrom?: string;  // field id to mirror; keeps in sync until user manually edits this field
 }
 
 export interface FormGroupDefinition {
@@ -85,6 +86,7 @@ export interface FormGroupDefinition {
   label: string;
   icon: string;
   fields: FormFieldDefinition[];
+  repeatable?: boolean;
 }
 
 export interface ProcessDefinition {

@@ -4,6 +4,8 @@
 // ============================================================
 
 import type { TestFlag } from '../../../../shared/domain/types';
+import type { RegisterEntry } from '../cos-registration/model';
+export type { RegisterEntry };
 
 export interface ElectricitySmartHHCOSRegistrationModel {
   testFlag: TestFlag;
@@ -39,37 +41,67 @@ export interface ElectricitySmartHHCOSRegistrationModel {
   gspGroupId: string;
   llfClass: string;
   ssc: string;
+  sconDate: string;
   meterType: string;
   mtc: string;
   manufacturersMakeAndType: string;
   ctPrimaryRatio: string;
-  numberOfDigits: string;
-  registerId: string;
-  measurementQuantityId: string;
   timePatternRegiment: string;
+  meterLocation: string;
+  meterAssetProviderId: string;
+  certificationDate: string;
+  retrievalMethod: string;
+  retrievalMethodEffectiveDate: string;
+  meterInstalledDate: string;
   supplierGeneratedReference: string;
   registrationRequestId: string;
   cssCorrelationId: string;
   timestampFormat: 'utc' | 'local';
   registrationDate: string;
   cosDate: string;
-  meterInstalledDate: string;
-  readingType: string;
-  readingValue: string;
-  readingDate: string;
-  estimatedAnnualConsumption: string;
-  meterLocation: string;
-  meterAssetProviderId: string;
-  certificationDate: string;
-  retrievalMethod: string;
-  retrievalMethodEffectiveDate: string;
-  meterRegisterType: string;
-  registerMappingCoefficient: string;
-  bscValidationStatus: string;
-  meterReadingFlag: string;
-  readingMethod: string;
   regularReadingCycle: string;
-  d0149RegisterCoefficient: string;
+  registers: RegisterEntry[];
+}
+
+function extractRegisters(inputs: Record<string, string>): RegisterEntry[] {
+  const registers: RegisterEntry[] = [];
+  let i = 0;
+  while (`registerId_${i}` in inputs) {
+    registers.push({
+      registerId:                 inputs[`registerId_${i}`]                 || '01',
+      d0149RegisterCoefficient:   inputs[`d0149RegisterCoefficient_${i}`]   || '1',
+      meterRegisterType:          inputs[`meterRegisterType_${i}`]          || 'C',
+      measurementQuantityId:      inputs[`measurementQuantityId_${i}`]      || 'AI',
+      registerMappingCoefficient: inputs[`registerMappingCoefficient_${i}`] || '1.00',
+      numberOfDigits:             inputs[`numberOfDigits_${i}`]             || '5',
+      readingDate:                inputs[`readingDate_${i}`]                || '',
+      bscValidationStatus:        inputs[`bscValidationStatus_${i}`]        || 'V',
+      readingType:                inputs[`readingType_${i}`]                || 'I',
+      readingValue:               inputs[`readingValue_${i}`]               || '00000.0',
+      meterReadingFlag:           inputs[`meterReadingFlag_${i}`]           || 'T',
+      readingMethod:              inputs[`readingMethod_${i}`]              || 'N',
+      estimatedAnnualConsumption: inputs[`estimatedAnnualConsumption_${i}`] || '3100',
+    });
+    i++;
+  }
+  if (registers.length === 0) {
+    registers.push({
+      registerId:                 inputs['registerId']                 || '01',
+      d0149RegisterCoefficient:   inputs['d0149RegisterCoefficient']   || '1',
+      meterRegisterType:          inputs['meterRegisterType']          || 'C',
+      measurementQuantityId:      inputs['measurementQuantityId']      || 'AI',
+      registerMappingCoefficient: inputs['registerMappingCoefficient'] || '1.00',
+      numberOfDigits:             inputs['numberOfDigits']             || '5',
+      readingDate:                inputs['readingDate']                || '',
+      bscValidationStatus:        inputs['bscValidationStatus']        || 'V',
+      readingType:                inputs['readingType']                || 'I',
+      readingValue:               inputs['readingValue']               || '00000.0',
+      meterReadingFlag:           inputs['meterReadingFlag']           || 'T',
+      readingMethod:              inputs['readingMethod']              || 'N',
+      estimatedAnnualConsumption: inputs['estimatedAnnualConsumption'] || '3100',
+    });
+  }
+  return registers;
 }
 
 export function mapFormToSmartHHCOSModel(
@@ -109,36 +141,25 @@ export function mapFormToSmartHHCOSModel(
     gspGroupId: inputs['gspGroupId'] || '',
     llfClass: inputs['llfClass'] || '001',
     ssc: inputs['ssc'] || '0000',
+    sconDate: inputs['sconDate'] || inputs['cosDate'] || inputs['registrationDate'] || '',
     meterType: inputs['meterType'] || 'S1A',
     mtc: inputs['mtc'] || '001',
     manufacturersMakeAndType: inputs['manufacturersMakeAndType'] || '',
     ctPrimaryRatio: inputs['ctPrimaryRatio'] || '1',
-    numberOfDigits: inputs['numberOfDigits'] || '5',
-    registerId: inputs['registerId'] || '01',
-    measurementQuantityId: inputs['measurementQuantityId'] || 'AI',
     timePatternRegiment: inputs['timePatternRegiment'] || '00001',
-    supplierGeneratedReference: inputs['supplierGeneratedReference'] || '',
-    registrationRequestId: inputs['registrationRequestId'] || '',
-    cssCorrelationId: inputs['cssCorrelationId'] || '',
-    timestampFormat: (inputs['timestampFormat'] === 'local' ? 'local' : 'utc'),
-    registrationDate: inputs['registrationDate'] || '',
-    cosDate: inputs['cosDate'] || inputs['registrationDate'] || '',
-    meterInstalledDate: inputs['meterInstalledDate'] || '',
-    readingType: inputs['readingType'] || 'A',
-    readingValue: inputs['readingValue'] || '00000',
-    readingDate: inputs['readingDate'] || inputs['registrationDate'] || '',
-    estimatedAnnualConsumption: inputs['estimatedAnnualConsumption'] || '3100',
     meterLocation: inputs['meterLocation'] || 'J',
     meterAssetProviderId: inputs['meterAssetProviderId'] || '',
     certificationDate: inputs['certificationDate'] || '',
     retrievalMethod: inputs['retrievalMethod'] || 'R',
     retrievalMethodEffectiveDate: inputs['retrievalMethodEffectiveDate'] || '',
-    meterRegisterType: inputs['meterRegisterType'] || 'C',
-    registerMappingCoefficient: inputs['registerMappingCoefficient'] || '1.00',
-    bscValidationStatus: inputs['bscValidationStatus'] || 'V',
-    meterReadingFlag: inputs['meterReadingFlag'] || 'T',
-    readingMethod: inputs['readingMethod'] || 'N',
+    meterInstalledDate: inputs['meterInstalledDate'] || '',
+    supplierGeneratedReference: inputs['supplierGeneratedReference'] || '',
+    registrationRequestId: inputs['registrationRequestId'] || '',
+    cssCorrelationId: inputs['cssCorrelationId'] || '',
+    timestampFormat: inputs['timestampFormat'] === 'local' ? 'local' : 'utc',
+    registrationDate: inputs['registrationDate'] || '',
+    cosDate: inputs['cosDate'] || inputs['registrationDate'] || '',
     regularReadingCycle: inputs['regularReadingCycle'] || 'D',
-    d0149RegisterCoefficient: inputs['d0149RegisterCoefficient'] || '1',
+    registers: extractRegisters(inputs),
   };
 }

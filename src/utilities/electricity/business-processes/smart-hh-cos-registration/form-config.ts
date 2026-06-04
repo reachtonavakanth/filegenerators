@@ -219,6 +219,14 @@ export const smartHHCOSRegistrationFormGroups: FormGroupDefinition[] = [
         maxLength: 4,
         helpText: 'SSC code (NHH only)',
       },
+      {
+        id: 'sconDate',
+        label: 'Effective from Settlement Date (SCON)',
+        type: 'date',
+        required: false,
+        syncFrom: 'cosDate',
+        helpText: 'D0149 281[2] / D0150 289[2] — SSC effective from date',
+      },
     ],
   },
   {
@@ -320,6 +328,7 @@ export const smartHHCOSRegistrationFormGroups: FormGroupDefinition[] = [
     id: 'register-readings',
     label: 'Meter Registers & Meter Readings / Consumptions',
     icon: '📋',
+    repeatable: true,
     fields: [
       {
         id: 'registerId',
