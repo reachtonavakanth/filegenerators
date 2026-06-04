@@ -163,6 +163,9 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
       { id: 'collectorType',          label: 'Data Collector Type',          type: 'select', required: true, options: HH_TYPE_OPTIONS },
       { id: 'mopType',                label: 'Meter Operator Type',          type: 'select', required: true, options: HH_TYPE_OPTIONS },
       { id: 'postcode', label: 'Postcode', type: 'text', required: true, placeholder: 'GU1 4HN' },
+      { id: 'contractRefMop', label: 'GMTRMOP001', type: 'text', required: true, placeholder: 'GMTRMOP001', helpText: 'D0011 034[2] — MOP appointment contract reference' },
+      { id: 'contractRefDc',  label: 'GMTRDC001',  type: 'text', required: true, placeholder: 'GMTRDC001',  helpText: 'D0011 034[2] — DC appointment contract reference' },
+      { id: 'contractRefDa',  label: 'GMTRDA001',  type: 'text', required: true, placeholder: 'GMTRDA001',  helpText: 'D0011 034[2] — DA appointment contract reference' },
       {
         id: 'regularReadingCycle',
         label: 'Regular Reading Cycle',

@@ -51,8 +51,10 @@ export interface ElectricityCOSRegistrationModel {
   mopType: string;
   postcode: string;
 
-  // D0011 fields
-  appointmentRef: string;
+  // D0011 034[2] contract references — one per appointment type
+  contractRefMop: string;
+  contractRefDc: string;
+  contractRefDa: string;
   registerCode: string;
 
   // Supply point
@@ -167,7 +169,9 @@ export function mapFormToCOSModel(
     collectorType: inputs['collectorType'] || '',
     mopType: inputs['mopType'] || '',
     postcode: inputs['postcode'] || '',
-    appointmentRef: '01',
+    contractRefMop: inputs['contractRefMop'] || '01',
+    contractRefDc:  inputs['contractRefDc']  || '01',
+    contractRefDa:  inputs['contractRefDa']  || '01',
     registerCode: '01',
     mpan: inputs['mpan'] || '',
     msn: inputs['msn'] || '',
