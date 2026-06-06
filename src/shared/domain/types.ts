@@ -57,6 +57,24 @@ export interface GeneratedOutput {
   cssMessages: CSSMessage[];
 }
 
+// ---- Meter register entry — shared across NHH COS, Smart HH COS, Energisation ----
+
+export interface RegisterEntry {
+  registerId: string;
+  d0149RegisterCoefficient: string;
+  meterRegisterType: string;
+  measurementQuantityId: string;
+  registerMappingCoefficient: string;
+  numberOfDigits: string;
+  readingDate: string;
+  bscValidationStatus: string;
+  readingType: string;
+  readingValue: string;
+  meterReadingFlag: string;
+  readingMethod: string;
+  estimatedAnnualConsumption: string;
+}
+
 // ============================================================
 // UI / Form Types
 // ============================================================
@@ -69,7 +87,7 @@ export interface FormFieldOption {
 export interface FormFieldDefinition {
   id: string;
   label: string;
-  type: 'text' | 'select' | 'date' | 'time' | 'number';
+  type: 'text' | 'select' | 'date' | 'time' | 'number' | 'heading';
   required: boolean;
   defaultValue?: string;
   options?: FormFieldOption[];

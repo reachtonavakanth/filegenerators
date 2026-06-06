@@ -1,10 +1,8 @@
 // ============================================================
-// Electricity Smart HH COS Registration — Domain Model
-// (mirrors NHH COS Registration — diverge here when needed)
+// Electricity NHH Smart COS Registration — Domain Model
 // ============================================================
 
-import type { TestFlag } from '../../../../shared/domain/types';
-import type { RegisterEntry } from '../cos-registration/model';
+import type { TestFlag, RegisterEntry } from '../../../../shared/domain/types';
 export type { RegisterEntry };
 
 export interface ElectricitySmartHHCOSRegistrationModel {

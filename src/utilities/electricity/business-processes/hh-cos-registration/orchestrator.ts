@@ -1,22 +1,16 @@
-// ============================================================
-// Electricity NHH Smart COS Registration — Process Orchestrator
-// ============================================================
+// HH Advanced COS Registration — Process Orchestrator
 
 import type { GeneratedOutput, DFlowEnvelope } from '../../../../shared/domain/types';
-import type { ElectricitySmartHHCOSRegistrationModel } from './model';
+import type { ElectricityHHCOSRegistrationModel } from './model';
 import { makeDateTime, makeXRef, currentHHMMSS, generateFileIdBase } from '../../../../shared/rendering/dflow-renderer';
 import { STANDING_DATA_STATUS_ACTIVE } from '../../industry-constants';
 
 import { buildD0260 } from '../../dflows/d0260';
 import { buildD0217 } from '../../dflows/d0217';
 import { buildD0011 } from '../../dflows/d0011';
-import { buildD0149 } from '../../dflows/d0149';
-import { buildD0150 } from '../../dflows/d0150';
-import { buildD0052 } from '../../dflows/d0052';
-import { buildD0010 } from '../../dflows/d0010';
-import { buildD0086 } from '../../dflows/d0086';
-import { buildD0012 } from '../../dflows/d0012';
-import { buildD0019 } from '../../dflows/d0019';
+import { buildD0051 } from '../../dflows/d0051';
+import { buildD0268 } from '../../dflows/d0268';
+import { buildD0036 } from '../../dflows/d0036';
 import {
   buildCSS02300_01,
   buildCSS02380_01,
@@ -24,9 +18,8 @@ import {
   buildCSS02370_03,
 } from '../../css/builders';
 
-
 function makeEnvelope(
-  m: ElectricitySmartHHCOSRegistrationModel,
+  m: ElectricityHHCOSRegistrationModel,
   hhmmss: string,
   flowId: string,
   fileIdBase: number,
@@ -56,13 +49,12 @@ function localISOString(): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(), 3)}`;
 }
 
-export function orchestrateSmartHHCOSRegistration(
-  m: ElectricitySmartHHCOSRegistrationModel
+export function orchestrateHHCOSRegistration(
+  m: ElectricityHHCOSRegistrationModel
 ): GeneratedOutput {
   const ts = m.timestampFormat === 'local' ? localISOString() : new Date().toISOString();
   const hhmmss = currentHHMMSS();
   const fileIdBase = generateFileIdBase();
-  const reg0 = m.registers[0];
 
   const mpas = [m.mpasRoleCode, m.mpasParticipantId]         as const;
   const supp = [m.supplierRoleCode, m.supplierParticipantId] as const;
@@ -73,6 +65,7 @@ export function orchestrateSmartHHCOSRegistration(
   const env = (flowId: string, idx: number, seq: string, from: readonly [string, string], to: readonly [string, string]) =>
     makeEnvelope(m, hhmmss, flowId, fileIdBase, idx, seq, from[0], from[1], to[0], to[1]);
 
+  // ---- CSS messages ----
   const css02380 = buildCSS02380_01({
     mpxn: m.mpan,
     registrationRequestId: m.registrationRequestId,
@@ -112,6 +105,7 @@ export function orchestrateSmartHHCOSRegistration(
     registrationDate: m.registrationDate,
   });
 
+  // ---- D0260 ----
   const d0260 = buildD0260({
     envelope: env('D0260', 1, '002', mpas, supp),
     record758: {
@@ -122,7 +116,7 @@ export function orchestrateSmartHHCOSRegistration(
       oldSupplierParticipantId: m.oldSupplierParticipantId,
       energisationStatus: m.energisationStatus,
       measurementClass: m.measurementClass,
-      mtc: m.mtc,
+      mtc: '',
       profileClass: m.profileClass,
       ssc: m.ssc,
       aggrParticipantId: m.daParticipantId,
@@ -136,6 +130,7 @@ export function orchestrateSmartHHCOSRegistration(
     },
   });
 
+  // ---- D0217 ----
   const d0217 = buildD0217({
     envelope: env('D0217', 2, '002', mpas, supp),
     record492: {
@@ -149,7 +144,7 @@ export function orchestrateSmartHHCOSRegistration(
       gspGroupId: m.gspGroupId,
       energisationStatus: m.energisationStatus,
       measurementClass: m.measurementClass,
-      mtc: m.mtc,
+      mtc: '',
       profileClass: m.profileClass,
       ssc: m.ssc,
       aggrParticipantId: m.daParticipantId,
@@ -162,6 +157,7 @@ export function orchestrateSmartHHCOSRegistration(
     },
   });
 
+  // ---- D0011 ----
   const d0011_mop = buildD0011({
     envelope: env('D0011', 3, '001', mop, supp),
     appointmentType: 'MOP',
@@ -189,131 +185,38 @@ export function orchestrateSmartHHCOSRegistration(
   });
   d0011_da.fileName = `D0011_DA_${m.fileDate}_001.usr`;
 
-  // ---- D0149: one 284 row per register ----
-  const d0149 = buildD0149({
-    envelope: env('D0149', 6, '001', mop, supp),
+  // ---- D0051: MOP → Supplier (TODO: spec pending) ----
+  const d0051 = buildD0051({
+    envelope: env('D0051', 6, '001', mop, supp),
     mpan: m.mpan,
     cosDate: m.cosDate,
-    ssc: m.ssc,
-    sconDate: m.sconDate,
-    timePatternRegiment: m.timePatternRegiment,
-    msn: m.msn,
-    registers: m.registers.map(r => ({
-      registerId: r.registerId,
-      registerCoefficient: r.d0149RegisterCoefficient,
-    })),
   });
 
-  // ---- D0150: one 293 row per register ----
-  const d0150 = buildD0150({
-    envelope: env('D0150', 7, '002', mop, supp),
+  // ---- D0268: MOP → Supplier — 01A + (02A+03A+04A)×N ----
+  const d0268 = buildD0268({
+    envelope: env('D0268', 7, '002', mop, supp),
     mpan: m.mpan,
     cosDate: m.cosDate,
-    energisationStatus: m.energisationStatus,
-    ssc: m.ssc,
-    sconDate: m.sconDate,
-    msn: m.msn,
-    meterLocation: m.meterLocation,
-    manufacturersMakeAndType: m.manufacturersMakeAndType,
-    meterAssetProviderId: m.meterAssetProviderId,
-    meterType: m.meterType,
-    meterInstalledDate: m.meterInstalledDate,
-    certificationDate: m.certificationDate,
-    retrievalMethod: m.retrievalMethod,
-    retrievalMethodEffectiveDate: m.retrievalMethodEffectiveDate,
-    ctRatio: m.ctPrimaryRatio,
-    registers: m.registers.map(r => ({
-      registerId: r.registerId,
-      meterRegisterType: r.meterRegisterType,
-      measurementQuantityId: r.measurementQuantityId,
-      registerMappingCoefficient: r.registerMappingCoefficient,
-      numberOfDigits: r.numberOfDigits,
-    })),
+    meterCop: m.meterCop,
+    meterCopIssueNumber: m.meterCopIssueNumber,
+    complexSiteIndicator: m.complexSiteIndicator,
+    systemVoltage: m.systemVoltage,
+    numberOfPhases: m.numberOfPhases,
+    eventIndicator: m.eventIndicator,
+    meterBlocks: m.meterBlocks,
   });
 
-  // ---- D0052: one 124 row per register ----
-  const d0052 = buildD0052({
-    envelope: env('D0052', 8, '001', supp, dc),
+  // ---- D0036: MOP → Supplier (TODO: spec pending) ----
+  const d0036 = buildD0036({
+    envelope: env('D0036', 8, '001', mop, supp),
     mpan: m.mpan,
     cosDate: m.cosDate,
-    profileClass: m.profileClass,
-    measurementClass: m.measurementClass,
-    ssc: m.ssc,
-    gspGroupId: m.gspGroupId,
-    timePatternRegiment: m.timePatternRegiment,
-    registers: m.registers.map(r => ({
-      estimatedAnnualConsumption: r.estimatedAnnualConsumption,
-    })),
-  });
-
-  // ---- D0010: 026 + 028 once, one 030 per register ----
-  const d0010 = buildD0010({
-    envelope: env('D0010', 9, '002', dc, supp),
-    mpan: m.mpan,
-    bscValidationStatus: reg0.bscValidationStatus,
-    msn: m.msn,
-    readingType: reg0.readingType,
-    registers: m.registers.map(r => ({
-      registerId: r.registerId,
-      readingDateTime: r.readingDate + '000000',
-      readingValue: r.readingValue,
-      meterReadingFlag: r.meterReadingFlag,
-      readingMethod: r.readingMethod,
-    })),
-  });
-
-  // ---- D0086: 196 + 197 once, one 198 per register ----
-  const d0086 = buildD0086({
-    envelope: env('D0086', 10, '002', dc, supp),
-    mpan: m.mpan,
-    bscValidationStatus: reg0.bscValidationStatus,
-    msn: m.msn,
-    readingType: reg0.readingType,
-    registers: m.registers.map(r => ({
-      registerId: r.registerId,
-      readingDateTime: r.readingDate + '000000',
-      readingValue: r.readingValue,
-      meterReadingFlag: r.meterReadingFlag,
-      readingMethod: r.readingMethod,
-    })),
-  });
-
-  const d0012 = buildD0012({
-    envelope: env('D0012', 11, '001', dc, supp),
-    mpan: m.mpan,
-    cosDate: m.cosDate,
-    regularReadingCycle: m.regularReadingCycle,
-  });
-
-  // ---- D0019: MOP → Supplier — one AAD per register ----
-  const d0019 = buildD0019({
-    envelope: env('D0019', 12, '001', mop, supp),
-    fileSequenceNumber: String(fileIdBase % 9999 + 1),
-    instructionNumber: m.instructionNumber,
-    typeCode: 'NH09',
-    mpan: m.mpan,
-    cosDate: m.cosDate,
-    supplierParticipantId: m.supplierParticipantId,
-    profileClass: m.profileClass,
-    ssc: m.ssc,
-    measurementClass: m.measurementClass,
-    gspGroupId: m.gspGroupId,
-    energisationStatus: m.energisationStatus,
-    aadRecords: m.registers.map(r => ({
-      timePatternRegiment: m.timePatternRegiment,
-      annualisedAdvance: r.estimatedAnnualConsumption,
-    })),
   });
 
   return {
-    processId: 'nhh-smart-cos-registration',
-    processLabel: 'Electricity NHH Smart COS Registration',
-    dflows: [
-      d0260, d0217,
-      d0011_mop, d0011_dc, d0011_da,
-      d0149, d0150, d0052,
-      d0010, d0086, d0012, d0019,
-    ],
+    processId: 'hh-advanced-cos-registration',
+    processLabel: 'Electricity HH Advanced COS Registration',
+    dflows: [d0260, d0217, d0011_mop, d0011_dc, d0011_da, d0051, d0268, d0036],
     cssMessages: [css02300, css02380, css02370_01, css02370_03],
   };
 }

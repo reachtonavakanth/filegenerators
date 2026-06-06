@@ -157,6 +157,13 @@ function updateRemoveButtons(body: HTMLElement): void {
 // ---- Field builder ----
 
 function buildField(field: FormFieldDefinition, registerIndex?: number): HTMLElement {
+  if (field.type === 'heading') {
+    const heading = document.createElement('div');
+    heading.className = 'field-section-heading';
+    heading.textContent = field.label;
+    return heading;
+  }
+
   const wrapper = document.createElement('div');
   wrapper.className = 'field-wrapper';
 

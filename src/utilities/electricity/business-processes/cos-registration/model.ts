@@ -2,23 +2,8 @@
 // Electricity COS Registration — Domain Model
 // ============================================================
 
-import type { TestFlag } from '../../../../shared/domain/types';
-
-export interface RegisterEntry {
-  registerId: string;
-  d0149RegisterCoefficient: string;
-  meterRegisterType: string;
-  measurementQuantityId: string;
-  registerMappingCoefficient: string;
-  numberOfDigits: string;
-  readingDate: string;
-  bscValidationStatus: string;
-  readingType: string;
-  readingValue: string;
-  meterReadingFlag: string;
-  readingMethod: string;
-  estimatedAnnualConsumption: string;
-}
+import type { TestFlag, RegisterEntry } from '../../../../shared/domain/types';
+export type { RegisterEntry };
 
 export interface ElectricityCOSRegistrationModel {
   // Envelope / file settings

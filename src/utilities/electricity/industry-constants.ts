@@ -195,6 +195,79 @@ export const INSTRUCTION_TYPE_OPTIONS: FormFieldOption[] = [
   { label: 'DC90 — D0172 File Summary', value: 'DC90' },
 ];
 
+// ---- D0268 Meter COP ----
+export const METER_COP_OPTIONS: FormFieldOption[] = [
+  { value: '1',  label: '1 — CoP 1' },
+  { value: '2',  label: '2 — CoP 2' },
+  { value: '3',  label: '3 — CoP 3' },
+  { value: '5',  label: '5 — CoP 5' },
+  { value: '6a', label: '6a — CoP 6 (a)' },
+  { value: '6b', label: '6b — CoP 6 (b)' },
+  { value: '6c', label: '6c — CoP 6 (c)' },
+  { value: '6d', label: '6d — CoP 6 (d)' },
+  { value: '7',  label: '7 — CoP 7' },
+  { value: '8',  label: '8 — CoP 8' },
+  { value: '9',  label: '9 — CoP 9' },
+  { value: '10', label: '10 — CoP 10' },
+  { value: 'A',  label: 'A — CoP A' },
+  { value: 'B',  label: 'B — CoP B' },
+  { value: 'C',  label: 'C — CoP C' },
+  { value: 'D',  label: 'D — CoP D' },
+  { value: 'E',  label: 'E — CoP E' },
+  { value: 'F',  label: 'F — CoP F' },
+  { value: 'G',  label: 'G — CoP G' },
+  { value: 'H',  label: 'H — CoP H' },
+  { value: 'J',  label: 'J — CoP J' },
+  { value: 'K1', label: 'K1 — CoP K1' },
+  { value: 'K2', label: 'K2 — CoP K2' },
+  { value: 'N',  label: 'N — Dispensation / Non-compliant' },
+];
+
+// ---- D0268 Event Indicator ----
+export const EVENT_INDICATOR_OPTIONS: FormFieldOption[] = [
+  { value: 'A', label: 'A — New Connection' },
+  { value: 'B', label: 'B — Addition of Meter(s) and/or Outstation(s)' },
+  { value: 'C', label: 'C — Removal of Meter(s) and/or Outstation(s)' },
+  { value: 'D', label: 'D — Replacement of Meter(s) and/or Outstation(s)' },
+  { value: 'E', label: 'E — Configuration/Password Change' },
+  { value: 'F', label: 'F — Addition of Comms' },
+  { value: 'G', label: 'G — Removal of Comms' },
+  { value: 'H', label: 'H — Replacement of Comms' },
+  { value: 'I', label: 'I — Change of Agent' },
+  { value: 'J', label: 'J — Change of Supplier' },
+  { value: 'K', label: 'K — Coincident Change of Agent and Supplier' },
+  { value: 'L', label: 'L — Request from Agent' },
+  { value: 'M', label: 'M — Request from Supplier' },
+  { value: 'N', label: 'N — Change of Feeder Status' },
+  { value: 'O', label: 'O — Total Replacement of Meter(s) and/or Outstation(s)' },
+  { value: 'P', label: 'P — Addition of Meter and Password Change' },
+  { value: 'Q', label: 'Q — Change of Agent (No Meter at Site)' },
+  { value: 'R', label: 'R — Change of Supplier (No Meter at Site)' },
+  { value: 'S', label: 'S — Both CoA and CoS (No Meter at Site)' },
+  { value: 'T', label: 'T — Request from Agent (No Meter at Site)' },
+  { value: 'U', label: 'U — Request from Supplier (No Meter at Site)' },
+  { value: 'Z', label: 'Z — Other' },
+];
+
+// ---- D0268 Feeder Status ----
+export const FEEDER_STATUS_OPTIONS: FormFieldOption[] = [
+  { value: 'A', label: 'A — Active' },
+  { value: 'I', label: 'I — Inactive' },
+];
+
+// ---- D0268 Complex Site Indicator ----
+export const COMPLEX_SITE_OPTIONS: FormFieldOption[] = [
+  { value: 'F', label: 'F — False' },
+  { value: 'T', label: 'T — True' },
+];
+
+// ---- D0268 Number of Phases ----
+export const NUMBER_OF_PHASES_OPTIONS: FormFieldOption[] = [
+  { value: '1', label: '1' },
+  { value: '2', label: '2' },
+  { value: '3', label: '3' },
+];
+
 // ---- Half-Hourly / Non-Half-Hourly type (common to D0260 and D0217 party type fields) ----
 export const HH_TYPE_OPTIONS: FormFieldOption[] = [
   { label: 'H — Half Hourly', value: 'H' },
