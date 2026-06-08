@@ -93,7 +93,7 @@ export const energisationFormGroups: FormGroupDefinition[] = [
   },
   {
     id: 'energisation-request',
-    label: 'Energisation / De-energisation Request',
+    label: 'NHH Energisation / De-energisation Request',
     icon: '🔌',
     fields: [
       {

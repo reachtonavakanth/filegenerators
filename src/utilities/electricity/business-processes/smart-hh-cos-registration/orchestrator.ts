@@ -1,5 +1,5 @@
-// ============================================================
-// Electricity Smart HH COS Registration — Process Orchestrator
+﻿// ============================================================
+// Electricity NHH Smart COS Registration — Process Orchestrator
 // ============================================================
 
 import type { GeneratedOutput, DFlowEnvelope } from '../../../../shared/domain/types';
@@ -306,8 +306,8 @@ export function orchestrateSmartHHCOSRegistration(
   });
 
   return {
-    processId: 'smart-hh-cos-registration',
-    processLabel: 'Electricity Smart HH COS Registration',
+    processId: 'nhh-smart-cos-registration',
+    processLabel: 'Electricity NHH Smart COS Registration',
     dflows: [
       d0260, d0217,
       d0011_mop, d0011_dc, d0011_da,

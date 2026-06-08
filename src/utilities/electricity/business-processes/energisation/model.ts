@@ -2,8 +2,7 @@
 // Electricity Energisation — Domain Model
 // ============================================================
 
-import type { TestFlag } from '../../../../shared/domain/types';
-import type { RegisterEntry } from '../cos-registration/model';
+import type { TestFlag, RegisterEntry } from '../../../../shared/domain/types';
 export type { RegisterEntry };
 
 export type EnergisationActionType = 'E' | 'D';

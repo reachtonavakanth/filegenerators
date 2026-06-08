@@ -44,13 +44,15 @@ export async function saveToDirectory(output: GeneratedOutput, inputsJson: unkno
     saved.push(`${output.processLabel}/dflows/${dflow.fileName}`);
   }
 
-  const cssDir = await processDir.getDirectoryHandle('css', { create: true });
-  for (const cssMsg of output.cssMessages) {
-    const fh = await cssDir.getFileHandle(cssMsg.fileName, { create: true });
-    const writable = await fh.createWritable();
-    await writable.write(JSON.stringify(cssMsg.content, null, 2));
-    await writable.close();
-    saved.push(`${output.processLabel}/css/${cssMsg.fileName}`);
+  if (output.cssMessages.length > 0) {
+    const cssDir = await processDir.getDirectoryHandle('css', { create: true });
+    for (const cssMsg of output.cssMessages) {
+      const fh = await cssDir.getFileHandle(cssMsg.fileName, { create: true });
+      const writable = await fh.createWritable();
+      await writable.write(JSON.stringify(cssMsg.content, null, 2));
+      await writable.close();
+      saved.push(`${output.processLabel}/css/${cssMsg.fileName}`);
+    }
   }
 
   const inputFileName = `${output.processId}_input.json`;
@@ -77,9 +79,11 @@ export async function buildAndDownloadZip(
     dflowsFolder!.file(dflow.fileName, renderDFlowFile(dflow));
   }
 
-  const cssFolder = zip.folder('css');
-  for (const cssMsg of output.cssMessages) {
-    cssFolder!.file(cssMsg.fileName, JSON.stringify(cssMsg.content, null, 2));
+  if (output.cssMessages.length > 0) {
+    const cssFolder = zip.folder('css')!;
+    for (const cssMsg of output.cssMessages) {
+      cssFolder.file(cssMsg.fileName, JSON.stringify(cssMsg.content, null, 2));
+    }
   }
 
   zip.file(`${output.processId}_input.json`, JSON.stringify(inputsJson, null, 2));
