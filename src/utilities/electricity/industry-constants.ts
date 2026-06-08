@@ -353,6 +353,13 @@ export const RETRIEVAL_METHOD_OPTIONS: FormFieldOption[] = [
   { label: 'U — Unmetered reading', value: 'U' },
 ];
 
+// ---- D0036 HH Actual/Estimated Indicator (103[0]) ----
+export const HH_ACTUAL_ESTIMATED_OPTIONS: FormFieldOption[] = [
+  { value: 'A', label: 'A — Actual' },
+  { value: 'C', label: 'C — Long Day/Short Day Indicator' },
+  { value: 'E', label: 'E — Estimated' },
+];
+
 // ---- D0150 Meter Register Type (record 293 field[1]) ----
 export const METER_REGISTER_TYPE_OPTIONS: FormFieldOption[] = [
   { label: 'C — Cumulative', value: 'C' },

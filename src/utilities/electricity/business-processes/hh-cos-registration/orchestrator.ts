@@ -1,4 +1,4 @@
-// HH Advanced COS Registration — Process Orchestrator
+﻿// HH Advanced COS Registration — Process Orchestrator
 
 import type { GeneratedOutput, DFlowEnvelope } from '../../../../shared/domain/types';
 import type { ElectricityHHCOSRegistrationModel } from './model';
@@ -185,14 +185,16 @@ export function orchestrateHHCOSRegistration(
   });
   d0011_da.fileName = `D0011_DA_${m.fileDate}_001.usr`;
 
-  // ---- D0051: MOP → Supplier (TODO: spec pending) ----
+  // ---- D0051: DC → Supplier ----
   const d0051 = buildD0051({
-    envelope: env('D0051', 6, '001', mop, supp),
+    envelope: env('D0051', 6, '001', dc, supp),
     mpan: m.mpan,
-    cosDate: m.cosDate,
+    retrievalMethod: m.retrievalMethod,
+    retrievalMethodEffectiveDate: m.cosDate,
+    effectiveFromSettlementDate: m.cosDate,
   });
 
-  // ---- D0268: MOP → Supplier — 01A + (02A+03A+04A)×N ----
+  // ---- D0268: MOP → Supplier — 01A + 02A×N + (03A + 04A×M)×P ----
   const d0268 = buildD0268({
     envelope: env('D0268', 7, '002', mop, supp),
     mpan: m.mpan,
@@ -203,20 +205,33 @@ export function orchestrateHHCOSRegistration(
     systemVoltage: m.systemVoltage,
     numberOfPhases: m.numberOfPhases,
     eventIndicator: m.eventIndicator,
-    meterBlocks: m.meterBlocks,
+    outstations: m.outstations,
+    meters: m.meters,
   });
 
-  // ---- D0036: MOP → Supplier (TODO: spec pending) ----
+  // ---- D0036: DC → Supplier ----
   const d0036 = buildD0036({
-    envelope: env('D0036', 8, '001', mop, supp),
+    envelope: env('D0036', 8, '001', dc, supp),
     mpan: m.mpan,
-    cosDate: m.cosDate,
+    measurementQuantityId: m.hhMeasurementQuantityId,
+    supplierParticipantId: m.supplierParticipantId,
+    settlements: m.hhSettlements,
   });
+
+  const warnings: string[] = [];
+  for (const s of m.hhSettlements) {
+    const filled = s.periods.filter(p => p.consumption.trim() !== '').length;
+    if (filled < 48) {
+      const label = s.settlementDate || 'unknown date';
+      warnings.push(`Settlement ${label}: ${filled} of 48 intervals have values (${48 - filled} missing)`);
+    }
+  }
 
   return {
     processId: 'hh-advanced-cos-registration',
     processLabel: 'Electricity HH Advanced COS Registration',
     dflows: [d0260, d0217, d0011_mop, d0011_dc, d0011_da, d0051, d0268, d0036],
     cssMessages: [css02300, css02380, css02370_01, css02370_03],
+    warnings: warnings.length > 0 ? warnings : undefined,
   };
 }

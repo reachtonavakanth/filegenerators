@@ -55,6 +55,7 @@ export interface GeneratedOutput {
   processLabel: string;
   dflows: DFlowFile[];
   cssMessages: CSSMessage[];
+  warnings?: string[];
 }
 
 // ---- Meter register entry — shared across NHH COS, Smart HH COS, Energisation ----
@@ -87,7 +88,7 @@ export interface FormFieldOption {
 export interface FormFieldDefinition {
   id: string;
   label: string;
-  type: 'text' | 'select' | 'date' | 'time' | 'number' | 'heading';
+  type: 'text' | 'select' | 'date' | 'time' | 'number' | 'heading' | 'fill-action';
   required: boolean;
   defaultValue?: string;
   options?: FormFieldOption[];
@@ -95,8 +96,25 @@ export interface FormFieldDefinition {
   helpText?: string;
   maxLength?: number;
   pattern?: string;
+  step?: string;       // for number inputs e.g. '0.1', '1'
   readOnly?: boolean;
+  // fill-action fields
+  fillTargets?: string[];
+  fillRange?: { min: number; max: number; decimals: number };
   syncFrom?: string;  // field id to mirror; keeps in sync until user manually edits this field
+}
+
+export interface InnerRepeatableDefinition {
+  id: string;
+  label: string;    // section heading e.g. "Register Details (04A)"
+  addLabel: string; // button text e.g. "Add Another Register (04A)"
+  fields: FormFieldDefinition[];
+}
+
+export interface BlockAutoFill {
+  label: string;                               // button text e.g. "Auto-fill Periods"
+  fieldIds: string[];                          // data-field-id values of text inputs to fill
+  range: { min: number; max: number; decimals: number };
 }
 
 export interface FormGroupDefinition {
@@ -105,6 +123,11 @@ export interface FormGroupDefinition {
   icon: string;
   fields: FormFieldDefinition[];
   repeatable?: boolean;
+  blockLabel?: string;             // label for each outer block e.g. "Meter", "Outstation" (default "Register")
+  addLabel?: string;               // "Add Another X" button text (default "Add Another Register")
+  innerRepeatable?: InnerRepeatableDefinition;
+  blockAutoFill?: BlockAutoFill;   // per-block auto-fill button (repeatable groups only)
+  blockFieldsClass?: string;       // extra CSS class on the fields grid inside each block
 }
 
 export interface ProcessDefinition {

@@ -238,10 +238,13 @@ function handleGenerate(): void {
   try {
     lastOutput = selectedProcess.generate(inputs);
     setButtonStates(true, true);
-    showStatus(
-      'success',
-      `Generated ${lastOutput.dflows.length} D-flow file(s) and ${lastOutput.cssMessages.length} CSS message(s). Click Save Files to export.`
-    );
+    if (lastOutput.warnings?.length) {
+      showStatus('info',
+        `Generated with warning(s): ${lastOutput.warnings.join(' | ')} — review before saving.`);
+    } else {
+      showStatus('success',
+        `Generated ${lastOutput.dflows.length} D-flow file(s) and ${lastOutput.cssMessages.length} CSS message(s). Click Save Files to export.`);
+    }
   } catch (err) {
     showStatus('error', `Generation failed: ${err instanceof Error ? err.message : String(err)}`);
   }
@@ -253,13 +256,23 @@ async function handleDownload(): Promise<void> {
   if (!lastOutput || !selectedProcess) return;
   const formBody = document.getElementById('form-body')!;
 
-  // Always regenerate from current form values so changes since last Generate are picked up
+  // Regenerate from current form values — validate first so we never save invalid files
+  const errors = validateForm(formBody, selectedProcess.formGroups);
+  if (errors.length > 0) {
+    showStatus('error', `Please fill required fields before saving: ${errors.slice(0, 3).join(', ')}${errors.length > 3 ? ` (+${errors.length - 3} more)` : ''}`);
+    return;
+  }
   try {
     const inputs = collectFormValues(formBody, selectedProcess.formGroups);
     lastOutput = selectedProcess.generate(inputs);
   } catch (err) {
     showStatus('error', `Generation failed: ${err instanceof Error ? err.message : String(err)}`);
     return;
+  }
+
+  if (lastOutput.warnings?.length) {
+    const msg = lastOutput.warnings.join('\n');
+    if (!confirm(`Missing intervals detected:\n\n${msg}\n\nProceed and save files without all 48 intervals?`)) return;
   }
 
   const inputsJson = collectFormValuesGrouped(formBody, selectedProcess.formGroups, selectedProcess.label);

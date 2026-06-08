@@ -1,60 +1,12 @@
 // HH Advanced COS Registration — Domain Model
 
 import type { TestFlag } from '../../../../shared/domain/types';
-
-export interface HHMeterBlock {
-  // 02A — Outstation Details
-  outstationId: string;
-  outstationType: string;
-  modemType: string;
-  outstationChannels: string;
-  outstationDials: string;
-  outstationPin: string;
-  usernameL1: string;
-  passwordL1: string;
-  usernameL2: string;
-  passwordL2: string;
-  usernameL3: string;
-  passwordL3: string;
-  readerPassword: string;
-  commAddressType: string;
-  commMethodB: string;
-  dialIndicator: string;
-  commAddress: string;
-  commAddressB: string;
-  baudRate: string;
-  commProvider: string;
-  simSerial: string;
-  seqMpan: string;
-  seqOutstationId: string;
-  // 03A — Meter Details
-  msn: string;
-  manufacturersMakeAndType: string;
-  meterInstalledDate: string;
-  meterCurrentRating: string;
-  vtRatio: string;
-  ctRatio: string;
-  phaseWire: string;
-  feederStatus: string;
-  feederStatusEffectiveDate: string;
-  meterAssetProviderId: string;
-  // 04A — Meter Register Details
-  meterRegisterId: string;
-  channelNumber: string;
-  pulseMultiplier: string;
-  meterRegisterMultiplier: string;
-  outstationMultiplier: string;
-  measurementQuantityId: string;
-  numberOfRegisterDigits: string;
-  associatedMeterId: string;
-  associatedMeterRegisterId: string;
-}
+import type { D0268Outstation, D0268Meter, D0268MeterRegister } from '../../dflows/d0268';
 
 export interface ElectricityHHCOSRegistrationModel {
   testFlag: TestFlag;
   fileDate: string;
 
-  // ZHV routing
   supplierRoleCode: string;
   supplierParticipantId: string;
   oldSupplierRoleCode: string;
@@ -70,7 +22,6 @@ export interface ElectricityHHCOSRegistrationModel {
   dcRoleCode: string;
   dcParticipantId: string;
 
-  // D0260 / D0217
   instructionNumber: string;
   instructionType: string;
   d0217InstructionType: string;
@@ -80,36 +31,31 @@ export interface ElectricityHHCOSRegistrationModel {
   mopType: string;
   postcode: string;
 
-  // D0011
   contractRefMop: string;
   contractRefDc: string;
   contractRefDa: string;
   registerCode: string;
 
-  // Supply point
   mpan: string;
 
-  // Technical attributes
   profileClass: string;
   measurementClass: string;
   gspGroupId: string;
   llfClass: string;
   ssc: string;
 
-  // Dates
   registrationDate: string;
   cosDate: string;
 
-  // D0012
-  regularReadingCycle: string;
-
-  // CSS
   supplierGeneratedReference: string;
   registrationRequestId: string;
   cssCorrelationId: string;
   timestampFormat: 'utc' | 'local';
 
-  // D0268 01A fields
+  // D0051 120[2]
+  retrievalMethod: string;
+
+  // D0268 01A
   meterCop: string;
   meterCopIssueNumber: string;
   complexSiteIndicator: string;
@@ -117,88 +63,122 @@ export interface ElectricityHHCOSRegistrationModel {
   numberOfPhases: string;
   eventIndicator: string;
 
-  // Repeatable meter blocks (D0268 02A+03A+04A)
-  meterBlocks: HHMeterBlock[];
+  // D0268 02A — independent outstations
+  outstations: D0268Outstation[];
+
+  // D0268 03A + 04A — meters each with their own registers
+  meters: D0268Meter[];
+
+  // D0036 — HH Consumption (one entry per settlement date block)
+  hhMeasurementQuantityId: string;                             // 101[1] — from first block
+  hhSettlements: Array<{
+    settlementDate: string;                                    // 102[0]
+    periods: Array<{ indicator: string; consumption: string }>; // 48 × 103
+  }>;
 }
 
-function extractMeterBlocks(inputs: Record<string, string>): HHMeterBlock[] {
-  const blocks: HHMeterBlock[] = [];
+function extractOutstations(inputs: Record<string, string>): D0268Outstation[] {
+  const outstations: D0268Outstation[] = [];
   let i = 0;
   while (`outstationId_${i}` in inputs) {
-    blocks.push({
-      outstationId:              inputs[`outstationId_${i}`]              || '',
-      outstationType:            inputs[`outstationType_${i}`]            || 'VIS',
-      modemType:                 inputs[`modemType_${i}`]                 || '',
-      outstationChannels:        inputs[`outstationChannels_${i}`]        || '3',
-      outstationDials:           inputs[`outstationDials_${i}`]           || '',
-      outstationPin:             inputs[`outstationPin_${i}`]             || '',
-      usernameL1:                inputs[`usernameL1_${i}`]                || '',
-      passwordL1:                inputs[`passwordL1_${i}`]                || '',
-      usernameL2:                inputs[`usernameL2_${i}`]                || '',
-      passwordL2:                inputs[`passwordL2_${i}`]                || '',
-      usernameL3:                inputs[`usernameL3_${i}`]                || '',
-      passwordL3:                inputs[`passwordL3_${i}`]                || '',
-      readerPassword:            inputs[`readerPassword_${i}`]            || '',
-      commAddressType:           inputs[`commAddressType_${i}`]           || 'IP',
-      commMethodB:               inputs[`commMethodB_${i}`]               || '',
-      dialIndicator:             inputs[`dialIndicator_${i}`]             || '',
-      commAddress:               inputs[`commAddress_${i}`]               || '',
-      commAddressB:              inputs[`commAddressB_${i}`]              || '',
-      baudRate:                  inputs[`baudRate_${i}`]                  || '',
-      commProvider:              inputs[`commProvider_${i}`]              || '',
-      simSerial:                 inputs[`simSerial_${i}`]                 || '',
-      seqMpan:                   inputs[`seqMpan_${i}`]                   || '',
-      seqOutstationId:           inputs[`seqOutstationId_${i}`]           || '',
-      msn:                       inputs[`msn_${i}`]                       || '',
-      manufacturersMakeAndType:  inputs[`manufacturersMakeAndType_${i}`]  || '',
-      meterInstalledDate:        inputs[`meterInstalledDate_${i}`]        || '',
-      meterCurrentRating:        inputs[`meterCurrentRating_${i}`]        || '',
-      vtRatio:                   inputs[`vtRatio_${i}`]                   || '',
-      ctRatio:                   inputs[`ctRatio_${i}`]                   || '',
-      phaseWire:                 inputs[`phaseWire_${i}`]                 || '',
-      feederStatus:              inputs[`feederStatus_${i}`]              || 'A',
-      feederStatusEffectiveDate: inputs[`feederStatusEffectiveDate_${i}`] || '',
-      meterAssetProviderId:      inputs[`meterAssetProviderId_${i}`]      || '',
-      meterRegisterId:           inputs[`meterRegisterId_${i}`]           || '10',
-      channelNumber:             inputs[`channelNumber_${i}`]             || '006',
-      pulseMultiplier:           inputs[`pulseMultiplier_${i}`]           || '1.000000',
-      meterRegisterMultiplier:   inputs[`meterRegisterMultiplier_${i}`]   || '1.00',
-      outstationMultiplier:      inputs[`outstationMultiplier_${i}`]      || '1.0000',
-      measurementQuantityId:     inputs[`measurementQuantityId_${i}`]     || '',
-      numberOfRegisterDigits:    inputs[`numberOfRegisterDigits_${i}`]    || '6',
-      associatedMeterId:         inputs[`associatedMeterId_${i}`]         || '',
-      associatedMeterRegisterId: inputs[`associatedMeterRegisterId_${i}`] || '',
+    outstations.push({
+      outstationId:       inputs[`outstationId_${i}`]       || '',
+      outstationType:     inputs[`outstationType_${i}`]     || 'VIS',
+      modemType:          inputs[`modemType_${i}`]          || '',
+      outstationChannels: inputs[`outstationChannels_${i}`] || '3',
+      outstationDials:    inputs[`outstationDials_${i}`]    || '',
+      outstationPin:      inputs[`outstationPin_${i}`]      || '',
+      usernameL1:         inputs[`usernameL1_${i}`]         || '',
+      passwordL1:         inputs[`passwordL1_${i}`]         || '',
+      usernameL2:         inputs[`usernameL2_${i}`]         || '',
+      passwordL2:         inputs[`passwordL2_${i}`]         || '',
+      usernameL3:         inputs[`usernameL3_${i}`]         || '',
+      passwordL3:         inputs[`passwordL3_${i}`]         || '',
+      readerPassword:     inputs[`readerPassword_${i}`]     || '',
+      commAddressType:    inputs[`commAddressType_${i}`]    || 'IP',
+      commMethodB:        inputs[`commMethodB_${i}`]        || '',
+      dialIndicator:      inputs[`dialIndicator_${i}`]      || '',
+      commAddress:        inputs[`commAddress_${i}`]        || '',
+      commAddressB:       inputs[`commAddressB_${i}`]       || '',
+      baudRate:           inputs[`baudRate_${i}`]           || '',
+      commProvider:       inputs[`commProvider_${i}`]       || '',
+      simSerial:          inputs[`simSerial_${i}`]          || '',
+      seqMpan:            inputs[`seqMpan_${i}`]            || '',
+      seqOutstationId:    inputs[`seqOutstationId_${i}`]    || '',
     });
     i++;
   }
-  if (blocks.length === 0) {
-    blocks.push({
+  if (outstations.length === 0) {
+    outstations.push({
       outstationId: inputs['outstationId'] || '', outstationType: inputs['outstationType'] || 'VIS',
-      modemType: inputs['modemType'] || '', outstationChannels: inputs['outstationChannels'] || '3',
-      outstationDials: inputs['outstationDials'] || '', outstationPin: inputs['outstationPin'] || '',
+      modemType: '', outstationChannels: inputs['outstationChannels'] || '3',
+      outstationDials: inputs['outstationDials'] || '', outstationPin: '',
       usernameL1: '', passwordL1: '', usernameL2: '', passwordL2: '',
       usernameL3: '', passwordL3: '', readerPassword: '',
       commAddressType: inputs['commAddressType'] || 'IP', commMethodB: '', dialIndicator: '',
-      commAddress: inputs['commAddress'] || '', commAddressB: '', baudRate: inputs['baudRate'] || '',
-      commProvider: inputs['commProvider'] || '', simSerial: inputs['simSerial'] || '',
-      seqMpan: '', seqOutstationId: '',
-      msn: inputs['msn'] || '', manufacturersMakeAndType: inputs['manufacturersMakeAndType'] || '',
-      meterInstalledDate: inputs['meterInstalledDate'] || '',
-      meterCurrentRating: '', vtRatio: '', ctRatio: inputs['ctRatio'] || '',
-      phaseWire: inputs['phaseWire'] || '', feederStatus: inputs['feederStatus'] || 'A',
-      feederStatusEffectiveDate: inputs['feederStatusEffectiveDate'] || '',
-      meterAssetProviderId: inputs['meterAssetProviderId'] || '',
-      meterRegisterId: inputs['meterRegisterId'] || '10',
-      channelNumber: inputs['channelNumber'] || '006',
-      pulseMultiplier: inputs['pulseMultiplier'] || '1.000000',
-      meterRegisterMultiplier: inputs['meterRegisterMultiplier'] || '1.00',
-      outstationMultiplier: inputs['outstationMultiplier'] || '1.0000',
-      measurementQuantityId: inputs['measurementQuantityId'] || '',
-      numberOfRegisterDigits: inputs['numberOfRegisterDigits'] || '6',
-      associatedMeterId: '', associatedMeterRegisterId: '',
+      commAddress: inputs['commAddress'] || '', commAddressB: '',
+      baudRate: inputs['baudRate'] || '', commProvider: '', simSerial: '', seqMpan: '', seqOutstationId: '',
     });
   }
-  return blocks;
+  return outstations;
+}
+
+function extractRegisters(inputs: Record<string, string>, meterIndex: number): D0268MeterRegister[] {
+  const registers: D0268MeterRegister[] = [];
+  let j = 0;
+  while (`meterRegisterId_${meterIndex}_${j}` in inputs) {
+    registers.push({
+      meterRegisterId:           inputs[`meterRegisterId_${meterIndex}_${j}`]           || '10',
+      outstationId:              inputs[`reg_outstationId_${meterIndex}_${j}`]          || '',
+      channelNumber:             inputs[`channelNumber_${meterIndex}_${j}`]             || '006',
+      pulseMultiplier:           inputs[`pulseMultiplier_${meterIndex}_${j}`]           || '1.000000',
+      meterRegisterMultiplier:   inputs[`meterRegisterMultiplier_${meterIndex}_${j}`]   || '1.00',
+      outstationMultiplier:      inputs[`outstationMultiplier_${meterIndex}_${j}`]      || '1.0000',
+      measurementQuantityId:     inputs[`measurementQuantityId_${meterIndex}_${j}`]     || '',
+      numberOfRegisterDigits:    inputs[`numberOfRegisterDigits_${meterIndex}_${j}`]    || '6',
+      associatedMeterId:         inputs[`associatedMeterId_${meterIndex}_${j}`]         || '',
+      associatedMeterRegisterId: inputs[`associatedMeterRegisterId_${meterIndex}_${j}`] || '',
+    });
+    j++;
+  }
+  if (registers.length === 0) {
+    registers.push({
+      meterRegisterId: '10', outstationId: '', channelNumber: '006',
+      pulseMultiplier: '1.000000', meterRegisterMultiplier: '1.00', outstationMultiplier: '1.0000',
+      measurementQuantityId: '', numberOfRegisterDigits: '6', associatedMeterId: '', associatedMeterRegisterId: '',
+    });
+  }
+  return registers;
+}
+
+function extractMeters(inputs: Record<string, string>): D0268Meter[] {
+  const meters: D0268Meter[] = [];
+  let i = 0;
+  while (`msn_${i}` in inputs) {
+    meters.push({
+      msn:                      inputs[`msn_${i}`]                      || '',
+      manufacturersMakeAndType: inputs[`manufacturersMakeAndType_${i}`] || '',
+      meterInstalledDate:       inputs[`meterInstalledDate_${i}`]       || '',
+      meterCurrentRating:       inputs[`meterCurrentRating_${i}`]       || '',
+      vtRatio:                  inputs[`vtRatio_${i}`]                  || '',
+      ctRatio:                  inputs[`ctRatio_${i}`]                  || '',
+      phaseWire:                inputs[`phaseWire_${i}`]                || '',
+      feederStatus:             inputs[`feederStatus_${i}`]             || 'A',
+      feederStatusEffectiveDate: inputs[`feederStatusEffectiveDate_${i}`] || '',
+      meterAssetProviderId:     inputs[`meterAssetProviderId_${i}`]     || '',
+      registers: extractRegisters(inputs, i),
+    });
+    i++;
+  }
+  if (meters.length === 0) {
+    meters.push({
+      msn: '', manufacturersMakeAndType: '', meterInstalledDate: '',
+      meterCurrentRating: '', vtRatio: '', ctRatio: '', phaseWire: '',
+      feederStatus: 'A', feederStatusEffectiveDate: '', meterAssetProviderId: '',
+      registers: [{ meterRegisterId: '10', outstationId: '', channelNumber: '006', pulseMultiplier: '1.000000', meterRegisterMultiplier: '1.00', outstationMultiplier: '1.0000', measurementQuantityId: '', numberOfRegisterDigits: '6', associatedMeterId: '', associatedMeterRegisterId: '' }],
+    });
+  }
+  return meters;
 }
 
 export function mapFormToHHCOSModel(
@@ -241,17 +221,40 @@ export function mapFormToHHCOSModel(
     ssc: inputs['ssc'] || '0000',
     registrationDate: inputs['registrationDate'] || '',
     cosDate: inputs['cosDate'] || inputs['registrationDate'] || '',
-    regularReadingCycle: inputs['regularReadingCycle'] || 'D',
     supplierGeneratedReference: inputs['supplierGeneratedReference'] || '',
     registrationRequestId: inputs['registrationRequestId'] || '',
     cssCorrelationId: inputs['cssCorrelationId'] || '',
     timestampFormat: inputs['timestampFormat'] === 'local' ? 'local' : 'utc',
+    retrievalMethod: inputs['retrievalMethod'] || 'M',
     meterCop: inputs['meterCop'] || '5',
     meterCopIssueNumber: inputs['meterCopIssueNumber'] || '6',
     complexSiteIndicator: inputs['complexSiteIndicator'] || 'F',
     systemVoltage: inputs['systemVoltage'] || '415',
     numberOfPhases: inputs['numberOfPhases'] || '3',
     eventIndicator: inputs['eventIndicator'] || 'J',
-    meterBlocks: extractMeterBlocks(inputs),
+    outstations: extractOutstations(inputs),
+    meters: extractMeters(inputs),
+    hhMeasurementQuantityId: inputs['hhMeasurementQuantityId_0'] || 'AI',
+    hhSettlements: extractHHSettlements(inputs),
   };
+}
+
+function extractHHSettlements(inputs: Record<string, string>) {
+  const settlements = [];
+  let s = 0;
+  while (`hhSettlementDate_${s}` in inputs || s === 0) {
+    const settlementDate = inputs[`hhSettlementDate_${s}`] || '';
+    if (!settlementDate) break;
+    const periods = [];
+    for (let p = 1; p <= 48; p++) {
+      const idx = String(p).padStart(2, '0');
+      periods.push({
+        indicator:   inputs[`p${idx}Ind_${s}`] || 'A',
+        consumption: inputs[`p${idx}Val_${s}`] ?? '',
+      });
+    }
+    settlements.push({ settlementDate, periods });
+    s++;
+  }
+  return settlements;
 }
