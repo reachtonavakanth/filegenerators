@@ -9,9 +9,6 @@ import { orchestrateCOSRegistration } from './business-processes/cos-registratio
 import { energisationFormGroups } from './business-processes/energisation/form-config';
 import { mapFormToEnergisationModel } from './business-processes/energisation/model';
 import { orchestrateEnergisation } from './business-processes/energisation/orchestrator';
-import { smartHHCOSRegistrationFormGroups } from './business-processes/smart-hh-cos-registration/form-config';
-import { mapFormToSmartHHCOSModel } from './business-processes/smart-hh-cos-registration/model';
-import { orchestrateSmartHHCOSRegistration } from './business-processes/smart-hh-cos-registration/orchestrator';
 import { hhCOSRegistrationFormGroups } from './business-processes/hh-cos-registration/form-config';
 import { mapFormToHHCOSModel } from './business-processes/hh-cos-registration/model';
 import { orchestrateHHCOSRegistration } from './business-processes/hh-cos-registration/orchestrator';
@@ -32,18 +29,6 @@ export const electricityUtility: UtilityDefinition = {
       generate(inputs) {
         const model = mapFormToCOSModel(inputs);
         return orchestrateCOSRegistration(model);
-      },
-    },
-    {
-      id: 'nhh-smart-cos-registration',
-      label: 'NHH Smart COS Registration',
-      description:
-        'D0260 · D0217 · D0011 (MOP/DC/DA) · D0149 · D0150 · D0052 · D0010 · D0086 · D0012 · D0019 · CSS02300_01 · CSS02380_01 · CSS02370_01 · CSS02370_03',
-      utilityType: 'electricity',
-      formGroups: smartHHCOSRegistrationFormGroups,
-      generate(inputs) {
-        const model = mapFormToSmartHHCOSModel(inputs);
-        return orchestrateSmartHHCOSRegistration(model);
       },
     },
     {
