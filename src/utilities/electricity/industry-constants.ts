@@ -19,13 +19,13 @@ export const PROFILE_CLASS_OPTIONS: FormFieldOption[] = [
 ];
 
 export const MEASUREMENT_CLASS_OPTIONS: FormFieldOption[] = [
-  { label: 'A — Non Half-Hourly', value: 'A' },
-  { label: 'B — Unrestricted Unmetered', value: 'B' },
-  { label: 'C — Restricted Unmetered', value: 'C' },
-  { label: 'D — Automatically read NHH', value: 'D' },
-  { label: 'E — Half-Hourly', value: 'E' },
-  { label: 'G — Deemed NHH', value: 'G' },
-  { label: 'I — Half-Hourly AMR', value: 'I' },
+  { label: 'A', value: 'A' },
+  { label: 'B', value: 'B' },
+  { label: 'C', value: 'C' },
+  { label: 'D', value: 'D' },
+  { label: 'E', value: 'E' },
+  { label: 'G', value: 'G' },
+  { label: 'I', value: 'I' },
 ];
 
 export const GSP_GROUP_OPTIONS: FormFieldOption[] = [
