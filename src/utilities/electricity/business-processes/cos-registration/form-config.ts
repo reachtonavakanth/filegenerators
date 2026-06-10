@@ -111,13 +111,13 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
       { id: 'distributorRoleCode',       label: 'Distributor / MPAS Role Code',       type: 'text', required: true, maxLength: 1 },
       { id: 'distributorParticipantId',  label: 'Distributor / MPAS Participant ID',  type: 'text', required: true },
       // ---- MOP ----
-      { id: 'mopRoleCode',               label: 'New MOP Role Code',                type: 'text', required: true, placeholder: 'M', maxLength: 1 },
+      { id: 'mopRoleCode',               label: 'New MOP Role Code',                type: 'text', required: true, defaultValue: 'M', maxLength: 1 },
       { id: 'mopParticipantId',          label: 'New MOP Participant ID',           type: 'text', required: true },
       // ---- Data Aggregator (DA) ----
-      { id: 'daRoleCode',                label: 'New Data Aggregator Role Code',    type: 'text', required: true, placeholder: 'B', maxLength: 1 },
+      { id: 'daRoleCode',                label: 'New Data Aggregator Role Code',    type: 'text', required: true, defaultValue: 'B', maxLength: 1 },
       { id: 'daParticipantId',           label: 'New Data Aggregator Participant ID', type: 'text', required: true },
       // ---- Data Collector (DC) ----
-      { id: 'dcRoleCode',                label: 'New Data Collector Role Code',     type: 'text', required: true, placeholder: 'D', maxLength: 1 },
+      { id: 'dcRoleCode',                label: 'New Data Collector Role Code',     type: 'text', required: true, defaultValue: 'D', maxLength: 1 },
       { id: 'dcParticipantId',           label: 'New Data Collector Participant ID', type: 'text', required: true },
     ],
   },

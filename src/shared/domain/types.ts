@@ -111,12 +111,6 @@ export interface InnerRepeatableDefinition {
   fields: FormFieldDefinition[];
 }
 
-export interface BlockAutoFill {
-  label: string;                               // button text e.g. "Auto-fill Periods"
-  fieldIds: string[];                          // data-field-id values of text inputs to fill
-  range: { min: number; max: number; decimals: number };
-}
-
 export interface FormGroupDefinition {
   id: string;
   label: string;
@@ -126,7 +120,6 @@ export interface FormGroupDefinition {
   blockLabel?: string;             // label for each outer block e.g. "Meter", "Outstation" (default "Register")
   addLabel?: string;               // "Add Another X" button text (default "Add Another Register")
   innerRepeatable?: InnerRepeatableDefinition;
-  blockAutoFill?: BlockAutoFill;   // per-block auto-fill button (repeatable groups only)
   blockFieldsClass?: string;       // extra CSS class on the fields grid inside each block
 }
 

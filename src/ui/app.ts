@@ -2,8 +2,7 @@
 // App — main UI controller
 // ============================================================
 
-import type { ProcessDefinition, GeneratedOutput } from '../shared/domain/types';
-import type { UtilityDefinition } from '../shared/domain/types';
+import type { ProcessDefinition, GeneratedOutput, UtilityDefinition } from '../shared/domain/types';
 import { allUtilities } from '../utilities';
 import { renderFormGroups, collectFormValues, collectFormValuesGrouped, validateForm, populateFormFromData } from './forms/form-renderer';
 import { buildAndDownloadZip, saveToDirectory, supportsFileSystemAccess, downloadJSONFile } from '../shared/downloads/zip-builder';

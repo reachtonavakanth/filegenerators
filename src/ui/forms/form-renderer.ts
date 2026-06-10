@@ -109,23 +109,6 @@ function buildRegisterBlock(group: FormGroupDefinition, index: number): HTMLElem
   label.textContent = `${blockLabel} ${index + 1}`;
   blockHeader.appendChild(label);
 
-  if (group.blockAutoFill) {
-    const cfg = group.blockAutoFill;
-    const autoFillBtn = document.createElement('button');
-    autoFillBtn.type = 'button';
-    autoFillBtn.className = 'btn-auto-fill';
-    autoFillBtn.textContent = cfg.label;
-    autoFillBtn.addEventListener('click', () => {
-      const fieldsGrid = block.querySelector<HTMLElement>('.register-block-fields');
-      if (!fieldsGrid) return;
-      for (const fieldId of cfg.fieldIds) {
-        const el = fieldsGrid.querySelector<HTMLInputElement>(`[data-field-id="${fieldId}"]`);
-        if (el) el.value = (cfg.range.min + Math.random() * (cfg.range.max - cfg.range.min)).toFixed(cfg.range.decimals);
-      }
-    });
-    blockHeader.appendChild(autoFillBtn);
-  }
-
   const removeBtn = document.createElement('button');
   removeBtn.type = 'button';
   removeBtn.className = 'btn-remove-register';

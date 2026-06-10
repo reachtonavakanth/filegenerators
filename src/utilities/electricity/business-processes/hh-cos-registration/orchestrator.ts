@@ -137,7 +137,7 @@ export function orchestrateHHCOSRegistration(
       instructionNumber: m.instructionNumber,
       instructionType: m.d0217InstructionType,
       mpan: m.mpan,
-      currentDate: m.fileDate,
+      currentDate: m.cosDate,
       cosDate: m.cosDate,
       postcode: m.postcode,
       llfClass: m.llfClass,

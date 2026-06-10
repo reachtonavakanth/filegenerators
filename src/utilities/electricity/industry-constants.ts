@@ -7,6 +7,7 @@
 import type { FormFieldOption } from '../../shared/domain/types';
 
 export const PROFILE_CLASS_OPTIONS: FormFieldOption[] = [
+  { label: '00 — Half-Hourly', value: '00' },
   { label: '01 — Domestic Unrestricted', value: '01' },
   { label: '02 — Domestic Economy 7', value: '02' },
   { label: '03 — Non-Dom Unrestricted', value: '03' },
