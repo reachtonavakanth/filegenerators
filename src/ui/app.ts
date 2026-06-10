@@ -215,7 +215,10 @@ function handleExportJSON(): void {
   if (!selectedProcess) return;
   const formBody = document.getElementById('form-body')!;
   const grouped = collectFormValuesGrouped(formBody, selectedProcess.formGroups, selectedProcess.label);
-  const filename = `${selectedProcess.label.replace(/[/\\:*?"<>|]/g, '-')}_inputs.json`;
+  const mpan = (document.getElementById('field-mpan') as HTMLInputElement | null)?.value.trim() || '';
+  const processShort = selectedProcess.label.replace(/^Electricity\s+/i, '').replace(/[/\\:*?"<>|]/g, '-');
+  const prefix = mpan ? `${mpan}_${processShort}` : processShort;
+  const filename = `${prefix}_input.json`;
   downloadJSONFile(grouped, filename);
 }
 

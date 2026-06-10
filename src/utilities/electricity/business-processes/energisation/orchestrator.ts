@@ -150,6 +150,7 @@ export function orchestrateEnergisation(
   return {
     processId: 'energisation',
     processLabel: `Electricity ${m.actionRequired === 'E' ? 'Energisation' : 'De-energisation'}`,
+    folderName: `${m.mpan}_${m.actionRequired === 'E' ? 'Energisation' : 'De-energisation'}`,
     dflows: [d0142, d0010, d0149, d0150],
     cssMessages: [css02380, css02370],
   };

@@ -70,7 +70,7 @@ export function buildCSS02300_01(params: {
   };
   return {
     messageType: CSS_MSG_COS_INITIATION,
-    fileName: `CSS02300_01_${params.mpxn.slice(-6)}.json`,
+    fileName: `CSS02300_01-${event.eventType}.json`,
     content: event as unknown as Record<string, unknown>,
   };
 }
@@ -104,7 +104,7 @@ export function buildCSS02380_01(params: {
   };
   return {
     messageType: CSS_MSG_REGISTRATION_NOTIF,
-    fileName: `CSS02380_01_${params.mpxn.slice(-6)}.json`,
+    fileName: `CSS02380_01-${event.eventType}.json`,
     content: event as unknown as Record<string, unknown>,
   };
 }
@@ -141,7 +141,7 @@ export function buildCSS02370_01(params: {
   };
   return {
     messageType: CSS_MSG_QUERY,
-    fileName: `CSS02370_01_${params.mpxn.slice(-6)}.json`,
+    fileName: `CSS02370_01-${event.eventType}.json`,
     content: event as unknown as Record<string, unknown>,
   };
 }
@@ -176,7 +176,7 @@ export function buildCSS02370_03(params: {
   };
   return {
     messageType: CSS_MSG_QUERY_RESPONSE,
-    fileName: `CSS02370_03_${params.mpxn.slice(-6)}.json`,
+    fileName: `CSS02370_03-${event.eventType}.json`,
     content: event as unknown as Record<string, unknown>,
   };
 }

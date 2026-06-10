@@ -53,6 +53,7 @@ export interface CSSMessage {
 export interface GeneratedOutput {
   processId: string;
   processLabel: string;
+  folderName?: string;          // overrides processLabel for the output folder/zip name
   dflows: DFlowFile[];
   cssMessages: CSSMessage[];
   warnings?: string[];
