@@ -22,7 +22,7 @@ function renderUtilitySelector(): void {
   const container = document.getElementById('utility-selector')!;
   container.innerHTML = '';
 
-  for (const utility of allUtilities.filter(u => !u.comingSoon)) {
+  for (const utility of allUtilities) {
     const btn = document.createElement('button');
     btn.className = `selector-btn utility-${utility.id}${utility.comingSoon ? ' coming-soon' : ''}`;
     btn.dataset.utilityId = utility.id;
@@ -31,7 +31,7 @@ function renderUtilitySelector(): void {
       <span class="btn-icon">${utility.icon}</span>
       <span>
         ${utility.label}
-        <span class="btn-sub">${utility.description}</span>
+        ${!utility.comingSoon ? `<span class="btn-sub">${utility.description}</span>` : ''}
       </span>
       ${utility.comingSoon ? '<span class="coming-soon-tag">Coming Soon</span>' : ''}
     `;

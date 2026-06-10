@@ -2,7 +2,7 @@
 // Shared Domain Types — used across Electricity and Gas
 // ============================================================
 
-export type UtilityType = 'electricity' | 'gas';
+export type UtilityType = 'electricity' | 'electricity-mhhs' | 'gas';
 export type TestFlag = 'OPER' | 'TR06';
 
 // ---- D-Flow envelope (ZHV header fields) ----
