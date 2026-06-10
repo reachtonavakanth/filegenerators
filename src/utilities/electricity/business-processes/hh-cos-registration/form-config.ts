@@ -100,7 +100,6 @@ export const hhCOSRegistrationFormGroups: FormGroupDefinition[] = [
       { id: 'measurementClass', label: 'Measurement Class',                          type: 'select', required: true, options: MEASUREMENT_CLASS_OPTIONS },
       { id: 'gspGroupId',       label: 'GSP Group ID',                               type: 'select', required: true, options: GSP_GROUP_OPTIONS },
       { id: 'llfClass',         label: 'Line Loss Factor Class',                     type: 'text',   required: true, placeholder: '001', maxLength: 3 },
-      { id: 'ssc',              label: 'Standard Settlement Configuration (SSC) Id', type: 'text',   required: false, placeholder: '0000', maxLength: 4 },
       { id: 'retrievalMethod',  label: 'Retrieval Method',                           type: 'select', required: true, defaultValue: 'M', options: RETRIEVAL_METHOD_OPTIONS, helpText: 'D0051 120[2]' },
     ],
   },

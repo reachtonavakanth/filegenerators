@@ -218,7 +218,7 @@ export function mapFormToHHCOSModel(
     measurementClass: inputs['measurementClass'] || '',
     gspGroupId: inputs['gspGroupId'] || '',
     llfClass: inputs['llfClass'] || '001',
-    ssc: inputs['ssc'] || '0000',
+    ssc: inputs['ssc'] || '',
     registrationDate: inputs['registrationDate'] || '',
     cosDate: inputs['cosDate'] || inputs['registrationDate'] || '',
     supplierGeneratedReference: inputs['supplierGeneratedReference'] || '',
