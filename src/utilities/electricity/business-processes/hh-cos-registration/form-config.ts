@@ -173,7 +173,7 @@ export const hhCOSRegistrationFormGroups: FormGroupDefinition[] = [
     addLabel: 'Add Another Meter',
     fields: [
       { id: 'msn',                      label: 'Meter Serial Number',          type: 'text',   required: true,  placeholder: 'K21W003729',         helpText: 'D0268 03A[1]' },
-      { id: 'manufacturersMakeAndType', label: 'Manufacturers Make & Type',    type: 'text',   required: false, placeholder: 'ABB LV CT MU Vision', helpText: 'D0268 03A[2]' },
+      { id: 'manufacturersMakeAndType', label: 'Manufacturers Make & Type',    type: 'text',   required: false, defaultValue: 'ABB LV CT MU Vision', helpText: 'D0268 03A[2]' },
       { id: 'meterInstalledDate',       label: 'Meter Installed Date',         type: 'date',   required: true,                                       helpText: 'D0268 03A[3]' },
       { id: 'meterCurrentRating',       label: 'Meter Current Rating',         type: 'text',   required: false,                                      helpText: 'D0268 03A[4]' },
       { id: 'vtRatio',                  label: 'VT Ratio',                     type: 'text',   required: false,                                      helpText: 'D0268 03A[5]' },
