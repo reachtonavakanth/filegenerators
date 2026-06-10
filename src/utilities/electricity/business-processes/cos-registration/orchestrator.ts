@@ -171,7 +171,8 @@ export function orchestrateCOSRegistration(
     appointmentType: 'MOP',
     record034: { mpan: m.mpan, contractRef: m.contractRefMop, cosDate: m.cosDate },
     appointmentDate: m.cosDate,
-    registerRef: m.registerCode,
+    serviceRef: m.mopServiceRef,
+    serviceLevelRef: m.mopServiceLevelRef,
   });
   d0011_mop.fileName = `D0011_MOP_${m.fileDate}_001.usr`;
 
@@ -180,7 +181,8 @@ export function orchestrateCOSRegistration(
     appointmentType: 'DC',
     record034: { mpan: m.mpan, contractRef: m.contractRefDc, cosDate: m.cosDate },
     appointmentDate: m.cosDate,
-    registerRef: m.registerCode,
+    serviceRef: m.dcServiceRef,
+    serviceLevelRef: m.dcServiceLevelRef,
   });
   d0011_dc.fileName = `D0011_DC_${m.fileDate}_001.usr`;
 
@@ -189,7 +191,8 @@ export function orchestrateCOSRegistration(
     appointmentType: 'DA',
     record034: { mpan: m.mpan, contractRef: m.contractRefDa, cosDate: m.cosDate },
     appointmentDate: m.cosDate,
-    registerRef: m.registerCode,
+    serviceRef: m.daServiceRef,
+    serviceLevelRef: m.daServiceLevelRef,
   });
   d0011_da.fileName = `D0011_DA_${m.fileDate}_001.usr`;
 
@@ -315,7 +318,7 @@ export function orchestrateCOSRegistration(
     processLabel: 'Electricity NHH COS Registration',
     dflows: [
       d0260, d0217,
-      d0011_mop, d0011_dc, d0011_da,
+      d0011_mop, d0011_da, d0011_dc,
       d0149, d0150, d0052,
       d0010, d0086, d0012, d0019,
     ],

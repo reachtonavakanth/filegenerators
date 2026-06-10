@@ -1,4 +1,4 @@
-// HH Advanced COS Registration — Form Group Definitions
+﻿// HH Advanced COS Registration — Form Group Definitions
 
 import type { FormGroupDefinition } from '../../../../shared/domain/types';
 import {
@@ -52,6 +52,22 @@ export const hhCOSRegistrationFormGroups: FormGroupDefinition[] = [
     ],
   },
   {
+    id: 'agreed-service-details',
+    label: 'Agreed Service Details (D0011)',
+    icon: '📋',
+    fields: [
+      { id: 'contractRefMop',     label: 'MOP Contract Reference',       type: 'text', required: true, placeholder: 'GMTRMOP001' },
+      { id: 'mopServiceRef',      label: 'MOP Service Reference',        type: 'text', required: true, placeholder: '01' },
+      { id: 'mopServiceLevelRef', label: 'MOP Service Level Reference',  type: 'text', required: true, placeholder: '01' },
+      { id: 'contractRefDa',      label: 'DA Contract Reference',        type: 'text', required: true, placeholder: 'GMTRDA001' },
+      { id: 'daServiceRef',       label: 'DA Service Reference',         type: 'text', required: true, placeholder: '01' },
+      { id: 'daServiceLevelRef',  label: 'DA Service Level Reference',   type: 'text', required: true, placeholder: '01' },
+      { id: 'contractRefDc',      label: 'DC Contract Reference',        type: 'text', required: true, placeholder: 'GMTRDC001' },
+      { id: 'dcServiceRef',       label: 'DC Service Reference',         type: 'text', required: true, placeholder: '01' },
+      { id: 'dcServiceLevelRef',  label: 'DC Service Level Reference',   type: 'text', required: true, placeholder: '01' },
+    ],
+  },
+  {
     id: 'market-parties',
     label: 'Market Parties',
     icon: '🏢',
@@ -86,9 +102,6 @@ export const hhCOSRegistrationFormGroups: FormGroupDefinition[] = [
       { id: 'collectorType',      label: 'Data Collector Type',     type: 'select', required: true, defaultValue: 'H', options: HH_TYPE_OPTIONS },
       { id: 'mopType',            label: 'Meter Operator Type',     type: 'select', required: true, defaultValue: 'H', options: HH_TYPE_OPTIONS },
       { id: 'postcode',           label: 'Postcode',                type: 'text',   required: true, placeholder: 'GU1 4HN' },
-      { id: 'contractRefMop', label: 'MOP Contract Reference', type: 'text', required: true, placeholder: 'GMTRMOP001', helpText: 'D0011 034[2] — MOP' },
-      { id: 'contractRefDc',  label: 'DC Contract Reference',  type: 'text', required: true, placeholder: 'GMTRDC001',  helpText: 'D0011 034[2] — DC' },
-      { id: 'contractRefDa',  label: 'DA Contract Reference',  type: 'text', required: true, placeholder: 'GMTRDA001',  helpText: 'D0011 034[2] — DA' },
     ],
   },
   {
