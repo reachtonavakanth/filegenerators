@@ -32,9 +32,14 @@ export interface ElectricityHHCOSRegistrationModel {
   postcode: string;
 
   contractRefMop: string;
-  contractRefDc: string;
+  mopServiceRef: string;
+  mopServiceLevelRef: string;
   contractRefDa: string;
-  registerCode: string;
+  daServiceRef: string;
+  daServiceLevelRef: string;
+  contractRefDc: string;
+  dcServiceRef: string;
+  dcServiceLevelRef: string;
 
   mpan: string;
 
@@ -209,16 +214,21 @@ export function mapFormToHHCOSModel(
     collectorType: inputs['collectorType'] || '',
     mopType: inputs['mopType'] || '',
     postcode: inputs['postcode'] || '',
-    contractRefMop: inputs['contractRefMop'] || '01',
-    contractRefDc:  inputs['contractRefDc']  || '01',
-    contractRefDa:  inputs['contractRefDa']  || '01',
-    registerCode: '01',
+    contractRefMop:     inputs['contractRefMop']     || '',
+    mopServiceRef:      inputs['mopServiceRef']      || '',
+    mopServiceLevelRef: inputs['mopServiceLevelRef'] || '',
+    contractRefDa:      inputs['contractRefDa']      || '',
+    daServiceRef:       inputs['daServiceRef']       || '',
+    daServiceLevelRef:  inputs['daServiceLevelRef']  || '',
+    contractRefDc:      inputs['contractRefDc']      || '',
+    dcServiceRef:       inputs['dcServiceRef']       || '',
+    dcServiceLevelRef:  inputs['dcServiceLevelRef']  || '',
     mpan: inputs['mpan'] || '',
     profileClass: inputs['profileClass'] || '',
     measurementClass: inputs['measurementClass'] || '',
     gspGroupId: inputs['gspGroupId'] || '',
     llfClass: inputs['llfClass'] || '001',
-    ssc: inputs['ssc'] || '0000',
+    ssc: inputs['ssc'] || '',
     registrationDate: inputs['registrationDate'] || '',
     cosDate: inputs['cosDate'] || inputs['registrationDate'] || '',
     supplierGeneratedReference: inputs['supplierGeneratedReference'] || '',

@@ -73,20 +73,21 @@ export async function buildAndDownloadZip(
   inputsJson: unknown
 ): Promise<void> {
   const zip = new JSZip();
+  const now = new Date();
 
   const dflowsFolder = zip.folder('dflows');
   for (const dflow of output.dflows) {
-    dflowsFolder!.file(dflow.fileName, renderDFlowFile(dflow));
+    dflowsFolder!.file(dflow.fileName, renderDFlowFile(dflow), { date: now });
   }
 
   if (output.cssMessages.length > 0) {
     const cssFolder = zip.folder('css')!;
     for (const cssMsg of output.cssMessages) {
-      cssFolder.file(cssMsg.fileName, JSON.stringify(cssMsg.content, null, 2));
+      cssFolder.file(cssMsg.fileName, JSON.stringify(cssMsg.content, null, 2), { date: now });
     }
   }
 
-  zip.file(`${output.processId}_input.json`, JSON.stringify(inputsJson, null, 2));
+  zip.file(`${output.processId}_input.json`, JSON.stringify(inputsJson, null, 2), { date: now });
 
   const blob = await zip.generateAsync({ type: 'blob' });
   triggerDownload(blob, `${sanitiseName(output.processLabel)}_${dateStamp}.zip`);

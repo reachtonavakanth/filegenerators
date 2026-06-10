@@ -7,7 +7,7 @@
 //   MOP appointment → 036|cosDate|
 //
 // 034|mpan|contractRef|cosDate|
-// 038|registerRef|registerRef|   (same value both fields, alphanumeric max 4)
+// 038|serviceRef|serviceLevelRef|
 
 import { DFLOW_FILE_EXT } from '../../industry-constants';
 import type { DFlowFile, DFlowEnvelope } from '../../../../shared/domain/types';
@@ -30,8 +30,9 @@ export interface D0011Model {
   envelope: DFlowEnvelope;
   appointmentType: D0011AppointmentType;
   record034: D0011_034;
-  appointmentDate: string;  // date for the middle record (035/036/037) — cosDate
-  registerRef: string;      // 038 Service Reference (field[1]) & Service Level Reference (field[2]) — same value, alphanumeric max 4
+  appointmentDate: string;   // date for the middle record (035/036/037) — cosDate
+  serviceRef: string;        // 038[0] — Service Reference
+  serviceLevelRef: string;   // 038[1] — Service Level Reference
 }
 
 export function buildD0011(model: D0011Model): DFlowFile {
@@ -44,7 +45,7 @@ export function buildD0011(model: D0011Model): DFlowFile {
     records: [
       { recordType: '034', fields: [r.mpan, r.contractRef, r.cosDate] },
       { recordType: middleRecord, fields: [model.appointmentDate] },
-      { recordType: '038', fields: [model.registerRef, model.registerRef] },
+      { recordType: '038', fields: [model.serviceRef, model.serviceLevelRef] },
     ],
   };
 }
