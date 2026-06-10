@@ -43,8 +43,7 @@ function makeEnvelope(
   };
 }
 
-function localISOString(): string {
-  const d = new Date();
+function localISOString(d: Date): string {
   const p = (n: number, l = 2) => String(n).padStart(l, '0');
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(), 3)}`;
 }
@@ -52,7 +51,10 @@ function localISOString(): string {
 export function orchestrateHHCOSRegistration(
   m: ElectricityHHCOSRegistrationModel
 ): GeneratedOutput {
-  const ts = m.timestampFormat === 'local' ? localISOString() : new Date().toISOString();
+  const baseDate = new Date();
+  const GAP_MS = 3 * 60_000; // 3 minutes between each CSS file
+  const formatTs = (d: Date) => m.timestampFormat === 'local' ? localISOString(d) : d.toISOString();
+  const [ts0, ts1, ts2, ts3] = [0, 1, 2, 3].map(i => formatTs(new Date(baseDate.getTime() + i * GAP_MS)));
   const hhmmss = currentHHMMSS();
   const fileIdBase = generateFileIdBase();
 
@@ -65,13 +67,14 @@ export function orchestrateHHCOSRegistration(
   const env = (flowId: string, idx: number, seq: string, from: readonly [string, string], to: readonly [string, string]) =>
     makeEnvelope(m, hhmmss, flowId, fileIdBase, idx, seq, from[0], from[1], to[0], to[1]);
 
-  // ---- CSS messages ----
+  // ---- CSS messages (order: Validation → Pending → SecuredActive → Confirmed) ----
+  // eventDate steps forward by 3 minutes per file: ts0 → ts1 → ts2 → ts3
   const css02380 = buildCSS02380_01({
     mpxn: m.mpan,
     registrationRequestId: m.registrationRequestId,
     supplierGeneratedReference: m.supplierGeneratedReference,
     correlationId: m.cssCorrelationId,
-    timestamp: ts,
+    timestamp: ts0,
   });
 
   const css02300 = buildCSS02300_01({
@@ -82,7 +85,7 @@ export function orchestrateHHCOSRegistration(
     supplierRole: m.supplierRoleCode,
     supplierMpid: m.supplierParticipantId,
     correlationId: m.cssCorrelationId,
-    timestamp: ts,
+    timestamp: ts1,
     registrationDate: m.registrationDate,
   });
 
@@ -92,7 +95,7 @@ export function orchestrateHHCOSRegistration(
     registrationId: m.registrationRequestId,
     registrationActiveDate: m.cosDate,
     correlationId: m.cssCorrelationId,
-    timestamp: ts,
+    timestamp: ts2,
     registrationDate: m.registrationDate,
   });
 
@@ -101,7 +104,7 @@ export function orchestrateHHCOSRegistration(
     supplierGeneratedReference: m.supplierGeneratedReference,
     registrationId: m.registrationRequestId,
     correlationId: m.cssCorrelationId,
-    timestamp: ts,
+    timestamp: ts3,
     registrationDate: m.registrationDate,
   });
 
@@ -205,9 +208,11 @@ export function orchestrateHHCOSRegistration(
     meterCop: m.meterCop,
     meterCopIssueNumber: m.meterCopIssueNumber,
     complexSiteIndicator: m.complexSiteIndicator,
+    meterEquipmentLocation: m.meterEquipmentLocation,
     systemVoltage: m.systemVoltage,
     numberOfPhases: m.numberOfPhases,
     eventIndicator: m.eventIndicator,
+    additionalInformation: m.additionalInformation,
     outstations: m.outstations,
     meters: m.meters,
   });
@@ -233,8 +238,9 @@ export function orchestrateHHCOSRegistration(
   return {
     processId: 'hh-advanced-cos-registration',
     processLabel: 'Electricity HH Advanced COS Registration',
+    folderName: `${m.mpan}_HH Advanced COS Registration`,
     dflows: [d0260, d0217, d0011_mop, d0011_da, d0011_dc, d0051, d0268, d0036],
-    cssMessages: [css02300, css02380, css02370_01, css02370_03],
+    cssMessages: [css02380, css02300, css02370_01, css02370_03],
     warnings: warnings.length > 0 ? warnings : undefined,
   };
 }

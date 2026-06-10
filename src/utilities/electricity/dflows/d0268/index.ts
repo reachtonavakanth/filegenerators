@@ -76,9 +76,11 @@ export interface D0268Model {
   meterCop: string;
   meterCopIssueNumber: string;
   complexSiteIndicator: string;
+  meterEquipmentLocation: string;  // 01A[6]
   systemVoltage: string;
   numberOfPhases: string;
   eventIndicator: string;
+  additionalInformation: string;   // 01A[10] — optional
   // 02A — independent outstations
   outstations: D0268Outstation[];
   // 03A + 04A — meters, each with their own registers
@@ -94,7 +96,8 @@ export function buildD0268(model: D0268Model): DFlowFile {
     recordType: '01A',
     fields: [
       r.mpan, r.cosDate, r.meterCop, r.meterCopIssueNumber,
-      r.complexSiteIndicator, '', r.systemVoltage, r.numberOfPhases, r.eventIndicator,
+      r.complexSiteIndicator, r.meterEquipmentLocation, r.systemVoltage, r.numberOfPhases, r.eventIndicator,
+      r.additionalInformation,
     ],
   });
 

@@ -33,7 +33,8 @@ export async function saveToDirectory(output: GeneratedOutput, inputsJson: unkno
   const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite', startIn: 'downloads' });
   const saved: string[] = [];
 
-  const processDir = await dirHandle.getDirectoryHandle(sanitiseName(output.processLabel), { create: true });
+  const folderName = sanitiseName(output.folderName ?? output.processLabel);
+  const processDir = await dirHandle.getDirectoryHandle(folderName, { create: true });
 
   const dflowsDir = await processDir.getDirectoryHandle('dflows', { create: true });
   for (const dflow of output.dflows) {
@@ -41,7 +42,7 @@ export async function saveToDirectory(output: GeneratedOutput, inputsJson: unkno
     const writable = await fh.createWritable();
     await writable.write(renderDFlowFile(dflow));
     await writable.close();
-    saved.push(`${output.processLabel}/dflows/${dflow.fileName}`);
+    saved.push(`${folderName}/dflows/${dflow.fileName}`);
   }
 
   if (output.cssMessages.length > 0) {
@@ -51,16 +52,16 @@ export async function saveToDirectory(output: GeneratedOutput, inputsJson: unkno
       const writable = await fh.createWritable();
       await writable.write(JSON.stringify(cssMsg.content, null, 2));
       await writable.close();
-      saved.push(`${output.processLabel}/css/${cssMsg.fileName}`);
+      saved.push(`${folderName}/css/${cssMsg.fileName}`);
     }
   }
 
-  const inputFileName = `${output.processId}_input.json`;
+  const inputFileName = `${folderName}_input.json`;
   const inputsFh = await processDir.getFileHandle(inputFileName, { create: true });
   const inputsWritable = await inputsFh.createWritable();
   await inputsWritable.write(JSON.stringify(inputsJson, null, 2));
   await inputsWritable.close();
-  saved.push(`${output.processLabel}/${inputFileName}`);
+  saved.push(`${folderName}/${inputFileName}`);
 
   return saved;
 }
@@ -74,23 +75,25 @@ export async function buildAndDownloadZip(
 ): Promise<void> {
   const zip = new JSZip();
   const now = new Date();
+  const folderName = sanitiseName(output.folderName ?? output.processLabel);
+  const root = zip.folder(folderName)!;
 
-  const dflowsFolder = zip.folder('dflows');
+  const dflowsFolder = root.folder('dflows')!;
   for (const dflow of output.dflows) {
-    dflowsFolder!.file(dflow.fileName, renderDFlowFile(dflow), { date: now });
+    dflowsFolder.file(dflow.fileName, renderDFlowFile(dflow), { date: now });
   }
 
   if (output.cssMessages.length > 0) {
-    const cssFolder = zip.folder('css')!;
+    const cssFolder = root.folder('css')!;
     for (const cssMsg of output.cssMessages) {
       cssFolder.file(cssMsg.fileName, JSON.stringify(cssMsg.content, null, 2), { date: now });
     }
   }
 
-  zip.file(`${output.processId}_input.json`, JSON.stringify(inputsJson, null, 2), { date: now });
+  root.file(`${folderName}_input.json`, JSON.stringify(inputsJson, null, 2), { date: now });
 
   const blob = await zip.generateAsync({ type: 'blob' });
-  triggerDownload(blob, `${sanitiseName(output.processLabel)}_${dateStamp}.zip`);
+  triggerDownload(blob, `${folderName}_${dateStamp}.zip`);
 }
 
 function triggerDownload(blob: Blob, filename: string): void {
@@ -114,8 +117,9 @@ function sanitiseName(name: string): string {
 }
 
 export function buildFileSummary(output: GeneratedOutput): string[] {
+  const folderName = sanitiseName(output.folderName ?? output.processLabel);
   const summary: string[] = [];
-  for (const df of output.dflows) summary.push(`dflows/${df.fileName}`);
-  for (const css of output.cssMessages) summary.push(`css/${css.fileName}`);
+  for (const df of output.dflows) summary.push(`${folderName}/dflows/${df.fileName}`);
+  for (const css of output.cssMessages) summary.push(`${folderName}/css/${css.fileName}`);
   return summary;
 }

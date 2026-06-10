@@ -123,10 +123,12 @@ export const hhCOSRegistrationFormGroups: FormGroupDefinition[] = [
     fields: [
       { id: 'meterCop',             label: 'Meter COP',              type: 'select', required: true, defaultValue: '5', options: METER_COP_OPTIONS,    helpText: 'D0268 01A[3]' },
       { id: 'meterCopIssueNumber',  label: 'Meter COP Issue Number', type: 'text',   required: true, defaultValue: '6',                                  helpText: 'D0268 01A[4]' },
-      { id: 'complexSiteIndicator', label: 'Complex Site Indicator', type: 'select', required: true, defaultValue: 'F', options: COMPLEX_SITE_OPTIONS,  helpText: 'D0268 01A[5]' },
-      { id: 'systemVoltage',        label: 'System Voltage',         type: 'text',   required: true, defaultValue: '415',                                helpText: 'D0268 01A[7]' },
-      { id: 'numberOfPhases',       label: 'Number of Phases',       type: 'select', required: true, defaultValue: '3', options: NUMBER_OF_PHASES_OPTIONS, helpText: 'D0268 01A[8]' },
-      { id: 'eventIndicator',       label: 'Event Indicator',        type: 'select', required: true, defaultValue: 'J', options: EVENT_INDICATOR_OPTIONS, helpText: 'D0268 01A[9]' },
+      { id: 'complexSiteIndicator',    label: 'Complex Site Indicator',         type: 'select', required: true,  defaultValue: 'F', options: COMPLEX_SITE_OPTIONS,     helpText: 'D0268 01A[5]' },
+      { id: 'meterEquipmentLocation', label: 'Meter Equipment/Service Location', type: 'text',   required: false,                                                        helpText: 'D0268 01A[6]' },
+      { id: 'systemVoltage',          label: 'System Voltage',                  type: 'text',   required: true,  defaultValue: '415',                                   helpText: 'D0268 01A[7]' },
+      { id: 'numberOfPhases',         label: 'Number of Phases',                type: 'select', required: true,  defaultValue: '3', options: NUMBER_OF_PHASES_OPTIONS,  helpText: 'D0268 01A[8]' },
+      { id: 'eventIndicator',         label: 'Event Indicator',                 type: 'select', required: true,  defaultValue: 'J', options: EVENT_INDICATOR_OPTIONS,   helpText: 'D0268 01A[9]' },
+      { id: 'additionalInformation',  label: 'Additional Information',          type: 'text',   required: false,                                                        helpText: 'D0268 01A[10]' },
     ],
   },
   // ---- 02A — Outstation Details (independent repeatable) ----

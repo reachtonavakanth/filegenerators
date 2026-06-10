@@ -316,6 +316,7 @@ export function orchestrateCOSRegistration(
   return {
     processId: 'cos-registration',
     processLabel: 'Electricity NHH COS Registration',
+    folderName: `${m.mpan}_NHH COS Registration`,
     dflows: [
       d0260, d0217,
       d0011_mop, d0011_da, d0011_dc,

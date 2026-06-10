@@ -1,4 +1,4 @@
-# Test File Generator
+# Industry File Generator
 
 A local browser-based tool for generating UK electricity market D-flow (`.usr`) files and CSS JSON messages for QA testing. Runs fully offline — no server, no backend, no internet required.
 

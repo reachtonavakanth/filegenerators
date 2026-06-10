@@ -2,7 +2,7 @@
 // Shared Domain Types — used across Electricity and Gas
 // ============================================================
 
-export type UtilityType = 'electricity' | 'gas';
+export type UtilityType = 'electricity' | 'electricity-mhhs' | 'gas';
 export type TestFlag = 'OPER' | 'TR06';
 
 // ---- D-Flow envelope (ZHV header fields) ----
@@ -53,6 +53,7 @@ export interface CSSMessage {
 export interface GeneratedOutput {
   processId: string;
   processLabel: string;
+  folderName?: string;          // overrides processLabel for the output folder/zip name
   dflows: DFlowFile[];
   cssMessages: CSSMessage[];
   warnings?: string[];
