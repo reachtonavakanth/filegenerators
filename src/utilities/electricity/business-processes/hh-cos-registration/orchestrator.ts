@@ -205,9 +205,11 @@ export function orchestrateHHCOSRegistration(
     meterCop: m.meterCop,
     meterCopIssueNumber: m.meterCopIssueNumber,
     complexSiteIndicator: m.complexSiteIndicator,
+    meterEquipmentLocation: m.meterEquipmentLocation,
     systemVoltage: m.systemVoltage,
     numberOfPhases: m.numberOfPhases,
     eventIndicator: m.eventIndicator,
+    additionalInformation: m.additionalInformation,
     outstations: m.outstations,
     meters: m.meters,
   });

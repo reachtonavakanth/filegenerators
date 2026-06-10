@@ -64,9 +64,11 @@ export interface ElectricityHHCOSRegistrationModel {
   meterCop: string;
   meterCopIssueNumber: string;
   complexSiteIndicator: string;
+  meterEquipmentLocation: string;
   systemVoltage: string;
   numberOfPhases: string;
   eventIndicator: string;
+  additionalInformation: string;
 
   // D0268 02A — independent outstations
   outstations: D0268Outstation[];
@@ -239,9 +241,11 @@ export function mapFormToHHCOSModel(
     meterCop: inputs['meterCop'] || '5',
     meterCopIssueNumber: inputs['meterCopIssueNumber'] || '6',
     complexSiteIndicator: inputs['complexSiteIndicator'] || 'F',
+    meterEquipmentLocation: inputs['meterEquipmentLocation'] || '',
     systemVoltage: inputs['systemVoltage'] || '415',
     numberOfPhases: inputs['numberOfPhases'] || '3',
     eventIndicator: inputs['eventIndicator'] || 'J',
+    additionalInformation: inputs['additionalInformation'] || '',
     outstations: extractOutstations(inputs),
     meters: extractMeters(inputs),
     hhMeasurementQuantityId: inputs['hhMeasurementQuantityId_0'] || 'AI',
