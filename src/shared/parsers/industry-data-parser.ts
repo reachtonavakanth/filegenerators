@@ -4,6 +4,7 @@
 
 export interface IndustryDataParseResult {
   fields: Record<string, string>;
+  meters: Array<Record<string, string>>; // one entry per MeterDetails item, keyed by form field ID
   warnings: string[];
   error?: string; // fatal — caller should not apply this result
 }
@@ -48,32 +49,45 @@ export function parseIndustryData(text: string): IndustryDataParseResult | null 
   pick('distributorParticipantId', data['distributor_mpid']);
   pick('oldSupplierParticipantId', data['supplier_mpid']);
 
-  // MeterDetails — first entry only
+  // MeterDetails — all entries
   const meterDetails = data['MeterDetails'];
   if (!Array.isArray(meterDetails) || meterDetails.length === 0) {
     warnings.push('No MeterDetails in file — meter fields not populated');
-    return { fields, warnings };
+    return { fields, meters: [], warnings };
   }
 
-  const meter = meterDetails[0] as Record<string, unknown>;
+  const firstMeter = meterDetails[0] as Record<string, unknown>;
 
   // MPAN cross-check: outer mpan must match MeterDetails.mpan_core
   const outerMpan = typeof data['mpan'] === 'string' ? data['mpan'].trim() : '';
-  const innerMpan = typeof meter['mpan_core'] === 'string' ? meter['mpan_core'].trim() : '';
+  const innerMpan = typeof firstMeter['mpan_core'] === 'string' ? firstMeter['mpan_core'].trim() : '';
   if (outerMpan && innerMpan && outerMpan !== innerMpan) {
     return {
       fields: {},
+      meters: [],
       warnings: [],
       error: `MPAN mismatch — header "${outerMpan}" vs MeterDetails "${innerMpan}"`,
     };
   }
 
-  pick('msn',                    meter['msn']);
-  pick('meterType',              meter['meter_type']);
-  pick('meterInstalledDate',     meter['meter_install_date']); // YYYYMMDD — form renderer normalises
-  pick('manufacturersMakeAndType', meter['meter_manufacturer']);
-  pick('meterAssetProviderId',   meter['map_mpid']);
-  pick('meterLocation',          meter['meter_location']);
+  const meterFieldPick = (m: Record<string, unknown>): Record<string, string> => {
+    const entry: Record<string, string> = {};
+    const p = (id: string, v: unknown): void => { if (typeof v === 'string' && v.trim()) entry[id] = v.trim(); };
+    p('msn',                    m['msn']);
+    p('meterType',              m['meter_type']);
+    p('meterInstalledDate',     m['meter_install_date']);
+    p('manufacturersMakeAndType', m['meter_manufacturer']);
+    p('meterAssetProviderId',   m['map_mpid']);
+    p('meterLocation',          m['meter_location']);
+    return entry;
+  };
 
-  return { fields, warnings };
+  const meters: Array<Record<string, string>> = meterDetails
+    .map(m => meterFieldPick(m as Record<string, unknown>))
+    .filter(e => Object.keys(e).length > 0);
+
+  // Flat fields from first meter — keeps NHH forms (where msn is non-repeatable) working
+  for (const [k, v] of Object.entries(meters[0] ?? {})) pick(k, v);
+
+  return { fields, meters, warnings };
 }

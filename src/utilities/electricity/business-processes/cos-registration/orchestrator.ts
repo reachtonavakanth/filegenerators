@@ -22,6 +22,7 @@ import {
   buildCSS02380_01,
   buildCSS02370_01,
   buildCSS02370_03,
+  generateCssTimestamps,
 } from '../../css/builders';
 
 
@@ -50,16 +51,10 @@ function makeEnvelope(
   };
 }
 
-function localISOString(): string {
-  const d = new Date();
-  const p = (n: number, l = 2) => String(n).padStart(l, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(), 3)}`;
-}
-
 export function orchestrateCOSRegistration(
   m: ElectricityCOSRegistrationModel
 ): GeneratedOutput {
-  const ts = m.timestampFormat === 'local' ? localISOString() : new Date().toISOString();
+  const [ts0, ts1, ts2, ts3] = generateCssTimestamps(4, m.timestampFormat);
   const hhmmss = currentHHMMSS();
   const fileIdBase = generateFileIdBase();
   const reg0 = m.registers[0];
@@ -74,12 +69,13 @@ export function orchestrateCOSRegistration(
     makeEnvelope(m, hhmmss, flowId, fileIdBase, idx, seq, from[0], from[1], to[0], to[1]);
 
   // ---- CSS messages ----
+  // CSS messages — eventDate steps forward by 3 minutes per file: ts0 → ts1 → ts2 → ts3
   const css02380 = buildCSS02380_01({
     mpxn: m.mpan,
     registrationRequestId: m.registrationRequestId,
     supplierGeneratedReference: m.supplierGeneratedReference,
     correlationId: m.cssCorrelationId,
-    timestamp: ts,
+    timestamp: ts0,
   });
 
   const css02300 = buildCSS02300_01({
@@ -90,7 +86,7 @@ export function orchestrateCOSRegistration(
     supplierRole: m.supplierRoleCode,
     supplierMpid: m.supplierParticipantId,
     correlationId: m.cssCorrelationId,
-    timestamp: ts,
+    timestamp: ts1,
     registrationDate: m.registrationDate,
   });
 
@@ -100,7 +96,7 @@ export function orchestrateCOSRegistration(
     registrationId: m.registrationRequestId,
     registrationActiveDate: m.cosDate,
     correlationId: m.cssCorrelationId,
-    timestamp: ts,
+    timestamp: ts2,
     registrationDate: m.registrationDate,
   });
 
@@ -109,7 +105,7 @@ export function orchestrateCOSRegistration(
     supplierGeneratedReference: m.supplierGeneratedReference,
     registrationId: m.registrationRequestId,
     correlationId: m.cssCorrelationId,
-    timestamp: ts,
+    timestamp: ts3,
     registrationDate: m.registrationDate,
   });
 

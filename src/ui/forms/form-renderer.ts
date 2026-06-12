@@ -511,7 +511,8 @@ const IMPORT_METADATA_KEYS = new Set(['process', 'exportedAt']);
 export function populateFormFromData(
   container: HTMLElement,
   groups: FormGroupDefinition[],
-  data: Record<string, unknown>
+  data: Record<string, unknown>,
+  mode: 'reset' | 'merge' = 'reset'
 ): ImportResult {
   const flat: Record<string, string> = {};
   for (const [key, value] of Object.entries(data)) {
@@ -538,6 +539,10 @@ export function populateFormFromData(
       if (!card || !body) continue;
 
       const groupArrayData = data[group.label];
+
+      // In merge mode, skip repeatable groups not present in the data — leave existing blocks untouched.
+      if (mode === 'merge' && groupArrayData === undefined) continue;
+
       const outerEntries: Record<string, unknown>[] = [];
 
       const toEntry = (e: unknown): Record<string, unknown> | null => {
@@ -616,12 +621,16 @@ export function populateFormFromData(
         }
       });
     } else {
-      for (const field of group.fields) {
-        if (field.readOnly || field.type === 'heading' || field.type === 'fill-action') continue;
-        const el = container.querySelector(`#field-${field.id}`) as HTMLInputElement | HTMLSelectElement | null;
-        if (!el) continue;
-        setElValue(el, field.defaultValue ?? '', field.type);
-        syncFieldClass(el, field.type);
+      // In reset mode, clear every field to its default before applying data.
+      // In merge mode, leave fields not present in the data untouched.
+      if (mode === 'reset') {
+        for (const field of group.fields) {
+          if (field.readOnly || field.type === 'heading' || field.type === 'fill-action') continue;
+          const el = container.querySelector(`#field-${field.id}`) as HTMLInputElement | HTMLSelectElement | null;
+          if (!el) continue;
+          setElValue(el, field.defaultValue ?? '', field.type);
+          syncFieldClass(el, field.type);
+        }
       }
       for (const field of group.fields) {
         if (field.readOnly || field.type === 'heading' || field.type === 'fill-action') continue;

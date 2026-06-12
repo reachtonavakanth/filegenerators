@@ -11,7 +11,7 @@ import { buildD0142 } from '../../dflows/d0142';
 import { buildD0010 } from '../../dflows/d0010';
 import { buildD0149 } from '../../dflows/d0149';
 import { buildD0150 } from '../../dflows/d0150';
-import { buildCSS02380_01, buildCSS02370_01 } from '../../css/builders';
+import { buildCSS02380_01, buildCSS02370_01, generateCssTimestamps } from '../../css/builders';
 
 function makeEnvelope(
   m: ElectricityEnergisationModel,
@@ -41,7 +41,7 @@ function makeEnvelope(
 export function orchestrateEnergisation(
   m: ElectricityEnergisationModel
 ): GeneratedOutput {
-  const ts = new Date().toISOString();
+  const [ts0, ts1] = generateCssTimestamps(2);
   const hhmmss = currentHHMMSS();
   const correlationId = `COR-EN-${m.mpan.slice(-6)}-${m.fileDate}`;
   const fileIdBase = generateFileIdBase();
@@ -133,7 +133,7 @@ export function orchestrateEnergisation(
     registrationRequestId: '',
     supplierGeneratedReference: '',
     correlationId,
-    timestamp: ts,
+    timestamp: ts0,
   });
 
   // ---- CSS02370_01 ----
@@ -143,7 +143,7 @@ export function orchestrateEnergisation(
     registrationId: '',
     registrationActiveDate: m.requestedDate,
     correlationId,
-    timestamp: ts,
+    timestamp: ts1,
     registrationDate: m.requestedDate,
   });
 

@@ -222,7 +222,7 @@ function handleImportRaw(files: FileList): void {
   const process = selectedProcess;
   const formBody = document.getElementById('form-body')!;
 
-  type FileResult = { name: string; fields: Record<string, string>; warnings: string[] };
+  type FileResult = { name: string; fields: Record<string, string>; meters: Array<Record<string, string>>; warnings: string[] };
 
   const successes: FileResult[] = [];
   const errors: string[] = [];
@@ -232,26 +232,49 @@ function handleImportRaw(files: FileList): void {
     if (pending > 0) return;
 
     if (successes.length === 0) {
-      showStatus('error', errors.length === 1 ? errors[0] : `${errors.length} file(s) not recognised or invalid`);
+      showStatus('error', 'Import failed — none of the selected files could be recognised. Please check you have selected the correct file types (M0030002 / industry data JSON / CSS09000).');
+      return;
+    }
+
+    // If any file could not be parsed, abort entirely — we can't know if the skipped
+    // file is for a different MPAN or would otherwise conflict with the parsed ones.
+    if (errors.length > 0) {
+      const fileTypeLabel = (name: string): string => {
+        const ext = name.split('.').pop()?.toLowerCase();
+        if (ext !== 'json') return 'M0030002';
+        if (name.toLowerCase().startsWith('css09000')) return 'CSS09000';
+        return 'Industry Data';
+      };
+      const typeLabels = [...new Set(Array.from(files).map(f => fileTypeLabel(f.name)))];
+      const typesStr = typeLabels.join(' & ');
+      showStatus('error', `Import failed — MPAN are not matching in the ${typesStr} provided. Please ensure all files are for the same supply point.`);
       return;
     }
 
     // Validate all files reference the same MPAN
     const mpans = [...new Set(successes.map(r => r.fields['mpan']).filter(Boolean))];
     if (mpans.length > 1) {
-      showStatus('error', `MPAN mismatch across files: ${mpans.join(' vs ')} — nothing imported`);
+      showStatus('error', `Import failed — MPAN are not matching in the ${mpans.join(' vs ')} provided. Please ensure all files are for the same supply point.`);
       return;
     }
 
-    let totalMatched = 0;
     const allWarnings: string[] = [];
-
-    for (const { name, fields, warnings } of successes) {
-      const r = populateFormFromData(formBody, process.formGroups, fields);
-      totalMatched += r.matched;
+    for (const { name, warnings } of successes) {
       for (const w of warnings) allWarnings.push(`${name}: ${w}`);
     }
-    for (const e of errors) allWarnings.push(`Skipped: ${e}`);
+
+    const mergedData: Record<string, unknown> = {};
+    for (const { fields } of successes) Object.assign(mergedData, fields);
+
+    // For processes where meter fields live in a repeatable group (e.g. HH COS Registration),
+    // inject the full meters array so populateFormFromData can add/fill multiple blocks.
+    const allMeters = successes.flatMap(s => s.meters);
+    if (allMeters.length > 0) {
+      const meterGroup = process.formGroups.find(g => g.repeatable && g.fields.some(f => f.id === 'msn'));
+      if (meterGroup) mergedData[meterGroup.label] = allMeters;
+    }
+
+    const { matched: totalMatched } = populateFormFromData(formBody, process.formGroups, mergedData, 'merge');
 
     const warnText = allWarnings.length
       ? '. Warnings: ' + allWarnings.slice(0, 3).join('; ') + (allWarnings.length > 3 ? ` +${allWarnings.length - 3} more` : '')
@@ -294,7 +317,12 @@ function handleImportRaw(files: FileList): void {
       } else if (result.error) {
         errors.push(`"${file.name}": ${result.error}`);
       } else {
-        successes.push({ name: file.name, fields: result.fields, warnings: result.warnings });
+        successes.push({
+          name: file.name,
+          fields: result.fields,
+          meters: 'meters' in result ? (result.meters as Array<Record<string, string>>) : [],
+          warnings: result.warnings,
+        });
       }
 
       pending--;
