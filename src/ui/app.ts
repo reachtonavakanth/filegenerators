@@ -6,6 +6,9 @@ import type { ProcessDefinition, GeneratedOutput, UtilityDefinition } from '../s
 import { allUtilities } from '../utilities';
 import { renderFormGroups, collectFormValues, collectFormValuesGrouped, validateForm, populateFormFromData } from './forms/form-renderer';
 import { buildAndDownloadZip, saveToDirectory, supportsFileSystemAccess, downloadJSONFile } from '../shared/downloads/zip-builder';
+import { parseM0030002 } from '../shared/parsers/m0030002-parser';
+import { parseIndustryData } from '../shared/parsers/industry-data-parser';
+import { parseCss09000 } from '../shared/parsers/css09000-parser';
 
 let selectedProcess: ProcessDefinition | null = null;
 let lastOutput: GeneratedOutput | null = null;
@@ -133,6 +136,9 @@ function selectProcess(process: ProcessDefinition): void {
   showForm(process);
   setButtonStates(true, false);
   hideStatus();
+
+  const regIdEl = document.getElementById('field-registrationRequestId') as HTMLInputElement | null;
+  if (regIdEl) regIdEl.value = crypto.randomUUID();
 }
 
 // ---- Form ----
@@ -207,6 +213,96 @@ function handleImportJSON(): void {
     }
   };
   reader.readAsText(file);
+}
+
+// ---- Import Raw Data (.usr / .json industry data) ----
+
+function handleImportRaw(files: FileList): void {
+  if (!selectedProcess) return;
+  const process = selectedProcess;
+  const formBody = document.getElementById('form-body')!;
+
+  type FileResult = { name: string; fields: Record<string, string>; warnings: string[] };
+
+  const successes: FileResult[] = [];
+  const errors: string[] = [];
+  let pending = files.length;
+
+  const tryFinish = (): void => {
+    if (pending > 0) return;
+
+    if (successes.length === 0) {
+      showStatus('error', errors.length === 1 ? errors[0] : `${errors.length} file(s) not recognised or invalid`);
+      return;
+    }
+
+    // Validate all files reference the same MPAN
+    const mpans = [...new Set(successes.map(r => r.fields['mpan']).filter(Boolean))];
+    if (mpans.length > 1) {
+      showStatus('error', `MPAN mismatch across files: ${mpans.join(' vs ')} — nothing imported`);
+      return;
+    }
+
+    let totalMatched = 0;
+    const allWarnings: string[] = [];
+
+    for (const { name, fields, warnings } of successes) {
+      const r = populateFormFromData(formBody, process.formGroups, fields);
+      totalMatched += r.matched;
+      for (const w of warnings) allWarnings.push(`${name}: ${w}`);
+    }
+    for (const e of errors) allWarnings.push(`Skipped: ${e}`);
+
+    const warnText = allWarnings.length
+      ? '. Warnings: ' + allWarnings.slice(0, 3).join('; ') + (allWarnings.length > 3 ? ` +${allWarnings.length - 3} more` : '')
+      : '';
+    showStatus(
+      allWarnings.length > 0 ? 'info' : 'success',
+      `Imported ${totalMatched} field(s) from ${successes.length} file(s)${warnText}`
+    );
+  };
+
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+
+    reader.onerror = () => {
+      errors.push(`"${file.name}" could not be read`);
+      pending--;
+      tryFinish();
+    };
+
+    reader.onload = (ev) => {
+      const text = ev.target?.result;
+      if (typeof text !== 'string') {
+        errors.push(`"${file.name}" could not be read`);
+        pending--;
+        tryFinish();
+        return;
+      }
+
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      const isCss09000 = file.name.toLowerCase().startsWith('css09000');
+      const result = ext !== 'json'
+        ? parseM0030002(text)
+        : isCss09000
+          ? parseCss09000(text)
+          : parseIndustryData(text);
+
+      if (!result) {
+        const label = ext !== 'json' ? 'M0030002' : isCss09000 ? 'CSS09000' : 'industry data JSON';
+        errors.push(`"${file.name}" is not a recognised ${label} file`);
+      } else if (result.error) {
+        errors.push(`"${file.name}": ${result.error}`);
+      } else {
+        successes.push({ name: file.name, fields: result.fields, warnings: result.warnings });
+      }
+
+      pending--;
+      tryFinish();
+    };
+
+    reader.readAsText(file);
+  });
 }
 
 // ---- Export JSON ----
@@ -314,6 +410,7 @@ function showStatus(type: 'success' | 'error' | 'info', message: string): void {
   icon.textContent = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
   text.textContent = message;
   bar.style.display = 'flex';
+  bar.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
   showToast(type, message);
 }
@@ -361,10 +458,12 @@ function setButtonStates(generateEnabled: boolean, downloadEnabled: boolean): vo
   const btnDownload = document.getElementById('btn-download') as HTMLButtonElement;
   const btnExportJson = document.getElementById('btn-export-json') as HTMLButtonElement;
   const btnImportJson = document.getElementById('btn-import-json') as HTMLButtonElement;
+  const btnImportRaw = document.getElementById('btn-import-raw') as HTMLButtonElement;
   btnGenerate.disabled = !generateEnabled;
   btnDownload.disabled = !downloadEnabled;
   btnExportJson.disabled = !generateEnabled;
   btnImportJson.disabled = !generateEnabled;
+  btnImportRaw.disabled = !generateEnabled;
 }
 
 function wireButtons(): void {
@@ -377,6 +476,16 @@ function wireButtons(): void {
     (document.getElementById('input-import-json') as HTMLInputElement).click();
   });
   document.getElementById('input-import-json')!.addEventListener('change', handleImportJSON);
+  document.getElementById('btn-import-raw')!.addEventListener('click', () => {
+    (document.getElementById('input-import-raw') as HTMLInputElement).click();
+  });
+  document.getElementById('input-import-raw')!.addEventListener('change', (e) => {
+    const files = (e.target as HTMLInputElement).files;
+    if (files && files.length > 0) {
+      handleImportRaw(files);
+      (e.target as HTMLInputElement).value = '';
+    }
+  });
   document.getElementById('status-close')!.addEventListener('click', hideStatus);
   document.getElementById('toast-close')!.addEventListener('click', hideToast);
   wireIndustryLookup();
