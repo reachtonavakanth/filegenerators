@@ -56,6 +56,9 @@
                 <p id="form-description" class="form-desc"></p>
               </div>
               <div class="form-actions">
+                <button id="btn-import-raw" class="btn btn-orange" disabled>
+                  ⬆ Import Raw Data
+                </button>
                 <button id="btn-generate" class="btn btn-primary" disabled>
                   ⚙ Generate Files
                 </button>
@@ -70,6 +73,7 @@
                 </button>
               </div>
               <input type="file" id="input-import-json" accept=".json" style="display:none" />
+              <input type="file" id="input-import-raw" accept=".usr,.json" multiple style="display:none" />
             </div>
 
             <!-- Industry Data Lookup (collapsible) -->

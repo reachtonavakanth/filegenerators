@@ -860,6 +860,18 @@ html, body {
   border-color: var(--accent-purple);
 }
 
+/* ---- Orange ghost button (Import Raw Data) ---- */
+.btn-orange {
+  background: rgba(251, 146, 60, 0.12);
+  color: #fb923c;
+  border-color: rgba(251, 146, 60, 0.3);
+}
+
+.btn-orange:not(:disabled):hover {
+  background: rgba(251, 146, 60, 0.22);
+  border-color: #fb923c;
+}
+
 /* ---- Collapsible Panel ---- */
 .collapsible-panel {
   background: var(--bg-panel);

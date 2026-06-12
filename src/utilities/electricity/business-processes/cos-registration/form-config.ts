@@ -59,6 +59,14 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
     icon: '🔗',
     fields: [
       {
+        id: 'registrationDate',
+        label: 'SO37 Creation Date',
+        type: 'date',
+        required: true,
+        defaultValue: localDateISO(),
+        helpText: 'New supply start / COS effective date',
+      },
+      {
         id: 'supplierGeneratedReference',
         label: 'Supplier Generated Reference',
         type: 'text',
@@ -124,7 +132,7 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
       { id: 'oldSupplierRoleCode',       label: 'Old Supplier Role Code',       type: 'text', required: true, defaultValue: 'X', maxLength: 1 },
       { id: 'oldSupplierParticipantId',  label: 'Old Supplier Participant ID',  type: 'text', required: true },
       // ---- Distributor / MPAS ----
-      { id: 'distributorRoleCode',       label: 'Distributor / MPAS Role Code',       type: 'text', required: true, maxLength: 1 },
+      { id: 'distributorRoleCode',       label: 'Distributor / MPAS Role Code',       type: 'text', required: true, defaultValue: 'P', maxLength: 1 },
       { id: 'distributorParticipantId',  label: 'Distributor / MPAS Participant ID',  type: 'text', required: true },
       // ---- MOP ----
       { id: 'mopRoleCode',               label: 'New MOP Role Code',                type: 'text', required: true, defaultValue: 'M', maxLength: 1 },
@@ -151,13 +159,6 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
         maxLength: 13,
       },
       {
-        id: 'registrationDate',
-        label: 'Registration Date (Supply Start)',
-        type: 'date',
-        required: true,
-        helpText: 'New supply start / COS effective date',
-      },
-      {
         id: 'cosDate',
         label: 'Change of Supplier Date',
         type: 'date',
@@ -175,9 +176,9 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
       { id: 'instructionType',        label: 'D0260 Instruction Type',       type: 'select', required: true, defaultValue: 'SP43', options: INSTRUCTION_TYPE_OPTIONS },
       { id: 'd0217InstructionType',   label: 'D0217 Instruction Type',       type: 'select', required: true, defaultValue: 'SP40', options: INSTRUCTION_TYPE_OPTIONS },
       { id: 'energisationStatus',     label: 'Energisation Status',          type: 'select', required: true, defaultValue: 'E',    options: ENERGISATION_STATUS_OPTIONS },
-      { id: 'aggrType',               label: 'Data Aggregation Type',        type: 'select', required: true, options: HH_TYPE_OPTIONS },
-      { id: 'collectorType',          label: 'Data Collector Type',          type: 'select', required: true, options: HH_TYPE_OPTIONS },
-      { id: 'mopType',                label: 'Meter Operator Type',          type: 'select', required: true, options: HH_TYPE_OPTIONS },
+      { id: 'aggrType',               label: 'Data Aggregation Type',        type: 'select', required: true, defaultValue: 'N', options: HH_TYPE_OPTIONS },
+      { id: 'collectorType',          label: 'Data Collector Type',          type: 'select', required: true, defaultValue: 'N', options: HH_TYPE_OPTIONS },
+      { id: 'mopType',                label: 'Meter Operator Type',          type: 'select', required: true, defaultValue: 'N', options: HH_TYPE_OPTIONS },
       { id: 'postcode', label: 'Postcode', type: 'text', required: true, placeholder: 'GU1 4HN' },
       {
         id: 'regularReadingCycle',

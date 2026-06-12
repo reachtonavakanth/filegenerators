@@ -39,6 +39,7 @@ export const hhCOSRegistrationFormGroups: FormGroupDefinition[] = [
     label: 'CSS Registration',
     icon: '🔗',
     fields: [
+      { id: 'registrationDate', label: 'SO37 Creation Date', type: 'date', required: true, defaultValue: localDateISO(), helpText: 'New supply start / COS effective date' },
       { id: 'supplierGeneratedReference', label: 'Supplier Generated Reference', type: 'text', required: true, placeholder: 'SC000000549' },
       { id: 'cssCorrelationId',           label: 'Correlation ID',               type: 'text', required: true, placeholder: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' },
       { id: 'registrationRequestId',      label: 'Registration ID',              type: 'text', required: true, placeholder: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' },
@@ -92,7 +93,6 @@ export const hhCOSRegistrationFormGroups: FormGroupDefinition[] = [
     icon: '⚡',
     fields: [
       { id: 'mpan',               label: 'MPAN',                    type: 'text',   required: true, placeholder: '1200012345678', maxLength: 13 },
-      { id: 'registrationDate',   label: 'Registration Date',       type: 'date',   required: true, helpText: 'New supply start / COS effective date' },
       { id: 'cosDate',            label: 'Change of Supplier Date', type: 'date',   required: true },
       { id: 'instructionNumber',  label: 'Instruction Number',      type: 'text',   required: true, placeholder: '17658' },
       { id: 'instructionType',    label: 'D0260 Instruction Type',  type: 'select', required: true, defaultValue: 'SP43', options: INSTRUCTION_TYPE_OPTIONS },
