@@ -4,6 +4,18 @@
 // ============================================================
 
 import type { CSSMessage } from '../../../shared/domain/types';
+import type {
+  CSS02380_01_Event,
+  CSS02300_01_Event,
+  CSS02370_01_Event,
+  CSS02370_03_Event,
+} from './types';
+import {
+  CSS_MSG_COS_INITIATION,
+  CSS_MSG_REGISTRATION_NOTIF,
+  CSS_MSG_QUERY,
+  CSS_MSG_QUERY_RESPONSE,
+} from '../industry-constants';
 
 // Accepts YYYYMMDD (8) or YYYY-MM-DD (10) → YYYY-MM-DDT{time}
 // Pass a timestamp (ISO string) to use its time part; omit for T00:00:00.000Z
@@ -17,18 +29,24 @@ function toIsoDateTime(dateStr: string, timestamp?: string): string {
   }
   return dateStr;
 }
-import type {
-  CSS02380_01_Event,
-  CSS02300_01_Event,
-  CSS02370_01_Event,
-  CSS02370_03_Event,
-} from './types';
-import {
-  CSS_MSG_COS_INITIATION,
-  CSS_MSG_REGISTRATION_NOTIF,
-  CSS_MSG_QUERY,
-  CSS_MSG_QUERY_RESPONSE,
-} from '../industry-constants';
+
+// ---- Timestamp helper ----
+
+const CSS_GAP_MS = 3 * 60_000;
+
+function localISOString(d: Date): string {
+  const p = (n: number, l = 2) => String(n).padStart(l, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(), 3)}`;
+}
+
+/** Returns `count` ISO timestamps spaced 3 minutes apart starting from now. */
+export function generateCssTimestamps(count: number, format: 'utc' | 'local' = 'utc'): string[] {
+  const base = new Date();
+  return Array.from({ length: count }, (_, i) => {
+    const d = new Date(base.getTime() + i * CSS_GAP_MS);
+    return format === 'local' ? localISOString(d) : d.toISOString();
+  });
+}
 
 // ---- CSS02300_01 ----
 export function buildCSS02300_01(params: {

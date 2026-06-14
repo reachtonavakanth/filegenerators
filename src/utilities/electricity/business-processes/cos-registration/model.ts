@@ -2,8 +2,8 @@
 // Electricity COS Registration — Domain Model
 // ============================================================
 
-import type { TestFlag, RegisterEntry } from '../../../../shared/domain/types';
-export type { RegisterEntry };
+import type { TestFlag, MeterGroupEntry } from '../../../../shared/domain/types';
+export type { MeterGroupEntry };
 
 export interface ElectricityCOSRegistrationModel {
   // Envelope / file settings
@@ -49,7 +49,6 @@ export interface ElectricityCOSRegistrationModel {
 
   // Supply point
   mpan: string;
-  msn: string;
 
   // Technical attributes
   profileClass: string;
@@ -59,18 +58,8 @@ export interface ElectricityCOSRegistrationModel {
   ssc: string;
   sconDate: string;
 
-  // Meter details
-  meterType: string;
+  // Meter Timeswitch Code (MPAN-level, used in D0260/D0217)
   mtc: string;
-  manufacturersMakeAndType: string;
-  ctPrimaryRatio: string;
-  timePatternRegiment: string;
-  meterLocation: string;
-  meterAssetProviderId: string;
-  certificationDate: string;
-  retrievalMethod: string;
-  retrievalMethodEffectiveDate: string;
-  meterInstalledDate: string;
 
   // CSS identifiers
   supplierGeneratedReference: string;
@@ -85,50 +74,75 @@ export interface ElectricityCOSRegistrationModel {
   // D0012
   regularReadingCycle: string;
 
-  // Per-register data (one entry per register block)
-  registers: RegisterEntry[];
+  // One entry per TPR / physical meter
+  meterGroups: MeterGroupEntry[];
 }
 
-function extractRegisters(inputs: Record<string, string>): RegisterEntry[] {
-  const registers: RegisterEntry[] = [];
+function extractMeterGroups(inputs: Record<string, string>): MeterGroupEntry[] {
+  const groups: MeterGroupEntry[] = [];
   let i = 0;
-  while (`registerId_${i}` in inputs) {
-    registers.push({
-      registerId:                 inputs[`registerId_${i}`]                 || '01',
-      d0149RegisterCoefficient:   inputs[`d0149RegisterCoefficient_${i}`]   || '1',
-      meterRegisterType:          inputs[`meterRegisterType_${i}`]          || 'C',
-      measurementQuantityId:      inputs[`measurementQuantityId_${i}`]      || 'AI',
-      registerMappingCoefficient: inputs[`registerMappingCoefficient_${i}`] || '1.00',
-      numberOfDigits:             inputs[`numberOfDigits_${i}`]             || '5',
-      readingDate:                inputs[`readingDate_${i}`]                || '',
-      bscValidationStatus:        inputs[`bscValidationStatus_${i}`]        || 'V',
-      readingType:                inputs[`readingType_${i}`]                || 'I',
-      readingValue:               inputs[`readingValue_${i}`]               || '00000.0',
-      meterReadingFlag:           inputs[`meterReadingFlag_${i}`]           || 'T',
-      readingMethod:              inputs[`readingMethod_${i}`]              || 'N',
-      estimatedAnnualConsumption: inputs[`estimatedAnnualConsumption_${i}`] || '3100',
+  while (`timePatternRegiment_${i}` in inputs) {
+    const registers = [];
+    let j = 0;
+    while (`registerId_${i}_${j}` in inputs) {
+      registers.push({
+        registerId:                 inputs[`registerId_${i}_${j}`]                 || 'S',
+        d0149RegisterCoefficient:   inputs[`d0149RegisterCoefficient_${i}_${j}`]   || '1',
+        meterRegisterType:          inputs[`meterRegisterType_${i}_${j}`]          || 'C',
+        measurementQuantityId:      inputs[`measurementQuantityId_${i}_${j}`]      || 'AI',
+        registerMappingCoefficient: inputs[`registerMappingCoefficient_${i}_${j}`] || '1.00',
+        numberOfDigits:             inputs[`numberOfDigits_${i}_${j}`]             || '5',
+        readingDate:                inputs[`readingDate_${i}_${j}`]                || '',
+        bscValidationStatus:        inputs[`bscValidationStatus_${i}_${j}`]        || 'V',
+        readingType:                inputs[`readingType_${i}_${j}`]                || 'I',
+        readingValue:               inputs[`readingValue_${i}_${j}`]               || '00000.0',
+        meterReadingFlag:           inputs[`meterReadingFlag_${i}_${j}`]           || 'T',
+        readingMethod:              inputs[`readingMethod_${i}_${j}`]              || 'N',
+        estimatedAnnualConsumption: inputs[`estimatedAnnualConsumption_${i}_${j}`] || '3100',
+      });
+      j++;
+    }
+    if (registers.length === 0) {
+      registers.push({
+        registerId: 'S', d0149RegisterCoefficient: '1', meterRegisterType: 'C',
+        measurementQuantityId: 'AI', registerMappingCoefficient: '1.00', numberOfDigits: '5',
+        readingDate: '', bscValidationStatus: 'V', readingType: 'I',
+        readingValue: '00000.0', meterReadingFlag: 'T', readingMethod: 'N',
+        estimatedAnnualConsumption: '3100',
+      });
+    }
+    groups.push({
+      timePatternRegiment:          inputs[`timePatternRegiment_${i}`]          || '00001',
+      msn:                          inputs[`msn_${i}`]                          || '',
+      meterType:                    inputs[`meterType_${i}`]                    || 'S1A',
+      meterInstalledDate:           inputs[`meterInstalledDate_${i}`]           || '',
+      meterLocation:                inputs[`meterLocation_${i}`]                || 'J',
+      manufacturersMakeAndType:     inputs[`manufacturersMakeAndType_${i}`]     || '',
+      meterAssetProviderId:         inputs[`meterAssetProviderId_${i}`]         || '',
+      certificationDate:            inputs[`certificationDate_${i}`]            || '',
+      retrievalMethod:              inputs[`retrievalMethod_${i}`]              || 'R',
+      retrievalMethodEffectiveDate: inputs[`retrievalMethodEffectiveDate_${i}`] || '',
+      ctRatio:                      inputs[`ctPrimaryRatio_${i}`]               || '1',
+      registers,
     });
     i++;
   }
-  if (registers.length === 0) {
-    // Fallback for legacy single-register flat keys
-    registers.push({
-      registerId:                 inputs['registerId']                 || '01',
-      d0149RegisterCoefficient:   inputs['d0149RegisterCoefficient']   || '1',
-      meterRegisterType:          inputs['meterRegisterType']          || 'C',
-      measurementQuantityId:      inputs['measurementQuantityId']      || 'AI',
-      registerMappingCoefficient: inputs['registerMappingCoefficient'] || '1.00',
-      numberOfDigits:             inputs['numberOfDigits']             || '5',
-      readingDate:                inputs['readingDate']                || '',
-      bscValidationStatus:        inputs['bscValidationStatus']        || 'V',
-      readingType:                inputs['readingType']                || 'I',
-      readingValue:               inputs['readingValue']               || '00000.0',
-      meterReadingFlag:           inputs['meterReadingFlag']           || 'T',
-      readingMethod:              inputs['readingMethod']              || 'N',
-      estimatedAnnualConsumption: inputs['estimatedAnnualConsumption'] || '3100',
+  if (groups.length === 0) {
+    groups.push({
+      timePatternRegiment: '00001', msn: '', meterType: 'S1A', meterInstalledDate: '',
+      meterLocation: 'J', manufacturersMakeAndType: '', meterAssetProviderId: '',
+      certificationDate: '', retrievalMethod: 'R', retrievalMethodEffectiveDate: '',
+      ctRatio: '1',
+      registers: [{
+        registerId: 'S', d0149RegisterCoefficient: '1', meterRegisterType: 'C',
+        measurementQuantityId: 'AI', registerMappingCoefficient: '1.00', numberOfDigits: '5',
+        readingDate: '', bscValidationStatus: 'V', readingType: 'I',
+        readingValue: '00000.0', meterReadingFlag: 'T', readingMethod: 'N',
+        estimatedAnnualConsumption: '3100',
+      }],
     });
   }
-  return registers;
+  return groups;
 }
 
 export function mapFormToCOSModel(
@@ -169,24 +183,13 @@ export function mapFormToCOSModel(
     daServiceRef:       inputs['daServiceRef']       || '',
     daServiceLevelRef:  inputs['daServiceLevelRef']  || '',
     mpan: inputs['mpan'] || '',
-    msn: inputs['msn'] || '',
     profileClass: inputs['profileClass'] || '',
     measurementClass: inputs['measurementClass'] || '',
     gspGroupId: inputs['gspGroupId'] || '',
     llfClass: inputs['llfClass'] || '001',
     ssc: inputs['ssc'] || '0000',
     sconDate: inputs['sconDate'] || inputs['cosDate'] || inputs['registrationDate'] || '',
-    meterType: inputs['meterType'] || 'S1A',
     mtc: inputs['mtc'] || '001',
-    manufacturersMakeAndType: inputs['manufacturersMakeAndType'] || '',
-    ctPrimaryRatio: inputs['ctPrimaryRatio'] || '1',
-    timePatternRegiment: inputs['timePatternRegiment'] || '00001',
-    meterLocation: inputs['meterLocation'] || 'J',
-    meterAssetProviderId: inputs['meterAssetProviderId'] || '',
-    certificationDate: inputs['certificationDate'] || '',
-    retrievalMethod: inputs['retrievalMethod'] || 'R',
-    retrievalMethodEffectiveDate: inputs['retrievalMethodEffectiveDate'] || '',
-    meterInstalledDate: inputs['meterInstalledDate'] || '',
     supplierGeneratedReference: inputs['supplierGeneratedReference'] || '',
     registrationRequestId: inputs['registrationRequestId'] || '',
     cssCorrelationId: inputs['cssCorrelationId'] || '',
@@ -194,6 +197,6 @@ export function mapFormToCOSModel(
     registrationDate: inputs['registrationDate'] || '',
     cosDate: inputs['cosDate'] || inputs['registrationDate'] || '',
     regularReadingCycle: inputs['regularReadingCycle'] || 'D',
-    registers: extractRegisters(inputs),
+    meterGroups: extractMeterGroups(inputs),
   };
 }

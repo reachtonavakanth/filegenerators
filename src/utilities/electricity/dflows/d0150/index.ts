@@ -1,14 +1,17 @@
 // D0150 — NHH Meter Standing Data
-// File structure: ZHV → 288 → 289 → 290 → 291 → 293×N → ZPT
+// File structure: ZHV → 288 → 289 → [290 → 291 → 293×N]×M → ZPT
 //
-// Sample (single register):
+// Sample (two meter groups, one register each):
 //   ZHV|0000833556|D0150002|M|BMET|X|GMTR|20260515140101||||OPER|
 //   288|1100013222946|20260515||E|
 //   289|0393|20260515|||
 //   290|E12Z070779|||5|J|EDMI AtlasMk10A|UFUN|||||||||||RCAMY|20260515|20260315||||R|20260515|
 //   291|200/5|
 //   293|S|C|AI|1.00||7|||
-//   ZPT|0000833556|5||1|20260515140101|
+//   290|E12Z070780|||5|J|EDMI AtlasMk10A|UFUN|||||||||||RCAMY|20260515|20260315||||R|20260515|
+//   291|200/5|
+//   293|01|C|AI|1.00||7|||
+//   ZPT|0000833556|8||1|20260515140101|
 
 import { DFLOW_FILE_EXT } from '../../industry-constants';
 import type { DFlowFile, DFlowEnvelope } from '../../../../shared/domain/types';
@@ -21,13 +24,7 @@ export interface D0150Register {
   numberOfDigits: string;            // 293[5]
 }
 
-export interface D0150Model {
-  envelope: DFlowEnvelope;
-  mpan: string;                         // 288[1]
-  cosDate: string;                      // 288[2]
-  energisationStatus: string;           // 288[4]
-  ssc: string;                          // 289[1]
-  sconDate: string;                     // 289[2]
+export interface D0150MeterGroup {
   msn: string;                          // 290[0]
   meterLocation: string;                // 290[4]
   manufacturersMakeAndType: string;     // 290[5]
@@ -41,6 +38,16 @@ export interface D0150Model {
   registers: D0150Register[];           // one 293 row per register
 }
 
+export interface D0150Model {
+  envelope: DFlowEnvelope;
+  mpan: string;               // 288[0]
+  cosDate: string;            // 288[1]
+  energisationStatus: string; // 288[3]
+  ssc: string;                // 289[0]
+  sconDate: string;           // 289[1]
+  meterGroups: D0150MeterGroup[];
+}
+
 export function buildD0150(model: D0150Model): DFlowFile {
   const { envelope: env, ...r } = model;
   return {
@@ -50,22 +57,24 @@ export function buildD0150(model: D0150Model): DFlowFile {
     records: [
       { recordType: '288', fields: [r.mpan, r.cosDate, '', r.energisationStatus] },
       { recordType: '289', fields: [r.ssc, r.sconDate, '', ''] },
-      {
-        recordType: '290',
-        fields: [
-          r.msn, '', '', '5',
-          r.meterLocation, r.manufacturersMakeAndType, r.meterAssetProviderId,
-          '', '', '', '', '', '', '', '', '', '',
-          r.meterType, r.meterInstalledDate, r.certificationDate,
-          '', '', '',
-          r.retrievalMethod, r.retrievalMethodEffectiveDate,
-        ],
-      },
-      { recordType: '291', fields: [r.ctRatio] },
-      ...r.registers.map(reg => ({
-        recordType: '293',
-        fields: [reg.registerId, reg.meterRegisterType, reg.measurementQuantityId, reg.registerMappingCoefficient, '', reg.numberOfDigits, '', ''],
-      })),
+      ...r.meterGroups.flatMap(group => [
+        {
+          recordType: '290',
+          fields: [
+            group.msn, '', '', '5',
+            group.meterLocation, group.manufacturersMakeAndType, group.meterAssetProviderId,
+            '', '', '', '', '', '', '', '', '', '',
+            group.meterType, group.meterInstalledDate, group.certificationDate,
+            '', '', '',
+            group.retrievalMethod, group.retrievalMethodEffectiveDate,
+          ],
+        },
+        { recordType: '291', fields: [group.ctRatio] },
+        ...group.registers.map(reg => ({
+          recordType: '293',
+          fields: [reg.registerId, reg.meterRegisterType, reg.measurementQuantityId, reg.registerMappingCoefficient, '', reg.numberOfDigits, '', ''],
+        })),
+      ]),
     ],
   };
 }

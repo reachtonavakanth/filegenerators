@@ -16,6 +16,7 @@ import {
   buildCSS02380_01,
   buildCSS02370_01,
   buildCSS02370_03,
+  generateCssTimestamps,
 } from '../../css/builders';
 
 function makeEnvelope(
@@ -43,18 +44,10 @@ function makeEnvelope(
   };
 }
 
-function localISOString(d: Date): string {
-  const p = (n: number, l = 2) => String(n).padStart(l, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(), 3)}`;
-}
-
 export function orchestrateHHCOSRegistration(
   m: ElectricityHHCOSRegistrationModel
 ): GeneratedOutput {
-  const baseDate = new Date();
-  const GAP_MS = 3 * 60_000; // 3 minutes between each CSS file
-  const formatTs = (d: Date) => m.timestampFormat === 'local' ? localISOString(d) : d.toISOString();
-  const [ts0, ts1, ts2, ts3] = [0, 1, 2, 3].map(i => formatTs(new Date(baseDate.getTime() + i * GAP_MS)));
+  const [ts0, ts1, ts2, ts3] = generateCssTimestamps(4, m.timestampFormat);
   const hhmmss = currentHHMMSS();
   const fileIdBase = generateFileIdBase();
 

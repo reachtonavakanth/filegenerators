@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 // Electricity COS Registration — Process Orchestrator
 // ============================================================
 
@@ -22,6 +22,7 @@ import {
   buildCSS02380_01,
   buildCSS02370_01,
   buildCSS02370_03,
+  generateCssTimestamps,
 } from '../../css/builders';
 
 
@@ -50,19 +51,14 @@ function makeEnvelope(
   };
 }
 
-function localISOString(): string {
-  const d = new Date();
-  const p = (n: number, l = 2) => String(n).padStart(l, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(), 3)}`;
-}
-
 export function orchestrateCOSRegistration(
   m: ElectricityCOSRegistrationModel
 ): GeneratedOutput {
-  const ts = m.timestampFormat === 'local' ? localISOString() : new Date().toISOString();
+  const [ts0, ts1, ts2, ts3] = generateCssTimestamps(4, m.timestampFormat);
   const hhmmss = currentHHMMSS();
   const fileIdBase = generateFileIdBase();
-  const reg0 = m.registers[0];
+  const group0 = m.meterGroups[0];
+  const reg0 = group0.registers[0];
 
   const mpas = [m.mpasRoleCode, m.mpasParticipantId]         as const;
   const supp = [m.supplierRoleCode, m.supplierParticipantId] as const;
@@ -79,7 +75,7 @@ export function orchestrateCOSRegistration(
     registrationRequestId: m.registrationRequestId,
     supplierGeneratedReference: m.supplierGeneratedReference,
     correlationId: m.cssCorrelationId,
-    timestamp: ts,
+    timestamp: ts0,
   });
 
   const css02300 = buildCSS02300_01({
@@ -90,7 +86,7 @@ export function orchestrateCOSRegistration(
     supplierRole: m.supplierRoleCode,
     supplierMpid: m.supplierParticipantId,
     correlationId: m.cssCorrelationId,
-    timestamp: ts,
+    timestamp: ts1,
     registrationDate: m.registrationDate,
   });
 
@@ -100,7 +96,7 @@ export function orchestrateCOSRegistration(
     registrationId: m.registrationRequestId,
     registrationActiveDate: m.cosDate,
     correlationId: m.cssCorrelationId,
-    timestamp: ts,
+    timestamp: ts2,
     registrationDate: m.registrationDate,
   });
 
@@ -109,7 +105,7 @@ export function orchestrateCOSRegistration(
     supplierGeneratedReference: m.supplierGeneratedReference,
     registrationId: m.registrationRequestId,
     correlationId: m.cssCorrelationId,
-    timestamp: ts,
+    timestamp: ts3,
     registrationDate: m.registrationDate,
   });
 
@@ -196,22 +192,24 @@ export function orchestrateCOSRegistration(
   });
   d0011_da.fileName = `D0011_DA_${m.fileDate}_001.usr`;
 
-  // ---- D0149: one 284 row per register ----
+  // ---- D0149: 778+283+284×N per TPR group ----
   const d0149 = buildD0149({
     envelope: env('D0149', 6, '001', mop, supp),
     mpan: m.mpan,
     cosDate: m.cosDate,
     ssc: m.ssc,
     sconDate: m.sconDate,
-    timePatternRegiment: m.timePatternRegiment,
-    msn: m.msn,
-    registers: m.registers.map(r => ({
-      registerId: r.registerId,
-      registerCoefficient: r.d0149RegisterCoefficient,
+    tprGroups: m.meterGroups.map(g => ({
+      timePatternRegiment: g.timePatternRegiment,
+      msn: g.msn,
+      registers: g.registers.map(r => ({
+        registerId: r.registerId,
+        registerCoefficient: r.d0149RegisterCoefficient,
+      })),
     })),
   });
 
-  // ---- D0150: one 293 row per register ----
+  // ---- D0150: 290+291+293×N per meter group ----
   const d0150 = buildD0150({
     envelope: env('D0150', 7, '002', mop, supp),
     mpan: m.mpan,
@@ -219,26 +217,28 @@ export function orchestrateCOSRegistration(
     energisationStatus: m.energisationStatus,
     ssc: m.ssc,
     sconDate: m.sconDate,
-    msn: m.msn,
-    meterLocation: m.meterLocation,
-    manufacturersMakeAndType: m.manufacturersMakeAndType,
-    meterAssetProviderId: m.meterAssetProviderId,
-    meterType: m.meterType,
-    meterInstalledDate: m.meterInstalledDate,
-    certificationDate: m.certificationDate,
-    retrievalMethod: m.retrievalMethod,
-    retrievalMethodEffectiveDate: m.retrievalMethodEffectiveDate,
-    ctRatio: m.ctPrimaryRatio,
-    registers: m.registers.map(r => ({
-      registerId: r.registerId,
-      meterRegisterType: r.meterRegisterType,
-      measurementQuantityId: r.measurementQuantityId,
-      registerMappingCoefficient: r.registerMappingCoefficient,
-      numberOfDigits: r.numberOfDigits,
+    meterGroups: m.meterGroups.map(g => ({
+      msn: g.msn,
+      meterLocation: g.meterLocation,
+      manufacturersMakeAndType: g.manufacturersMakeAndType,
+      meterAssetProviderId: g.meterAssetProviderId,
+      meterType: g.meterType,
+      meterInstalledDate: g.meterInstalledDate,
+      certificationDate: g.certificationDate,
+      retrievalMethod: g.retrievalMethod,
+      retrievalMethodEffectiveDate: g.retrievalMethodEffectiveDate,
+      ctRatio: g.ctRatio,
+      registers: g.registers.map(r => ({
+        registerId: r.registerId,
+        meterRegisterType: r.meterRegisterType,
+        measurementQuantityId: r.measurementQuantityId,
+        registerMappingCoefficient: r.registerMappingCoefficient,
+        numberOfDigits: r.numberOfDigits,
+      })),
     })),
   });
 
-  // ---- D0052: one 124 row per register ----
+  // ---- D0052: one 124 per register, TPR carried per row ----
   const d0052 = buildD0052({
     envelope: env('D0052', 8, '001', supp, dc),
     mpan: m.mpan,
@@ -247,42 +247,42 @@ export function orchestrateCOSRegistration(
     measurementClass: m.measurementClass,
     ssc: m.ssc,
     gspGroupId: m.gspGroupId,
-    timePatternRegiment: m.timePatternRegiment,
-    registers: m.registers.map(r => ({
+    registers: m.meterGroups.flatMap(g => g.registers.map(r => ({
+      timePatternRegiment: g.timePatternRegiment,
       estimatedAnnualConsumption: r.estimatedAnnualConsumption,
-    })),
+    }))),
   });
 
-  // ---- D0010: 026 + 028 once, one 030 per register ----
+  // ---- D0010: one 030 per register across all groups ----
   const d0010 = buildD0010({
     envelope: env('D0010', 9, '002', dc, supp),
     mpan: m.mpan,
     bscValidationStatus: reg0.bscValidationStatus,
-    msn: m.msn,
+    msn: group0.msn,
     readingType: reg0.readingType,
-    registers: m.registers.map(r => ({
+    registers: m.meterGroups.flatMap(g => g.registers.map(r => ({
       registerId: r.registerId,
       readingDateTime: r.readingDate + '000000',
       readingValue: r.readingValue,
       meterReadingFlag: r.meterReadingFlag,
       readingMethod: r.readingMethod,
-    })),
+    }))),
   });
 
-  // ---- D0086: 196 + 197 once, one 198 per register ----
+  // ---- D0086: one 198 per register across all groups ----
   const d0086 = buildD0086({
     envelope: env('D0086', 10, '002', dc, supp),
     mpan: m.mpan,
     bscValidationStatus: reg0.bscValidationStatus,
-    msn: m.msn,
+    msn: group0.msn,
     readingType: reg0.readingType,
-    registers: m.registers.map(r => ({
+    registers: m.meterGroups.flatMap(g => g.registers.map(r => ({
       registerId: r.registerId,
       readingDateTime: r.readingDate + '000000',
       readingValue: r.readingValue,
       meterReadingFlag: r.meterReadingFlag,
       readingMethod: r.readingMethod,
-    })),
+    }))),
   });
 
   // ---- D0012 ----
@@ -293,7 +293,7 @@ export function orchestrateCOSRegistration(
     regularReadingCycle: m.regularReadingCycle,
   });
 
-  // ---- D0019: MOP → Supplier — one AAD per register ----
+  // ---- D0019: one AAD row per register, TPR carried per row ----
   const d0019 = buildD0019({
     envelope: env('D0019', 12, '001', mop, supp),
     fileSequenceNumber: String(fileIdBase % 9999 + 1),
@@ -307,10 +307,10 @@ export function orchestrateCOSRegistration(
     measurementClass: m.measurementClass,
     gspGroupId: m.gspGroupId,
     energisationStatus: m.energisationStatus,
-    aadRecords: m.registers.map(r => ({
-      timePatternRegiment: m.timePatternRegiment,
+    aadRecords: m.meterGroups.flatMap(g => g.registers.map(r => ({
+      timePatternRegiment: g.timePatternRegiment,
       annualisedAdvance: r.estimatedAnnualConsumption,
-    })),
+    }))),
   });
 
   return {
