@@ -86,8 +86,5 @@ export function parseIndustryData(text: string): IndustryDataParseResult | null 
     .map(m => meterFieldPick(m as Record<string, unknown>))
     .filter(e => Object.keys(e).length > 0);
 
-  // Flat fields from first meter — keeps NHH forms (where msn is non-repeatable) working
-  for (const [k, v] of Object.entries(meters[0] ?? {})) pick(k, v);
-
   return { fields, meters, warnings };
 }

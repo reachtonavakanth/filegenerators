@@ -77,6 +77,23 @@ export interface RegisterEntry {
   estimatedAnnualConsumption: string;
 }
 
+// ---- Meter group entry — one per TPR/physical meter; feeds D0149, D0150, D0052 ----
+
+export interface MeterGroupEntry {
+  timePatternRegiment: string;
+  msn: string;
+  meterType: string;
+  meterInstalledDate: string;
+  meterLocation: string;
+  manufacturersMakeAndType: string;
+  meterAssetProviderId: string;
+  certificationDate: string;
+  retrievalMethod: string;
+  retrievalMethodEffectiveDate: string;
+  ctRatio: string;
+  registers: RegisterEntry[];
+}
+
 // ============================================================
 // UI / Form Types
 // ============================================================
