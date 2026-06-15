@@ -1,16 +1,17 @@
 // D0150 — NHH Meter Standing Data
-// File structure: ZHV → 288 → 289 → [290 → 291 → 293×N]×M → ZPT
+// File structure: ZHV → 288 → 289 → [290 → 291 → 293×N]×P → ZPT
+// P = number of unique physical meters (grouped by MSN).
+// Multiple TPR groups on the same physical meter share one 290/291 block;
+// their registers appear as consecutive 293 rows beneath it.
 //
-// Sample (two meter groups, one register each):
+// Sample (one physical meter, two TPR registers):
 //   ZHV|0000833556|D0150002|M|BMET|X|GMTR|20260515140101||||OPER|
 //   288|1100013222946|20260515||E|
 //   289|0393|20260515|||
 //   290|E12Z070779|||5|J|EDMI AtlasMk10A|UFUN|||||||||||RCAMY|20260515|20260315||||R|20260515|
 //   291|200/5|
-//   293|S|C|AI|1.00||7|||
-//   290|E12Z070780|||5|J|EDMI AtlasMk10A|UFUN|||||||||||RCAMY|20260515|20260315||||R|20260515|
-//   291|200/5|
 //   293|01|C|AI|1.00||7|||
+//   293|02|C|AI|1.00||7|||
 //   ZPT|0000833556|8||1|20260515140101|
 
 import { DFLOW_FILE_EXT } from '../../industry-constants';
@@ -50,6 +51,17 @@ export interface D0150Model {
 
 export function buildD0150(model: D0150Model): DFlowFile {
   const { envelope: env, ...r } = model;
+
+  // Collapse meter groups by MSN: multiple TPR groups on the same physical meter
+  // share one 290/291 block, with all their registers as consecutive 293 rows.
+  const physicalMeters = new Map<string, { group: D0150MeterGroup; registers: D0150Register[] }>();
+  for (const group of r.meterGroups) {
+    if (!physicalMeters.has(group.msn)) {
+      physicalMeters.set(group.msn, { group, registers: [] });
+    }
+    physicalMeters.get(group.msn)!.registers.push(...group.registers);
+  }
+
   return {
     envelope: env,
     fileName: `${env.xRef}${DFLOW_FILE_EXT}`,
@@ -57,7 +69,7 @@ export function buildD0150(model: D0150Model): DFlowFile {
     records: [
       { recordType: '288', fields: [r.mpan, r.cosDate, '', r.energisationStatus] },
       { recordType: '289', fields: [r.ssc, r.sconDate, '', ''] },
-      ...r.meterGroups.flatMap(group => [
+      ...[...physicalMeters.values()].flatMap(({ group, registers }) => [
         {
           recordType: '290',
           fields: [
@@ -70,7 +82,7 @@ export function buildD0150(model: D0150Model): DFlowFile {
           ],
         },
         { recordType: '291', fields: [group.ctRatio] },
-        ...group.registers.map(reg => ({
+        ...registers.map(reg => ({
           recordType: '293',
           fields: [reg.registerId, reg.meterRegisterType, reg.measurementQuantityId, reg.registerMappingCoefficient, '', reg.numberOfDigits, '', ''],
         })),
