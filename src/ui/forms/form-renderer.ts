@@ -343,7 +343,35 @@ function buildField(field: FormFieldDefinition, outerIndex?: number, innerIndex?
   }
   wrapper.appendChild(label);
 
-  if (field.type === 'select' && field.options) {
+  if (field.type === 'radio-group' && field.options) {
+    const hidden = document.createElement('input');
+    hidden.type = 'hidden';
+    hidden.id = fieldId;
+    hidden.name = field.id;
+    hidden.value = field.defaultValue ?? (field.options[0]?.value ?? '');
+    if (isOuter)  hidden.dataset.fieldId = field.id;
+    if (isInner) { hidden.dataset.innerFieldId = field.id; hidden.dataset.outerIndex = String(outerIndex); }
+    wrapper.appendChild(hidden);
+
+    const radioGroup = document.createElement('div');
+    radioGroup.className = 'field-radio-group';
+    const groupName = `${field.id}_rg_${outerIndex ?? ''}${innerIndex !== undefined ? `_${innerIndex}` : ''}`;
+    hidden.dataset.radioGroup = groupName;
+    for (const opt of field.options) {
+      const lbl = document.createElement('label');
+      lbl.className = 'radio-option';
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = groupName;
+      radio.value = opt.value;
+      radio.checked = opt.value === hidden.value;
+      radio.addEventListener('change', () => { if (radio.checked) hidden.value = radio.value; });
+      lbl.appendChild(radio);
+      lbl.appendChild(document.createTextNode(` ${opt.label}`));
+      radioGroup.appendChild(lbl);
+    }
+    wrapper.appendChild(radioGroup);
+  } else if (field.type === 'select' && field.options) {
     const select = document.createElement('select');
     select.id = fieldId;
     select.name = field.id;
@@ -729,6 +757,19 @@ function setElValue(el: HTMLInputElement | HTMLSelectElement, value: string, typ
       const instance = Array.isArray(fp) ? fp[0] : fp;
       instance.setDate(value, false);
       el.classList.toggle('date-empty', !value);
+      return;
+    }
+  }
+  // Ensure a blank/unknown value for a radio-group always falls back to the first option (estimated)
+  if (el instanceof HTMLInputElement && el.dataset.radioGroup) {
+    const groupName = el.dataset.radioGroup;
+    const radios = el.closest('.field-wrapper')?.querySelectorAll<HTMLInputElement>(`input[name="${groupName}"]`);
+    if (radios && radios.length > 0) {
+      const target = value || radios[0].value;
+      let matched = false;
+      radios.forEach(r => { r.checked = r.value === target; if (r.checked) matched = true; });
+      if (!matched) radios[0].checked = true;
+      el.value = matched ? target : radios[0].value;
       return;
     }
   }

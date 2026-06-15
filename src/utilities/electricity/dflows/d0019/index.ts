@@ -1,42 +1,45 @@
-// D0019 — Annualised Advance Notification (MOP → Supplier)
-// File structure: ZHV → ZPI → ZIN → ISD → AAH → AAD×N → REG → PSC → IMC → GSP → IES → ZPT
+// D0019 — Estimated / Actual Advance Notification (MOP → Supplier)
 //
-// Sample (single register):
-//   ZHV|S090176187|D0019001|B|UDMS|X|GMTR|20260515160000||||OPER|
-//   ZPI|4596|
-//   ZIN|13058|NH09|1100013222946|||
-//   ISD|20260518|
-//   AAH|20250518|20260518|
-//   AAD|00001|12008.8|
-//   REG|20260518|GMTR|
-//   PSC|20260518|3|0393|
-//   IMC|20260518|A|
-//   GSP|20260518|_B|
-//   IES|20260518|E|
-//   ZPT|S090176187|10||1|20260515160000|
+// consumptionType === 'estimated' (default):
+//   ISD → EAH|cosDate| → EAD×N
+//
+// consumptionType === 'actual':
+//   ISD → AAH|(cosDate-1)-1yr|(cosDate-1)| → AAD×N → EAH|cosDate| → EAD×N
 
 import { DFLOW_FILE_EXT } from '../../industry-constants';
-import type { DFlowFile, DFlowEnvelope } from '../../../../shared/domain/types';
+import type { DFlowFile, DFlowRecord } from '../../../../shared/domain/types';
 
-export interface D0019AAD {
-  timePatternRegiment: string; // AAD[0]
-  annualisedAdvance: string;   // AAD[1] — EAC kWh
+export interface D0019EAD {
+  timePatternRegiment: string;
+  estimatedAnnualConsumption: string;
+  actualAnnualConsumption?: string; // required when consumptionType === 'actual'
 }
 
 export interface D0019Model {
-  envelope: DFlowEnvelope;
-  fileSequenceNumber: string;  // ZPI[0]
-  instructionNumber: string;   // ZIN[0]
-  typeCode: string;            // ZIN[1]
-  mpan: string;                // ZIN[2]
-  cosDate: string;             // ISD / AAH / REG / PSC / IMC / GSP / IES — YYYYMMDD
-  supplierParticipantId: string; // REG[1]
-  profileClass: string;        // PSC[1]
-  ssc: string;                 // PSC[2]
-  measurementClass: string;    // IMC[1]
-  gspGroupId: string;          // GSP[1]
-  energisationStatus: string;  // IES[1]
-  aadRecords: D0019AAD[];      // one AAD row per register
+  envelope: import('../../../../shared/domain/types').DFlowEnvelope;
+  fileSequenceNumber: string;      // ZPI[0]
+  instructionNumber: string;       // ZIN[0]
+  typeCode: string;                // ZIN[1]
+  mpan: string;                    // ZIN[2]
+  cosDate: string;                 // ISD / EAH / AAH — YYYYMMDD
+  supplierParticipantId: string;   // REG[1]
+  profileClass: string;            // PSC[1]
+  ssc: string;                     // PSC[2]
+  measurementClass: string;        // IMC[1]
+  gspGroupId: string;              // GSP[1]
+  energisationStatus: string;      // IES[1]
+  eadRecords: D0019EAD[];          // one row per register / TPR
+  consumptionType?: 'estimated' | 'actual'; // default: 'estimated'
+}
+
+function subtractOneDay(yyyymmdd: string): string {
+  const d = new Date(
+    parseInt(yyyymmdd.slice(0, 4)),
+    parseInt(yyyymmdd.slice(4, 6)) - 1,
+    parseInt(yyyymmdd.slice(6, 8)),
+  );
+  d.setDate(d.getDate() - 1);
+  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function subtractOneYear(yyyymmdd: string): string {
@@ -51,7 +54,34 @@ function subtractOneYear(yyyymmdd: string): string {
 
 export function buildD0019(model: D0019Model): DFlowFile {
   const { envelope: env, ...r } = model;
-  const cosDateMinus1Y = subtractOneYear(r.cosDate);
+  const isActual = r.consumptionType === 'actual';
+
+  let advanceBlock: DFlowRecord[];
+
+  if (isActual) {
+    const cosDateMinusOne = subtractOneDay(r.cosDate);
+    const aahStart = subtractOneYear(cosDateMinusOne);
+    advanceBlock = [
+      { recordType: 'AAH', fields: [aahStart, cosDateMinusOne] },
+      ...r.eadRecords.map((ead: D0019EAD) => ({
+        recordType: 'AAD',
+        fields: [ead.timePatternRegiment, ead.actualAnnualConsumption ?? ''],
+      })),
+      { recordType: 'EAH', fields: [r.cosDate] },
+      ...r.eadRecords.map((ead: D0019EAD) => ({
+        recordType: 'EAD',
+        fields: [ead.timePatternRegiment, ead.estimatedAnnualConsumption],
+      })),
+    ];
+  } else {
+    advanceBlock = [
+      { recordType: 'EAH', fields: [r.cosDate] },
+      ...r.eadRecords.map((ead: D0019EAD) => ({
+        recordType: 'EAD',
+        fields: [ead.timePatternRegiment, ead.estimatedAnnualConsumption],
+      })),
+    ];
+  }
 
   return {
     envelope: env,
@@ -61,11 +91,7 @@ export function buildD0019(model: D0019Model): DFlowFile {
       { recordType: 'ZPI', fields: [r.fileSequenceNumber] },
       { recordType: 'ZIN', fields: [r.instructionNumber, r.typeCode, r.mpan, '', ''] },
       { recordType: 'ISD', fields: [r.cosDate] },
-      { recordType: 'AAH', fields: [cosDateMinus1Y, r.cosDate] },
-      ...r.aadRecords.map(aad => ({
-        recordType: 'AAD',
-        fields: [aad.timePatternRegiment, aad.annualisedAdvance],
-      })),
+      ...advanceBlock,
       { recordType: 'REG', fields: [r.cosDate, r.supplierParticipantId] },
       { recordType: 'PSC', fields: [r.cosDate, r.profileClass, r.ssc] },
       { recordType: 'IMC', fields: [r.cosDate, r.measurementClass] },

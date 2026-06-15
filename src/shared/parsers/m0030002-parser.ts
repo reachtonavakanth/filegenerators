@@ -33,7 +33,12 @@ export function parseM0030002(text: string): M0030002ParseResult | null {
     const parts = line.split('|');
     const rowType = parts[0];
 
-    if (rowType === 'MPN') {
+    if (rowType === 'REQ') {
+      // REQ|Reg Type|Change of Supplier Date|
+      //      0   1   2
+      pick('cosDate', parts[2]);
+
+    } else if (rowType === 'MPN') {
       // MPN|...|...|...|...|MPAN|
       //      0   1   2   3   4   5
       pick('mpan', parts[5]);
@@ -70,7 +75,7 @@ export function parseM0030002(text: string): M0030002ParseResult | null {
   }
 
   const expectedFields = [
-    'mpan', 'supplierGeneratedReference',
+    'mpan', 'cosDate', 'supplierGeneratedReference',
     'mopParticipantId', 'contractRefMop', 'mopServiceLevelRef', 'mopServiceRef',
     'daParticipantId',  'contractRefDa',  'daServiceLevelRef',  'daServiceRef',
     'dcParticipantId',  'contractRefDc',  'dcServiceLevelRef',  'dcServiceRef',

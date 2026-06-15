@@ -75,6 +75,7 @@ export interface RegisterEntry {
   meterReadingFlag: string;
   readingMethod: string;
   estimatedAnnualConsumption: string;
+  actualAnnualConsumption?: string;
 }
 
 // ---- Meter group entry — one per TPR/physical meter; feeds D0149, D0150, D0052 ----
@@ -106,7 +107,7 @@ export interface FormFieldOption {
 export interface FormFieldDefinition {
   id: string;
   label: string;
-  type: 'text' | 'select' | 'date' | 'time' | 'number' | 'heading' | 'fill-action';
+  type: 'text' | 'select' | 'date' | 'time' | 'number' | 'heading' | 'fill-action' | 'radio-group';
   required: boolean;
   defaultValue?: string;
   options?: FormFieldOption[];

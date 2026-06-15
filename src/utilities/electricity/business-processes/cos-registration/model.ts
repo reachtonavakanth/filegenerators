@@ -74,6 +74,9 @@ export interface ElectricityCOSRegistrationModel {
   // D0012
   regularReadingCycle: string;
 
+  // D0019 output mode
+  d0019ConsumptionType: 'estimated' | 'actual';
+
   // One entry per TPR / physical meter
   meterGroups: MeterGroupEntry[];
 }
@@ -99,6 +102,7 @@ function extractMeterGroups(inputs: Record<string, string>): MeterGroupEntry[] {
         meterReadingFlag:           inputs[`meterReadingFlag_${i}_${j}`]           || 'T',
         readingMethod:              inputs[`readingMethod_${i}_${j}`]              || 'N',
         estimatedAnnualConsumption: inputs[`estimatedAnnualConsumption_${i}_${j}`] || '3100',
+        actualAnnualConsumption:    inputs[`actualAnnualConsumption_${i}_${j}`]    || '',
       });
       j++;
     }
@@ -108,7 +112,7 @@ function extractMeterGroups(inputs: Record<string, string>): MeterGroupEntry[] {
         measurementQuantityId: 'AI', registerMappingCoefficient: '1.00', numberOfDigits: '5',
         readingDate: '', bscValidationStatus: 'V', readingType: 'I',
         readingValue: '00000.0', meterReadingFlag: 'T', readingMethod: 'N',
-        estimatedAnnualConsumption: '3100',
+        estimatedAnnualConsumption: '3100', actualAnnualConsumption: '',
       });
     }
     groups.push({
@@ -197,6 +201,7 @@ export function mapFormToCOSModel(
     registrationDate: inputs['registrationDate'] || '',
     cosDate: inputs['cosDate'] || inputs['registrationDate'] || '',
     regularReadingCycle: inputs['regularReadingCycle'] || 'D',
+    d0019ConsumptionType: (inputs['d0019ConsumptionType'] === 'actual' ? 'actual' : 'estimated'),
     meterGroups: extractMeterGroups(inputs),
   };
 }
