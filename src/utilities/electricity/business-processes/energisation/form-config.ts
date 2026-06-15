@@ -236,6 +236,7 @@ export const energisationFormGroups: FormGroupDefinition[] = [
         label: 'Manufacturers Make & Type',
         type: 'text',
         required: true,
+        defaultValue: 'EDMI AtlasMk10A',
         placeholder: 'EDMI AtlasMk10A',
         helpText: 'D0150 290[5]',
       },
