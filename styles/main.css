@@ -704,6 +704,23 @@ html, body {
   font-style: italic;
 }
 
+.field-radio-group {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 20px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
 .field-input,
 .field-select {
   background: var(--bg-input);

@@ -247,6 +247,24 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
     ],
   },
   {
+    id: 'd0019-settings',
+    label: 'D0019 Consumption Type',
+    icon: '⚡',
+    fields: [
+      {
+        id: 'd0019ConsumptionType',
+        label: 'Consumption Type',
+        type: 'radio-group',
+        required: false,
+        defaultValue: 'estimated',
+        options: [
+          { value: 'estimated', label: 'Estimated  —  EAH / EAD' },
+          { value: 'actual',    label: 'Actual  —  AAH / AAD + EAH / EAD' },
+        ],
+      },
+    ],
+  },
+  {
     id: 'meter-groups',
     label: 'Meter Groups (TPR / Registers)',
     icon: '📋',
@@ -456,7 +474,14 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
           label: 'Estimated Annual Consumption (kWh)',
           type: 'number',
           required: true,
-          helpText: 'EAC in kWh',
+          helpText: 'D0019 EAD — EAC in kWh',
+        },
+        {
+          id: 'actualAnnualConsumption',
+          label: 'Actual Annual Consumption (kWh)',
+          type: 'number',
+          required: false,
+          helpText: 'D0019 AAD — actual kWh (only used when Consumption Type is Actual)',
         },
       ],
     },

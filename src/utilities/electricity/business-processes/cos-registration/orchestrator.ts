@@ -293,7 +293,7 @@ export function orchestrateCOSRegistration(
     regularReadingCycle: m.regularReadingCycle,
   });
 
-  // ---- D0019: one AAD row per register, TPR carried per row ----
+  // ---- D0019: one EAD/AAD row per register, TPR carried per row ----
   const d0019 = buildD0019({
     envelope: env('D0019', 12, '001', mop, supp),
     fileSequenceNumber: String(fileIdBase % 9999 + 1),
@@ -307,9 +307,11 @@ export function orchestrateCOSRegistration(
     measurementClass: m.measurementClass,
     gspGroupId: m.gspGroupId,
     energisationStatus: m.energisationStatus,
-    aadRecords: m.meterGroups.flatMap(g => g.registers.map(r => ({
+    consumptionType: m.d0019ConsumptionType,
+    eadRecords: m.meterGroups.flatMap(g => g.registers.map(r => ({
       timePatternRegiment: g.timePatternRegiment,
-      annualisedAdvance: r.estimatedAnnualConsumption,
+      estimatedAnnualConsumption: r.estimatedAnnualConsumption,
+      actualAnnualConsumption: r.actualAnnualConsumption ?? '',
     }))),
   });
 
