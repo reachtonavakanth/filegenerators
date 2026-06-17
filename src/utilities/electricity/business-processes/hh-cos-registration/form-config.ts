@@ -203,22 +203,38 @@ export const hhCOSRegistrationFormGroups: FormGroupDefinition[] = [
       ],
     },
   },
-  // ---- D0036 — HH Consumption (DC → Supplier) — repeatable per settlement date ----
+  // ---- D0036 — Settlement Date Range ----
   {
-    id: 'hh-consumption',
-    label: 'HH Consumption (D0036)',
-    icon: '📊',
-    repeatable: true,
-    blockLabel: 'Settlement Date',
-    addLabel: 'Add Another Settlement Date',
-    blockFieldsClass: 'register-block-fields--compact',
+    id: 'hh-consumption-range',
+    label: 'HH Consumption Date Range (D0036)',
+    icon: '📅',
     fields: [
       {
-        id: 'hhSettlementDate',
-        label: 'Settlement Date',
+        id: 'hhStartDate',
+        label: 'Start Date',
         type: 'date',
         required: true,
+        helpText: 'First settlement date — one .usr file generated per day in the range',
       },
+      {
+        id: 'hhEndDate',
+        label: 'End Date',
+        type: 'date',
+        required: true,
+        helpText: 'Last settlement date (inclusive)',
+      },
+    ],
+  },
+  // ---- D0036 — Measurement Quantity blocks (one per MQID, 48 intervals each) ----
+  {
+    id: 'hh-mqid-blocks',
+    label: 'Measurement Quantities (D0036)',
+    icon: '📊',
+    repeatable: true,
+    blockLabel: 'Measurement Quantity',
+    addLabel: 'Add Another Measurement Quantity',
+    blockFieldsClass: 'register-block-fields--compact',
+    fields: [
       {
         id: 'hhMeasurementQuantityId',
         label: 'Measurement Quantity ID',
@@ -235,7 +251,7 @@ export const hhCOSRegistrationFormGroups: FormGroupDefinition[] = [
         fillTargets: Array.from({ length: 48 }, (_, i) => `p${String(i + 1).padStart(2, '0')}Val`),
         fillRange: { min: 5.0, max: 15.0, decimals: 1 },
       },
-      { id: 'hh-periods-heading', label: '48 half-hour intervals', type: 'heading', required: false },
+      { id: 'hh-periods-heading', label: '48 half-hour intervals (same values applied to every time interval across the range)', type: 'heading', required: false },
       ...Array.from({ length: 48 }, (_, i) => {
         const n = i + 1;
         const idx = String(n).padStart(2, '0');

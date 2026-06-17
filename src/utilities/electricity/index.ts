@@ -12,6 +12,9 @@ import { orchestrateEnergisation } from './business-processes/energisation/orche
 import { hhCOSRegistrationFormGroups } from './business-processes/hh-cos-registration/form-config';
 import { mapFormToHHCOSModel } from './business-processes/hh-cos-registration/model';
 import { orchestrateHHCOSRegistration } from './business-processes/hh-cos-registration/orchestrator';
+import { hhD0036FormGroups } from './business-processes/hh-d0036/form-config';
+import { mapFormToHHD0036Model } from './business-processes/hh-d0036/model';
+import { orchestrateHHD0036 } from './business-processes/hh-d0036/orchestrator';
 
 export const electricityUtility: UtilityDefinition = {
   id: 'electricity',
@@ -53,6 +56,17 @@ export const electricityUtility: UtilityDefinition = {
       generate(inputs) {
         const model = mapFormToEnergisationModel(inputs);
         return orchestrateEnergisation(model);
+      },
+    },
+    {
+      id: 'hh-d0036',
+      label: 'HH Consumption (D0036)',
+      description: 'D0036 — one file per settlement date, multiple Measurement Quantities per file',
+      utilityType: 'electricity',
+      formGroups: hhD0036FormGroups,
+      generate(inputs) {
+        const model = mapFormToHHD0036Model(inputs);
+        return orchestrateHHD0036(model);
       },
     },
   ],

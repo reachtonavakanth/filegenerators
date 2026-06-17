@@ -38,6 +38,7 @@ export interface DFlowFile {
   fileName: string;
   records: DFlowRecord[];
   trailerType: 'ZPT' | 'ZTT';
+  batchCount?: number; // ZPT field[4] — number of data groups (e.g. 101 records in D0036)
 }
 
 // ---- CSS message (JSON output) ----
