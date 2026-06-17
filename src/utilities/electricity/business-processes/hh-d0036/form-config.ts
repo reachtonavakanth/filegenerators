@@ -46,8 +46,9 @@ export const hhD0036FormGroups: FormGroupDefinition[] = [
     label: 'Settlement Date Range',
     icon: '📅',
     fields: [
-      { id: 'hhStartDate', label: 'Start Date', type: 'date', required: true, defaultValue: localDateISO(), helpText: 'First settlement date — one .usr file per day' },
-      { id: 'hhEndDate',   label: 'End Date',   type: 'date', required: true, defaultValue: localDateISO(), helpText: 'Last settlement date (inclusive)' },
+      { id: 'hhStartDate',    label: 'Start Date',          type: 'date',   required: true,  defaultValue: localDateISO(), helpText: 'First settlement date — one .usr file per day' },
+      { id: 'hhEndDate',      label: 'End Date',            type: 'date',   required: true,  defaultValue: localDateISO(), helpText: 'Last settlement date (inclusive)' },
+      { id: 'hhLowDayFactor', label: 'Even Day Multiplier', type: 'number', required: false, defaultValue: '0.3', step: '0.01', helpText: 'Odd days use values as-is from the form. Even days multiply each interval by this factor.' },
     ],
   },
   // ---- Measurement Quantity blocks — one per MQID, 48 intervals each ----

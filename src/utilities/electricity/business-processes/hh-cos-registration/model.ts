@@ -79,6 +79,7 @@ export interface ElectricityHHCOSRegistrationModel {
   // D0036 — HH Consumption date range + per-MQID 48 intervals
   hhStartDate: string;
   hhEndDate: string;
+  hhLowDayFactor: number;
   hhMQIDBlocks: Array<{
     measurementQuantityId: string;
     periods: Array<{ indicator: string; consumption: string }>;
@@ -251,6 +252,7 @@ export function mapFormToHHCOSModel(
     meters: extractMeters(inputs),
     hhStartDate: inputs['hhStartDate'] || '',
     hhEndDate: inputs['hhEndDate'] || '',
+    hhLowDayFactor: parseFloat(inputs['hhLowDayFactor'] || '0.3') || 0.3,
     hhMQIDBlocks: extractMQIDBlocks(inputs),
   };
 }

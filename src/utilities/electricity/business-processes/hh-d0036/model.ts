@@ -17,6 +17,7 @@ export interface HHD0036Model {
   mpan: string;
   hhStartDate: string;
   hhEndDate: string;
+  hhLowDayFactor: number;
   hhMQIDBlocks: HHD0036MQIDBlock[];
 }
 
@@ -58,6 +59,7 @@ export function mapFormToHHD0036Model(inputs: Record<string, string>): HHD0036Mo
     mpan:                  inputs['mpan']                  || '',
     hhStartDate:           inputs['hhStartDate']           || '',
     hhEndDate:             inputs['hhEndDate']             || '',
+    hhLowDayFactor:        parseFloat(inputs['hhLowDayFactor'] || '0.3') || 0.3,
     hhMQIDBlocks:          extractMQIDBlocks(inputs),
   };
 }

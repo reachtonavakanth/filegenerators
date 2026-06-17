@@ -223,6 +223,15 @@ export const hhCOSRegistrationFormGroups: FormGroupDefinition[] = [
         required: true,
         helpText: 'Last settlement date (inclusive)',
       },
+      {
+        id: 'hhLowDayFactor',
+        label: 'Even Day Multiplier',
+        type: 'number',
+        required: false,
+        defaultValue: '0.3',
+        step: '0.01',
+        helpText: 'Odd days use values as-is from the form. Even days multiply each interval by this factor.',
+      },
     ],
   },
   // ---- D0036 — Measurement Quantity blocks (one per MQID, 48 intervals each) ----

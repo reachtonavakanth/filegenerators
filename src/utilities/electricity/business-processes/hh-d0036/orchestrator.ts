@@ -7,6 +7,18 @@ import type { HHD0036Model } from './model';
 import { makeDateTime, makeXRef, currentHHMMSS, generateFileIdBase } from '../../../../shared/rendering/dflow-renderer';
 import { buildD0036 } from '../../dflows/d0036';
 
+function scaleConsumption(
+  periods: Array<{ indicator: string; consumption: string }>,
+  factor: number
+): Array<{ indicator: string; consumption: string }> {
+  return periods.map(p => ({
+    indicator: p.indicator,
+    consumption: p.consumption.trim()
+      ? (parseFloat(p.consumption) * factor).toFixed(1)
+      : '',
+  }));
+}
+
 function expandDateRange(startYMD: string, endYMD: string): string[] {
   if (startYMD.length !== 8 || endYMD.length !== 8) return [];
   const dates: string[] = [];
@@ -46,7 +58,10 @@ export function orchestrateHHD0036(m: HHD0036Model): GeneratedOutput {
       supplierParticipantId: m.supplierParticipantId,
       mqidBlocks: m.hhMQIDBlocks.map(block => ({
         measurementQuantityId: block.measurementQuantityId,
-        settlements: [{ settlementDate: date, periods: block.periods }],
+        settlements: [{
+          settlementDate: date,
+          periods: i % 2 === 0 ? block.periods : scaleConsumption(block.periods, m.hhLowDayFactor),
+        }],
       })),
     });
     file.fileName = `D0036_${date}.usr`;
