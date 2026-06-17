@@ -76,11 +76,13 @@ export interface ElectricityHHCOSRegistrationModel {
   // D0268 03A + 04A — meters each with their own registers
   meters: D0268Meter[];
 
-  // D0036 — HH Consumption (one entry per settlement date block)
-  hhMeasurementQuantityId: string;                             // 101[1] — from first block
-  hhSettlements: Array<{
-    settlementDate: string;                                    // 102[0]
-    periods: Array<{ indicator: string; consumption: string }>; // 48 × 103
+  // D0036 — HH Consumption date range + per-MQID 48 intervals
+  hhStartDate: string;
+  hhEndDate: string;
+  hhLowDayFactor: number;
+  hhMQIDBlocks: Array<{
+    measurementQuantityId: string;
+    periods: Array<{ indicator: string; consumption: string }>;
   }>;
 }
 
@@ -248,27 +250,36 @@ export function mapFormToHHCOSModel(
     additionalInformation: inputs['additionalInformation'] || '',
     outstations: extractOutstations(inputs),
     meters: extractMeters(inputs),
-    hhMeasurementQuantityId: inputs['hhMeasurementQuantityId_0'] || 'AI',
-    hhSettlements: extractHHSettlements(inputs),
+    hhStartDate: inputs['hhStartDate'] || '',
+    hhEndDate: inputs['hhEndDate'] || '',
+    hhLowDayFactor: parseFloat(inputs['hhLowDayFactor'] || '0.3') || 0.3,
+    hhMQIDBlocks: extractMQIDBlocks(inputs),
   };
 }
 
-function extractHHSettlements(inputs: Record<string, string>) {
-  const settlements = [];
-  let s = 0;
-  while (`hhSettlementDate_${s}` in inputs || s === 0) {
-    const settlementDate = inputs[`hhSettlementDate_${s}`] || '';
-    if (!settlementDate) break;
+function extractMQIDBlocks(inputs: Record<string, string>) {
+  const blocks = [];
+  let i = 0;
+  while (`hhMeasurementQuantityId_${i}` in inputs) {
     const periods = [];
     for (let p = 1; p <= 48; p++) {
       const idx = String(p).padStart(2, '0');
       periods.push({
-        indicator:   inputs[`p${idx}Ind_${s}`] || 'A',
-        consumption: inputs[`p${idx}Val_${s}`] ?? '',
+        indicator:   inputs[`p${idx}Ind_${i}`] || 'A',
+        consumption: inputs[`p${idx}Val_${i}`] ?? '',
       });
     }
-    settlements.push({ settlementDate, periods });
-    s++;
+    blocks.push({
+      measurementQuantityId: inputs[`hhMeasurementQuantityId_${i}`] || 'AI',
+      periods,
+    });
+    i++;
   }
-  return settlements;
+  if (blocks.length === 0) {
+    blocks.push({
+      measurementQuantityId: 'AI',
+      periods: Array.from({ length: 48 }, () => ({ indicator: 'A', consumption: '' })),
+    });
+  }
+  return blocks;
 }

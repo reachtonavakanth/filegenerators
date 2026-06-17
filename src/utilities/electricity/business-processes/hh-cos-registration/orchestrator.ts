@@ -44,6 +44,33 @@ function makeEnvelope(
   };
 }
 
+function scaleConsumption(
+  periods: Array<{ indicator: string; consumption: string }>,
+  factor: number
+): Array<{ indicator: string; consumption: string }> {
+  return periods.map(p => ({
+    indicator: p.indicator,
+    consumption: p.consumption.trim()
+      ? (parseFloat(p.consumption) * factor).toFixed(1)
+      : '',
+  }));
+}
+
+function expandDateRange(startYMD: string, endYMD: string): string[] {
+  if (startYMD.length !== 8 || endYMD.length !== 8) return [];
+  const dates: string[] = [];
+  const cur = new Date(+startYMD.slice(0, 4), +startYMD.slice(4, 6) - 1, +startYMD.slice(6, 8));
+  const end = new Date(+endYMD.slice(0, 4), +endYMD.slice(4, 6) - 1, +endYMD.slice(6, 8));
+  while (cur <= end) {
+    const y = cur.getFullYear();
+    const mo = String(cur.getMonth() + 1).padStart(2, '0');
+    const dy = String(cur.getDate()).padStart(2, '0');
+    dates.push(`${y}${mo}${dy}`);
+    cur.setDate(cur.getDate() + 1);
+  }
+  return dates;
+}
+
 export function orchestrateHHCOSRegistration(
   m: ElectricityHHCOSRegistrationModel
 ): GeneratedOutput {
@@ -210,21 +237,31 @@ export function orchestrateHHCOSRegistration(
     meters: m.meters,
   });
 
-  // ---- D0036: DC → Supplier ----
-  const d0036 = buildD0036({
-    envelope: env('D0036', 8, '001', dc, supp),
-    mpan: m.mpan,
-    measurementQuantityId: m.hhMeasurementQuantityId,
-    supplierParticipantId: m.supplierParticipantId,
-    settlements: m.hhSettlements,
+  // ---- D0036: DC → Supplier — one file per settlement date ----
+  if (m.hhStartDate > m.hhEndDate) throw new Error(`D0036: Start Date (${m.hhStartDate}) is after End Date (${m.hhEndDate})`);
+  const settlementDates = expandDateRange(m.hhStartDate, m.hhEndDate);
+  const d0036Files = settlementDates.map((date, i) => {
+    const file = buildD0036({
+      envelope: env('D0036', 8 + i, '001', dc, supp),
+      mpan: m.mpan,
+      supplierParticipantId: m.supplierParticipantId,
+      mqidBlocks: m.hhMQIDBlocks.map(block => ({
+        measurementQuantityId: block.measurementQuantityId,
+        settlements: [{
+          settlementDate: date,
+          periods: i % 2 === 0 ? block.periods : scaleConsumption(block.periods, m.hhLowDayFactor),
+        }],
+      })),
+    });
+    file.fileName = `D0036_${date}.usr`;
+    return file;
   });
 
   const warnings: string[] = [];
-  for (const s of m.hhSettlements) {
-    const filled = s.periods.filter(p => p.consumption.trim() !== '').length;
+  for (const block of m.hhMQIDBlocks) {
+    const filled = block.periods.filter(p => p.consumption.trim() !== '').length;
     if (filled < 48) {
-      const label = s.settlementDate || 'unknown date';
-      warnings.push(`Settlement ${label}: ${filled} of 48 intervals have values (${48 - filled} missing)`);
+      warnings.push(`${block.measurementQuantityId}: ${filled} of 48 intervals filled (${48 - filled} missing) — applied to all ${settlementDates.length} days`);
     }
   }
 
@@ -232,7 +269,7 @@ export function orchestrateHHCOSRegistration(
     processId: 'hh-advanced-cos-registration',
     processLabel: 'Electricity HH Advanced COS Registration',
     folderName: `${m.mpan}_HH Advanced COS Registration`,
-    dflows: [d0260, d0217, d0011_mop, d0011_da, d0011_dc, d0051, d0268, d0036],
+    dflows: [d0260, d0217, d0011_mop, d0011_da, d0011_dc, d0051, d0268, ...d0036Files],
     cssMessages: [css02380, css02300, css02370_01, css02370_03],
     warnings: warnings.length > 0 ? warnings : undefined,
   };

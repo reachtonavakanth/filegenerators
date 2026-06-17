@@ -19,7 +19,7 @@ export function renderDFlowFile(file: DFlowFile): string {
   }
 
   if (file.trailerType === 'ZPT') {
-    lines.push(renderZPT(file.envelope, file.records.length));
+    lines.push(renderZPT(file.envelope, file.records.length, file.batchCount));
   } else {
     // ZTT total = ZHV (1) + body records + ZTT (1)
     lines.push(renderZTT(file.envelope, file.records.length + 2));
@@ -50,14 +50,16 @@ function renderRecord(record: DFlowRecord): string {
   return pipe([record.recordType, ...record.fields, '']);
 }
 
-// ZPT — batch trailer: count = lines between ZHV and ZPT (body records only)
-function renderZPT(env: DFlowEnvelope, linesBetween: number): string {
+// ZPT — batch trailer
+// D0036 format: ZPT|fileId|linesBetween|linesBetween|batchCount|datetime|
+// Other flows:  ZPT|fileId|linesBetween||1|datetime|
+function renderZPT(env: DFlowEnvelope, linesBetween: number, batchCount?: number): string {
   return pipe([
     'ZPT',
     env.fileId,
     String(linesBetween),
-    '',
-    '1',
+    batchCount !== undefined ? String(linesBetween) : '',
+    batchCount !== undefined ? String(batchCount) : '1',
     env.creationDateTime,
     '',
   ]);
