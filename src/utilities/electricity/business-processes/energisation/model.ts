@@ -45,6 +45,16 @@ export interface ElectricityEnergisationModel {
   meterGroups: MeterGroupEntry[];
 }
 
+function formatReading(v: string | undefined): string {
+  const n = parseFloat(v ?? '');
+  return isNaN(n) ? '00000.0' : n.toFixed(1);
+}
+
+function formatEAC(v: string | undefined, fallback = '3100.0'): string {
+  const n = parseFloat(v ?? '');
+  return isNaN(n) ? fallback : n.toFixed(1);
+}
+
 function extractMeterGroups(inputs: Record<string, string>): MeterGroupEntry[] {
   const groups: MeterGroupEntry[] = [];
   let i = 0;
@@ -62,10 +72,10 @@ function extractMeterGroups(inputs: Record<string, string>): MeterGroupEntry[] {
         readingDate:                inputs[`readingDate_${i}_${j}`]                || '',
         bscValidationStatus:        inputs[`bscValidationStatus_${i}_${j}`]        || 'V',
         readingType:                inputs[`readingType_${i}_${j}`]                || 'I',
-        readingValue:               inputs[`readingValue_${i}_${j}`]               || '00000.0',
+        readingValue:               formatReading(inputs[`readingValue_${i}_${j}`]),
         meterReadingFlag:           inputs[`meterReadingFlag_${i}_${j}`]           || 'T',
         readingMethod:              inputs[`readingMethod_${i}_${j}`]              || 'N',
-        estimatedAnnualConsumption: inputs[`estimatedAnnualConsumption_${i}_${j}`] || '3100',
+        estimatedAnnualConsumption: formatEAC(inputs[`estimatedAnnualConsumption_${i}_${j}`]),
       });
       j++;
     }
@@ -75,7 +85,7 @@ function extractMeterGroups(inputs: Record<string, string>): MeterGroupEntry[] {
         measurementQuantityId: 'AI', registerMappingCoefficient: '1.00', numberOfDigits: '5',
         readingDate: '', bscValidationStatus: 'V', readingType: 'I',
         readingValue: '00000.0', meterReadingFlag: 'T', readingMethod: 'N',
-        estimatedAnnualConsumption: '3100',
+        estimatedAnnualConsumption: '3100.0',
       });
     }
     groups.push({
@@ -105,7 +115,7 @@ function extractMeterGroups(inputs: Record<string, string>): MeterGroupEntry[] {
         measurementQuantityId: 'AI', registerMappingCoefficient: '1.00', numberOfDigits: '5',
         readingDate: '', bscValidationStatus: 'V', readingType: 'I',
         readingValue: '00000.0', meterReadingFlag: 'T', readingMethod: 'N',
-        estimatedAnnualConsumption: '3100',
+        estimatedAnnualConsumption: '3100.0',
       }],
     });
   }
