@@ -446,8 +446,9 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
         {
           id: 'readingValue',
           label: 'Meter Reading',
-          type: 'text',
+          type: 'number',
           required: true,
+          step: '0.1',
           placeholder: '00000.0',
           helpText: 'D0010 030[2] — NUM(9,1) e.g. 256980.0',
         },
@@ -474,6 +475,7 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
           label: 'Estimated Annual Consumption (kWh)',
           type: 'number',
           required: true,
+          step: '0.1',
           helpText: 'D0019 EAD — EAC in kWh',
         },
         {
@@ -481,6 +483,7 @@ export const cosRegistrationFormGroups: FormGroupDefinition[] = [
           label: 'Actual Annual Consumption (kWh)',
           type: 'number',
           required: false,
+          step: '0.1',
           helpText: 'D0019 AAD — actual kWh (only used when Consumption Type is Actual)',
         },
       ],

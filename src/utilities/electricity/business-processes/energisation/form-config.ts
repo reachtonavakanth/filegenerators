@@ -378,8 +378,9 @@ export const energisationFormGroups: FormGroupDefinition[] = [
         {
           id: 'readingValue',
           label: 'Meter Reading',
-          type: 'text',
+          type: 'number',
           required: true,
+          step: '0.1',
           placeholder: '00000.0',
           helpText: 'D0010 030[2] — NUM(9,1) e.g. 256980.0',
         },
@@ -406,6 +407,7 @@ export const energisationFormGroups: FormGroupDefinition[] = [
           label: 'EAC (kWh)',
           type: 'number',
           required: true,
+          step: '0.1',
         },
       ],
     },

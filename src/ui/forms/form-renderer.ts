@@ -406,7 +406,18 @@ function buildField(field: FormFieldDefinition, outerIndex?: number, innerIndex?
     if (isInner) { input.dataset.innerFieldId = field.id; input.dataset.outerIndex = String(outerIndex); }
     if (field.placeholder) input.placeholder = field.placeholder;
     if (field.maxLength) input.maxLength = field.maxLength;
-    if (field.step) input.step = field.step;
+    if (field.step) {
+      input.step = field.step;
+      const decimals = field.step.includes('.') ? field.step.split('.')[1].length : 0;
+      if (decimals > 0) {
+        input.addEventListener('input', () => {
+          const dot = input.value.indexOf('.');
+          if (dot !== -1 && input.value.length - dot - 1 > decimals) {
+            input.value = input.value.slice(0, dot + 1 + decimals);
+          }
+        });
+      }
+    }
     if (field.required) input.required = true;
     if (field.readOnly) { input.readOnly = true; input.classList.add('field-readonly'); }
 
